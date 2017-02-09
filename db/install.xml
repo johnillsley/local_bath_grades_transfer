@@ -7,10 +7,19 @@
         <TABLE NAME="local_bath_grades_transfer" COMMENT="Transfer grades from Moodle to SAMIS">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                 <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mab_sequence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                 <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timeomdified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="locked" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="samis_assessment_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                 <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="SAMIS Assessment Name"/>
+                <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="SAMIS Assessment Name"/>
              </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
