@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/bath_grades_transfer/db" VERSION="20120122" COMMENT="XMLDB file for local/bath_grades_transfer"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="local_bath_grades_transfer" COMMENT="Transfer grades from Moodle to SAMIS">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                 <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="samis_assessment_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                 <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="SAMIS Assessment Name"/>
+             </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>
