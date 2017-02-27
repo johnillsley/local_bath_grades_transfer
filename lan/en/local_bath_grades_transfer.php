@@ -1,7 +1,2 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 09/02/2017
- * Time: 11:29
- */
+$string['pluginname'] = 'Bath Grades Transfer';
