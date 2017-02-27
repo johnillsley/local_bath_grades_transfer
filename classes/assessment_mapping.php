@@ -65,6 +65,8 @@ class assessment_mapping
      */
     public $samis_assessment_name;
 
+    public $ws_client;
+
     /**
      * assessment_mapping constructor.
      * @param $id
@@ -115,4 +117,8 @@ class assessment_mapping
     function __set($name, $value) {
         // TODO: Implement __set() method.
     }
+    protected function get_remote_assessment(){
+        $method = 'GetSamisAssessmentDetails';
+    }
+
 }
