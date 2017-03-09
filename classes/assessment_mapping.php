@@ -1,12 +1,12 @@
 <?php
-
-/**
+require_once 'local_bath_grades_transfer_samis_assessment_data.php';
+ /**
  * Created by PhpStorm.
  * User: Administrator
  * Date: 09/02/2017
  * Time: 14:53
  */
-class assessment_mapping
+class local_bath_grades_transfer_assessment_mapping
 {
     /**
      * @var
@@ -65,40 +65,10 @@ class assessment_mapping
      */
     public $samis_assessment_name;
 
-    public $ws_client;
 
-    /**
-     * assessment_mapping constructor.
-     * @param $id
-     * @param $coursemoduleid
-     * @param $samis_unit_code
-     * @param $periodslotcode
-     * @param $academic_year
-     * @param $occurrence
-     * @param $mab_sequence
-     * @param $timecreated
-     * @param $modifierid
-     * @param $timeomdified
-     * @param $locked
-     * @param $samis_assessment_end_date
-     * @param $samis_assessment_id
-     * @param $samis_assessment_name
-     */
-    public function __construct($id, $coursemoduleid, $samis_unit_code, $periodslotcode, $academic_year, $occurrence, $mab_sequence, $timecreated, $modifierid, $timeomdified, $locked, $samis_assessment_end_date, $samis_assessment_id, $samis_assessment_name) {
-        $this->id = $id;
-        $this->coursemoduleid = $coursemoduleid;
-        $this->samis_unit_code = $samis_unit_code;
-        $this->periodslotcode = $periodslotcode;
-        $this->academic_year = $academic_year;
-        $this->occurrence = $occurrence;
-        $this->mab_sequence = $mab_sequence;
-        $this->timecreated = $timecreated;
-        $this->modifierid = $modifierid;
-        $this->timeomdified = $timeomdified;
-        $this->locked = $locked;
-        $this->samis_assessment_end_date = $samis_assessment_end_date;
-        $this->samis_assessment_id = $samis_assessment_id;
-        $this->samis_assessment_name = $samis_assessment_name;
+
+    public function __construct(){
+
     }
 
     /**
@@ -109,6 +79,30 @@ class assessment_mapping
     }
     public function delete_record(){
         global $DB;
+        if($DB->record_exists('local_bath_grades_transfer')){
+            $DB->delete_records('local_bath_grades_transfer');
+        }
+    }
+    public function get_by_cm_id($cmid){
+        global $DB;
+        $record = false;
+        if($this->exists_by_cm_id($cmid)){
+            $record =  $DB->get_record('local_bath_grades_transfer',['coursemoduleid'=>$cmid]);
+        }
+        return $record;
+    }
+    public function exists_by_cm_id($cmid){
+        global $DB;
+        return $DB->record_exists('local_bath_grades_transfer',['coursemoduleid'=>$cmid]);
+    }
+    public function exists_by_samis_assessment_id($map_code){
+        global $DB;
+        return $DB->record_exists('local_bath_grades_transfer',['coursemoduleid'=>$map_code]);
+    }
+    public function get_remote_assesment_data($modulecode,$academic_year,$periodslotcode,$occurrence){
+        $assessment_data = new local_bath_grades_transfer_samis_assessment_data();
+        $data = json_decode($assessment_data->get_remote_assessment_details_for_mapping($modulecode,$academic_year,$periodslotcode,$occurrence));
+        return $data;
     }
     /**
      * @param $name
@@ -117,8 +111,6 @@ class assessment_mapping
     function __set($name, $value) {
         // TODO: Implement __set() method.
     }
-    protected function get_remote_assessment(){
-        $method = 'GetSamisAssessmentDetails';
-    }
+
 
 }
