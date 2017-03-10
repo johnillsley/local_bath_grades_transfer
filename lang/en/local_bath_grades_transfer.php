@@ -13,3 +13,4 @@ $string['bath_grade_transfer_samis_assessment'] ='SAMIS Assessment to link to';
 $string['bath_grade_transfer_samis_assessment_help'] = 'Help text';
 $string['bath_grade_transfer_not_samis_default_mapping'] = 'Course does not seems to have a valid SAMIS Mapping.Please ensure course has a default mapping added via the SAMIS block';
 $string['bath_grade_transfer_settings_locked'] = 'Settings have been locked as atleast 1 grade has been transferred';
+$string['bath_grade_transfer_grade_not_hundred'] = 'Grades should be exactly out of 100 for Grades Transfer to work';
