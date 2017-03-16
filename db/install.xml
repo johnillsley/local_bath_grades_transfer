@@ -14,27 +14,53 @@
                 <FIELD NAME="locked" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-             </FIELDS>
+            </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
         <TABLE NAME="local_bath_grades_lookup" COMMENT="External Assessment ID lookup">
-        <FIELDS>
-            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-            <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="mab_sequence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="expired" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-            <FIELD NAME="samis_assessment_id" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
-            <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="SAMIS Assessment Name"/>
-        </FIELDS>
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mab_sequence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="expired" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
+                <FIELD NAME="samis_assessment_id" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="SAMIS Assessment Name"/>
+            </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
+        <TABLE NAME="local_bath_grades_log" COMMENT="Record of all grade transfers initiated by Moodle.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="moodle.course_module.id"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="moodle.user.id"/>
+                <FIELD NAME="gradetransfermappingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="moodle.user.id"/>
+                <FIELD NAME="timetransferred" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="outcomeid" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false"
+                       COMMENT="1 => Success 2 => No grade to transfer 3 => Transfer error 4 => Grade already exists in SAMIS"/>
+                <FIELD NAME="grade_transfer_error_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="index_userid" UNIQUE="false" FIELDS="userid"/>
+                <INDEX NAME="index_coursemoduleid" UNIQUE="false" FIELDS="coursemoduleid"/>
+                <INDEX NAME="index_outcomeid" UNIQUE="false" FIELDS="outcomeid"/>
+                <INDEX NAME="index_gradetransfermappingid" UNIQUE="false" FIELDS="gradetransfermappingid"/>
+            </INDEXES>
+        </TABLE>
+
     </TABLES>
 </XMLDB>
