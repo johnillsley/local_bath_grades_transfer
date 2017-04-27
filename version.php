@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Version details.
  *
@@ -22,6 +23,6 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017031201;        // The current module version (YYYYMMDDXX)
+$plugin->version   = 2017031201.1;        // The current module version (YYYYMMDDXX)
 $plugin->requires  = 2015111000;        // Requires this Moodle version.
 $plugin->component = 'local_bath_grades_transfer';
