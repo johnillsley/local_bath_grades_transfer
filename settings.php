@@ -17,17 +17,13 @@
 /**
  * Global Settings for the plugin
  */
-
-/* Choice of mod types */
 defined('MOODLE_INTERNAL') || die;
-if ($ADMIN->fulltree) {
+if ($hassiteconfig) {
     $ADMIN->add('root', new admin_category('bath_grades_transfer',
         get_string('pluginname', 'local_bath_grades_transfer')
     ));
     $settings = new admin_settingpage('local_bath_grades_transfer', get_string('pluginname', 'local_bath_grades_transfer'));
     $ADMIN->add('localplugins', $settings);
-
-
     $settings->add(new admin_setting_heading('local_bath_grades_transfer/samis_api_heading', get_string('samis_api_heading', 'local_bath_grades_transfer'), ''));
     $settings->add(new admin_setting_configtext('local_bath_grades_transfer/samis_api_url', get_string('samis_api_url', 'local_bath_grades_transfer'), get_string('samis_api_url_desc', 'local_bath_grades_transfer'), ''));
     $settings->add(new admin_setting_configtext('local_bath_grades_transfer/samis_api_user', get_string('samis_api_user', 'local_bath_grades_transfer'), get_string('samis_api_user_desc', 'local_bath_grades_transfer'), ''));
