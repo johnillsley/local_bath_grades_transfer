@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MAV>
+    <MAV.CAMS>
+        <MOD_CODE>MN10008</MOD_CODE>
+        <MAV_OCCUR>A</MAV_OCCUR>
+        <AYR_CODE>2016/7</AYR_CODE>
+        <PSL_CODE>S1</PSL_CODE>
+        <MAP>
+            <MAP.CAMS>
+                <MAP_CODE>MN10008C</MAP_CODE>
+                <MAB>
+                    <MAB.CAMS>
+                        <MAP_CODE>MN10008C</MAP_CODE>
+                        <MAB_SEQ>01</MAB_SEQ>
+                        <AST_CODE>CW</AST_CODE>
+                        <MAB_PERC>25</MAB_PERC>
+                        <MAB_NAME>MN10008 Coursework</MAB_NAME>
+                    </MAB.CAMS>
+                    <MAB.CAMS>
+                        <MAP_CODE>MN10008C</MAP_CODE>
+                        <MAB_SEQ>02</MAB_SEQ>
+                        <AST_CODE>EX</AST_CODE>
+                        <MAB_PERC>75</MAB_PERC>
+                        <MAB_NAME>MN10008 Examination</MAB_NAME>
+                    </MAB.CAMS>
+                </MAB>
+            </MAP.CAMS>
+        </MAP>
+    </MAV.CAMS>
+</MAV>
