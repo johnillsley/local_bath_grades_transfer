@@ -133,7 +133,7 @@ class local_bath_grades_transfer
                         $dropdown_attributes['disabled'] = 'disabled';
                         ///// STATIC TRANSFER TIME TEXT /////
                         $samis_assessment_end_date = userdate($this->assessment_mapping->samis_assessment_end_date == NULL ? 'Not Set' : $this->assessment_mapping->samis_assessment_end_date);
-                        $mform->addElement('static', 'bath_grade_transfer_time_start', 'Transfer grades from',
+                        $mform->addElement('static', 'bath_grade_transfer_time_start_locked', 'Transfer grades from',
                             $samis_assessment_end_date);
                     } else {
                         //Mapping is not locked
@@ -197,7 +197,13 @@ class local_bath_grades_transfer
 
     protected function display_select_options($lrecord, &$select) {
         if ($this->assessment_mapping->exists_by_lookup_id($lrecord->id)) {
-            $this->select_option_format($lrecord->mab_name . " is in use", $lrecord->id, ['disabled' => 'disabled'], $select);
+            //Get the mapping to get the course ID
+            $assessment_mapping = $this->assessment_mapping->get_by_lookup_id($lrecord->id);
+            if(!empty($assessment_mapping)){
+                //TODO Show the right activity ID and type
+                $this->select_option_format($lrecord->mab_name . " is in use", $lrecord->id, ['disabled' => 'disabled','title'=>'ACTIVITY ID :'.$assessment_mapping->coursemodule.' AND TYPE : '.$assessment_mapping->activity_type], $select);
+            }
+
         } else {
             $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, [], $select);
         }
@@ -307,6 +313,7 @@ class local_bath_grades_transfer
         require($CFG->dirroot . '/mod/assign/locallib.php');
         //Get me all mapping whose transfer time is null ( they've never been transferred )
         $assessment_mapping_ids = $this->assessment_mapping->getAll();
+        var_dump($assessment_mapping_ids);die();
         foreach ($assessment_mapping_ids as $mapping_id) {
             //For each assessment mapping id , get the mapping object
             if (isset($mapping_id)) {
@@ -492,6 +499,7 @@ class local_bath_grades_transfer
             $new_assessment_mapping_data->id = $current_assessment_mapping->id;
             $new_assessment_mapping_data->modifierid = $USER->id;
             $new_assessment_mapping_data->coursemodule = $data->coursemodule;
+            $new_assessment_mapping_data->activity_type = $data->modulename;
             $new_assessment_mapping_data->samis_assessment_end_date = $data->bath_grade_transfer_time_start;
             $new_assessment_mapping_data->assessment_lookup_id = $form_samis_assessment_lookup_id;
             //SET
@@ -523,6 +531,7 @@ class local_bath_grades_transfer
             $new_assessment_mapping_data = new stdClass();
             $new_assessment_mapping_data->modifierid = $USER->id;
             $new_assessment_mapping_data->coursemodule = $data->coursemodule;
+            $new_assessment_mapping_data->activity_type = $data->modulename;
             $new_assessment_mapping_data->bath_grade_transfer_time_start = $data->bath_grade_transfer_time_start;
             $new_assessment_mapping_data->assessment_lookup_id = $form_samis_assessment_lookup_id;
             var_dump($new_assessment_mapping_data);
