@@ -20,7 +20,8 @@ class local_bath_grades_transfer_samis_api_client extends \GuzzleHttp\Client
      * @var
      */
     public $request;
- //  const API_KEY = 'AIzaSyCJoUyBIcOkHMc4XRRcddRF5304ZuIl1BA';
+    public $response;
+    private $connected;
 
     /**
      * local_bath_grades_transfer_samis_api_client constructor.
@@ -29,7 +30,11 @@ class local_bath_grades_transfer_samis_api_client extends \GuzzleHttp\Client
         global $CFG;
         //$uri = $CFG->wwwroot.'/blocks/bath_samis_grades_transfer/web-service.php/';
         $api_url = get_config('local_bath_grades_transfer', 'samis_api_url');
-        parent::__construct(['base_uri' => $api_url]);
+        $hash = get_config('local_bath_grades_transfer', 'samis_api_key');
+        if(isset($api_url)){
+            parent::__construct(['base_uri' => $api_url]);
+        }
+
     }
 
     /**
@@ -43,22 +48,39 @@ class local_bath_grades_transfer_samis_api_client extends \GuzzleHttp\Client
     }
 
     /**
+     * See if the client can connect to SAMIS
+     * @return mixed
+     */
+    public function is_connected(){
+        return $this->connected;
+    }
+    /**
      * Call a SAMIS API function
      * @param $method
      * @param $data
      * @return string
      */
     public function call($method, $data){
+        try{
+            $this->response = $this->request('GET', 'bath_grades_transfer/web-service.php2', [
+                'query' => ['method' => $method,
+                    'data'=>$data],
 
-        $request = $this->request('GET', 'bath_grades_transfer/web-service.php?', [
-            'query' => ['method' => $method,
-                'data'=>$data],
+                'debug' => false,
+                'timeout'=> 5,
+                'auth'=>['username','password'],
+                'body'=> $data
+            ]);
+            $this->connected = true;
+        }
+        catch (\GuzzleHttp\Exception\RequestException $exception){
+             if($exception->hasResponse()){
+                 $this->connected = false;
+                 $this->response = \GuzzleHttp\Psr7\str($exception->getResponse());
 
-            'debug' => false
-        ]);
-        $body = $request->getBody();
-        $json_content = $body->getContents();
-        return $json_content;
+            }
+
+        }
     }
 
 
