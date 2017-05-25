@@ -249,15 +249,22 @@ class local_bath_grades_transfer
                 //var_dump($remote_assessment_data);
                 foreach ($remote_assessment_data as $map_code => $arrayAssessments) {
                     foreach ($arrayAssessments as $key => $arrayAssessment) {
-                        $assessment_lookup = new local_bath_grades_transfer_assessment_lookup($samis_attributes);
+                        $assessment_lookup = new local_bath_grades_transfer_assessment_lookup();
+                        $assessment_lookup->set_attributes($samis_attributes);
                         //if lookup exists, housekeep
+                        var_dump($assessment_lookup);
                         if ($lookupid = $assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ'])) {
                             echo "lookup exists\n";
-                            $assessment_lookup->housekeep_lookup($lookupid, $arrayAssessment);
+                            echo "housekeeping IT ";
+                            //Get lookup object and housekeep it
+                            $objLookup = \local_bath_grades_transfer_assessment_lookup::get($lookupid);
+                            if ($objLookup) {
+                                $objLookup->housekeep($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ']);
+                            }
                         } else {
                             //else ,add new lookup
                             echo "adding new lookup";
-
+                            die();
                             $assessment_lookup->map_code = $arrayAssessment['MAP_CODE'];
                             $assessment_lookup->mab_seq = $arrayAssessment['MAB_SEQ'];
                             $assessment_lookup->ast_code = $arrayAssessment['AST_CODE'];
@@ -274,7 +281,7 @@ class local_bath_grades_transfer
                 return $remote_assessments_ids;
             } catch (Exception $e) {
                 echo "Throwing Exception #4";
-                var_dump($e->getMessage());
+                //var_dump($e->getMessage());
                 throw new Exception($e->getMessage());
             }
         }
