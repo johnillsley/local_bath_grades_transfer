@@ -41,7 +41,7 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * @var
      */
-    public $timeomdified;
+    public $timemodified;
     /**
      * @var
      */
@@ -62,6 +62,11 @@ class local_bath_grades_transfer_assessment_mapping
      * @var
      */
     public $coursemodule;
+
+    /**
+     * @var $activity_type
+     */
+    public $activity_type;
     /**
      * @var assessment_lookup
      */
@@ -70,36 +75,38 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * @var string
      */
-    private $table = 'local_bath_grades_mapping';
+    private static $table = 'local_bath_grades_mapping';
 
     /**
      * local_bath_grades_transfer_assessment_mapping constructor.
      * @param null $data
      */
     public function __construct($data = null) {
-        //$this->lookup = new local_bath_grades_transfer_assessment_lookup();
     }
 
     /** Get all mapping records from the table
      * @param null $lasttransfertime If provided, get only mapping based on the transfertime
      * @return array|null
      */
-    public function getAll($lasttransfertime = null) {
+    public static function getAll($lasttransfertime = null, $onlyids = true) {
         global $DB;
         $conditions = "lasttransfertime IS NULL";
-        $mapping_ids = null;
+        $return = null;
         if (!is_null($lasttransfertime)) {
             $conditions = "lasttransfertime < " . time();
 
         }
-        $rs = $DB->get_recordset_select($this->table, $conditions, null, '', 'id');
+        $rs = $DB->get_recordset_select(self::$table, $conditions, null, '', 'id');
         if ($rs->valid()) {
             foreach ($rs as $record) {
-                // Do whatever you want with this record
-                $mapping_ids[] = $record->id;
+                if ($onlyids) {
+                    $return[] = $record->id;
+                } else {
+                    $return[] = self::instantiate($record);
+                }
             }
         }
-        return $mapping_ids;
+        return $return;
     }
 
     /**
@@ -107,13 +114,24 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $id
      * @return mixed|null
      */
-    public function get($id) {
+    public static function get($id, $get_lookup = false) {
         global $DB;
-        $record = null;
-        if ($DB->record_exists($this->table, ['id' => $id])) {
-            $record = $DB->get_record($this->table, ['id' => $id]);
+        $mapping_object = array();
+        $objLookup = null;
+        if ($DB->record_exists(self::$table, ['id' => $id])) {
+            $record = $DB->get_record(self::$table, ['id' => $id]);
+            $mapping_object = self::instantiate($record);
         }
-        return $record;
+        //Fetch the corresponding lookup too
+        if ($get_lookup) {
+            $objLookup = $DB->get_record('local_bath_grades_lookup', ['id' => $record->assessment_lookup_id]);
+            if ($objLookup) {
+                $mapping_object->lookup = $objLookup;
+            }
+        }
+
+
+        return $mapping_object;
     }
 
 
@@ -122,11 +140,11 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $lookupid
      * @return mixed|null
      */
-    public function get_by_lookup_id($lookupid) {
+    public static function get_by_lookup_id($lookupid) {
         global $DB;
         $record = null;
-        if ($DB->record_exists($this->table, ['assessment_lookup_id' => $lookupid])) {
-            $record = $DB->get_record($this->table, ['assessment_lookup_id' => $lookupid]);
+        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
+            $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid]);
         }
         return $record;
     }
@@ -137,7 +155,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function exists_by_lookup_id($lookupid) {
         global $DB;
-        if ($DB->record_exists($this->table, ['assessment_lookup_id' => $lookupid])) {
+        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
             return true;
         }
         return false;
@@ -148,8 +166,8 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function delete_record() {
         global $DB;
-        if ($DB->record_exists($this->table)) {
-            $DB->delete_records($this->table);
+        if ($DB->record_exists(self::$table)) {
+            $DB->delete_records(self::$table);
         }
     }
 
@@ -175,6 +193,9 @@ class local_bath_grades_transfer_assessment_mapping
             if (isset($data->locked)) {
                 $this->locked = $data->locked;
             }
+            if (isset($data->activity_type)) {
+                $this->activity_type = $data->activity_type;
+            }
             //set modifier id
             $this->modifierid = $data->modifierid;
         }
@@ -198,13 +219,13 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function get_by_cm_id($cmid) {
         global $DB;
-        $record = false;
         if ($this->exists_by_cm_id($cmid)) {
-            $record = $DB->get_record($this->table, ['coursemodule' => $cmid]);
+            $record = $DB->get_record(self::$table, ['coursemodule' => $cmid]);
+            $object = self::instantiate($record);
         } else {
             return false;
         }
-        return $record;
+        return $object;
     }
 
     /**
@@ -214,7 +235,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     private function exists_by_cm_id($cmid) {
         global $DB;
-        return $DB->record_exists($this->table, ['coursemodule' => $cmid]);
+        return $DB->record_exists(self::$table, ['coursemodule' => $cmid]);
     }
 
     /**
@@ -224,7 +245,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function exists_by_id($id) {
         global $DB;
-        return $DB->record_exists($this->table, ['id' => $id]);
+        return $DB->record_exists(self::$table, ['id' => $id]);
     }
 
     /**
@@ -233,7 +254,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function exists_by_samis_assessment_id($map_code) {
         global $DB;
-        return $DB->record_exists($this->table, ['coursemodule' => $map_code]);
+        return $DB->record_exists(self::$table, ['coursemodule' => $map_code]);
     }
 
 
@@ -246,12 +267,13 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment = new stdClass();
         $objAssessment->id = $this->id;
         $objAssessment->coursemodule = $this->coursemodule;
+        $objAssessment->activity_type = $this->activity_type;
         $objAssessment->modifierid = $this->modifierid;
         $objAssessment->timemodified = time();
         $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
         var_dump($objAssessment);
-        return $DB->update_record($this->table, $objAssessment);
+        return $DB->update_record(self::$table, $objAssessment);
     }
 
     /**
@@ -292,6 +314,7 @@ class local_bath_grades_transfer_assessment_mapping
         global $DB;
         $objAssessment = new stdClass();
         $objAssessment->coursemodule = $this->coursemodule;
+        $objAssessment->activity_type = $this->activity_type;
         $objAssessment->timecreated = time(); //now
         $objAssessment->modifierid = $this->modifierid;
         $objAssessment->timemodified = time(); //now
@@ -299,7 +322,23 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
         $objAssessment->locked = 0;
         var_dump($objAssessment);
-        $DB->insert_record($this->table, $objAssessment);
+        $DB->insert_record(self::$table, $objAssessment);
+    }
+
+    private static function instantiate($record) {
+
+        $object = new self;
+        foreach ($record as $key => $value) {
+            if ($object->has_attribute($key)) {
+                $object->$key = $value;
+            }
+        }
+        return $object;
+    }
+
+    private function has_attribute($attribute) {
+        $object_vars = get_object_vars($this);
+        return array_key_exists($attribute, $object_vars);
     }
 
     /**
