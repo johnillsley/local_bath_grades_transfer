@@ -172,10 +172,10 @@ XML;
         try {
             //$xml_response = $this->http_wsclient->call_samis($function, $data);
             $xml_response = $this->rest_wsclient->call_samis($function, $data);
-            //var_dump($xml_response);
+            var_dump($xml_response);
 
             //$data = simplexml_load_string($xml_response);
-            $data = (json_decode($xml_response, true));
+            $data = json_decode($xml_response, true);
 
             if (isset($data) && !empty($data)) {
                 if (isset($data['status']) && $data['status'] < 0) {
@@ -195,7 +195,7 @@ XML;
             }
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            var_dump($e);
+            //var_dump($e);
             throw new Exception($e->getMessage());
         }
         return $assessments;
