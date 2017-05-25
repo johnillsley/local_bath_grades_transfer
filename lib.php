@@ -258,7 +258,7 @@ class local_bath_grades_transfer
                             //Get lookup object and housekeep it
                             $objLookup = \local_bath_grades_transfer_assessment_lookup::get($lookupid);
                             if ($objLookup) {
-                                $objLookup->housekeep($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ']);
+                                $objLookup->housekeep();
                             }
                         } else {
                             //else ,add new lookup
@@ -350,8 +350,9 @@ class local_bath_grades_transfer
     public function do_transfer_mapping($mapping_id, $users = array()) {
         if (isset($mapping_id)) {
             //From mapping ID , get mapping details and the rest.
+            echo "\n\n Processing MAPPING  ID : $mapping_id \n\n";
             if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
-                echo "\n\nMapping ID : $assessment_mapping->id \n\n";
+                echo "\n\nMapping Object found for ID : $assessment_mapping->id \n\n";
                 //$this->assessment_mapping->set_data($assessment_mapping);
                 var_dump($assessment_mapping);
 
@@ -374,7 +375,7 @@ class local_bath_grades_transfer
                         if (!$lookup->is_expired()) {
                             $lookup->set_expired(true);
                         }
-                        $lookup->save();
+                        $lookup->update();
                     } else {
                         //continue
                         if (isset($moodle_course_id)) {
@@ -422,6 +423,10 @@ class local_bath_grades_transfer
 
                         }
                     }
+                }
+                else{
+                    debugging("Mapping exists but no lookup associated with it !");
+                    return false;
                 }
 
             } else {
