@@ -25,7 +25,7 @@ class local_bath_grades_transfer_assessment_lookup
     /**
      * @var string
      */
-    private $table = 'local_bath_grades_lookup';
+    private static $table = 'local_bath_grades_lookup';
     public $attributes;
     public $id;
     public $map_code;
@@ -36,46 +36,34 @@ class local_bath_grades_transfer_assessment_lookup
     public $expired;
     public $samis_assessment_id;
 
-    /**
-     * local_bath_grades_transfer_assessment_lookup constructor.
-     * @param null $attributes
-     * @param $id
-     * @param $map_code
-     * @param $mab_seq
-     * @param $ast_code
-     * @param $mab_perc
-     * @param $mab_name
-     */
-    public function __construct(\local_bath_grades_transfer_samis_attributes $attributes, $id = null, $map_code = null, $mab_seq = null, $ast_code = null, $mab_perc = null, $mab_name = null) {
+    public function set_attributes(\local_bath_grades_transfer_samis_attributes $attributes) {
+        /*$this->attributes->samis_code = $attributes->samis_code;
+        $this->attributes->period_code = $attributes->period_code;
+        $this->attributes->academic_year = $attributes->academic_year;
+        $this->attributes->occurrence = $attributes->occurrence;*/
         $this->attributes = $attributes;
-        $this->id = $id;
-        $this->map_code = (string)$map_code;
-        $this->mab_seq = (string)$mab_seq;
-        $this->ast_code = (string)$ast_code;
-        $this->mab_perc = (string)$mab_perc;
-        $this->mab_name = (string)$mab_name;
-        $this->samis_assessment_mapping = new \local_bath_grades_transfer_assessment_mapping();
     }
 
-    /**
-     * local_bath_grades_transfer_assessment_lookup constructor.
-     */
-
-    public function create_lookup_instance() {
-
-    }
-
-    /** Get assessment lookup record by SAMIS Assessment ID
+    /** Get assessment lookup record by Lookup ID
      * @param $samis_assessment_id
      * @return mixed|null
      */
-    public function get_by_id($id) {
+    public static function get_by_id($id) {
         global $DB;
+        $object = null;
         $record = null;
-        if ($DB->record_exists($this->table, ['id' => $id])) {
-            $record = $DB->get_record($this->table, ['id' => $id]);
+        if ($DB->record_exists(self::$table, ['id' => $id])) {
+            $record = $DB->get_record(self::$table, ['id' => $id]);
+            $object = self::instantiate($record);
         }
-        return $record;
+        return $object;
+    }
+
+    public static function get($id) {
+        if (isset($id)) {
+            return self::get_by_id($id);
+        }
+        return false;
     }
 
     /**
@@ -86,17 +74,32 @@ class local_bath_grades_transfer_assessment_lookup
     public function get_lookup($lookupid) {
         if (isset($lookupid)) {
             if ($lookup = $this->get_by_id($lookupid)) {
-                if ($this->assessment_exists_in_samis($lookup->id) == true) {
-                    //Assessment exists,return object
-                    return $lookup;
-                } else {
-                    //TODO : log - lookup exists locally but missing from SAMIS
-                }
-            } else {
-                //TODO : lookup does not exist locally anymore
+                return $lookup;
             }
         }
         return false;
+    }
+
+    protected function has_attribute($attribute) {
+        $object_vars = get_object_vars($this);
+        return array_key_exists($attribute, $object_vars);
+    }
+
+    private static function instantiate($record) {
+
+        $object = new self;
+        foreach ($record as $key => $value) {
+            if ($object->has_attribute($key)) {
+                $object->$key = $value;
+            }
+            //Add the attributes
+            $object->attributes = new \local_bath_grades_transfer_samis_attributes(
+                $record->samis_unit_code,
+                $record->academic_year,
+                $record->periodslotcode,
+                $record->mab_seq);
+        }
+        return $object;
     }
 
     /**
@@ -122,15 +125,19 @@ class local_bath_grades_transfer_assessment_lookup
         return $this->samis_assessment_id;
     }
 
-    public function lookup_exists_by_id($lookupid) {
+    public static function lookup_exists_by_id($lookupid) {
         global $DB;
-        return $DB->record_exists($this->table, ['id' => $lookupid]);
+        return $DB->record_exists(self::$table, ['id' => $lookupid]);
 
     }
 
-    public function get_assessment_name_by_id($lookupid) {
+    public function get_assessment_name() {
+        return $this->mab_name;
+    }
+
+    public static function get_assessment_name_by_id($lookupid) {
         global $DB;
-        $assessment_name = $DB->get_field($this->table, 'mab_name', ['id' => $lookupid]);
+        $assessment_name = $DB->get_field(self::$table, 'mab_name', ['id' => $lookupid]);
     }
 
     /**
@@ -145,15 +152,35 @@ class local_bath_grades_transfer_assessment_lookup
         if (!isset($this->attributes)) {
             return false;
         }
-        if ($id = $DB->get_field($this->table, 'id', array('samis_assessment_id' => $samis_assessment_id
+        if ($id = $DB->get_field(self::$table, 'id', array('samis_assessment_id' => $samis_assessment_id
         ,
             'samis_unit_code' => $this->attributes->samis_code,
             'periodslotcode' => $this->attributes->period_code,
             'academic_year' => $this->attributes->academic_year,
-            'occurrence' => $this->attributes->occurrence))
+            'occurrence' => $this->attributes->mab_seq))
         ) {
 
         }
+        return $id;
+    }
+
+    public function add() {
+        global $DB;
+        $id = null;
+        $data = new stdClass();
+        $data->mab_seq = $this->mab_seq;
+        $data->ast_code = $this->ast_code;
+        $data->mab_perc = $this->mab_perc;
+        $data->timecreated = time();
+        $data->samis_unit_code = $this->attributes->samis_code;
+        $data->periodslotcode = $this->attributes->period_code;
+        $data->academic_year = $this->attributes->academic_year;
+        $data->occurrence = $this->attributes->occurrence;
+        //new lookup has no expiry
+        $this->set_expired(0);
+        $data->samis_assessment_id = $this->construct_assessment_id($this->map_code, $this->mab_seq);
+        $data->mab_name = $this->mab_name;
+        $id = $DB->insert_record(self::$table, $data, true);
         return $id;
     }
 
@@ -165,7 +192,6 @@ class local_bath_grades_transfer_assessment_lookup
     public function add_new_lookup($data) {
         global $DB;
         $id = null;
-        $this->set_data($data);
         $data = new stdClass();
         $data->samis_unit_code = $this->attributes->samis_code;
         $data->periodslotcode = $this->attributes->period_code;
@@ -178,7 +204,7 @@ class local_bath_grades_transfer_assessment_lookup
         $data->expired = null; // Initially not expired
         $data->samis_assessment_id = $this->construct_assessment_id($this->map_code, $this->mab_seq);
         $data->mab_name = $this->mab_name;
-        $id = $DB->insert_record($this->table, $data, true);
+        $id = $DB->insert_record(self::$table, $data, true);
         return $id;
     }
 
@@ -212,8 +238,8 @@ class local_bath_grades_transfer_assessment_lookup
     public function get_assessment_name_by_samis_assessment_id($samis_assessment_id) {
         global $DB;
         $record = null;
-        if ($DB->record_exists($this->table, ['id' => $samis_assessment_id])) {
-            $record = $DB->get_field($this->table, 'mab_name', ['id' => $samis_assessment_id]);
+        if ($DB->record_exists(self::$table, ['id' => $samis_assessment_id])) {
+            $record = $DB->get_field(self::$table, 'mab_name', ['id' => $samis_assessment_id]);
         }
         return $record;
     }
@@ -305,13 +331,6 @@ class local_bath_grades_transfer_assessment_lookup
     }*/
 
     /**
-     *
-     */
-    private function check_expired_assessments() {
-
-    }
-
-    /**
      * @param null $objLookup
      */
     public function housekeep_lookup($lookupid, $remote_assessment) {
@@ -333,51 +352,84 @@ class local_bath_grades_transfer_assessment_lookup
         }
     }
 
+    public function save() {
+        return isset($this->id) ? $this->update() : $this->create();
+
+    }
+
+    protected function create() {
+        global $DB;
+        $id = null;
+        $data = new stdClass();
+        $data->samis_unit_code = $this->attributes->samis_code;
+        $data->periodslotcode = $this->attributes->period_code;
+        $data->academic_year = $this->attributes->academic_year;
+        $data->occurrence = $this->attributes->occurrence;
+        $data->mab_seq = $this->mab_seq;
+        $data->ast_code = $this->ast_code;
+        $data->mab_perc = $this->mab_perc;
+        $data->timecreated = time();
+        $data->expired = null; // Initially not expired
+        $data->samis_assessment_id = $this->construct_assessment_id($this->mab_name, $this->mab_seq);
+        $data->mab_name = $this->mab_name;
+
+    }
+
+    protected function update() {
+        global $DB;
+        $data = new stdClass();
+        $data->id = $this->id;
+        $data->mab_seq = $this->mab_seq;
+        $data->ast_code = $this->ast_code;
+        $data->mab_perc = $this->mab_perc;
+        $data->timecreated = time();
+        $data->expired = $this->expired;
+        $data->mab_name = $this->mab_name;
+        $data->samis_assessment_id = $this->samis_assessment_id;
+        $DB->update_record(self::$table, $data, true);
+
+    }
+
     /**
      *
      * Based on the Lookup ID see if the assessment still exists in SAMIS,
      * if not , set expire to 1 and return false
      * @return bool true | false
      */
-    public function assessment_exists_in_samis($remote_assessment) {
-        echo "Checking against remote asessment";
+    public function assessment_exists_in_samis() {
+        $this->samis_data = new \local_bath_grades_transfer_external_data();
         $exists = false;
-        //Compare this to the remote assessment object
-        var_dump($remote_assessment);
-        die;
-
-        //From the lookup id , get the details
-        //From the details, get the SAMIS attributes
-        //From SAMIS attributes, contact samis to see if its there
-        if (!is_null($assessment_lookup)) {
-            $samis_assessment_id = $assessment_lookup->samis_assessment_id;
+        if (isset($this->id)) {
             $samis_attributes = new local_bath_grades_transfer_samis_attributes(
-                $assessment_lookup->samis_unit_code,
-                $assessment_lookup->academic_year,
-                $assessment_lookup->periodslotcode,
-                $assessment_lookup->occurrence,
-                $assessment_lookup->mab_sequence);
+                $this->attributes->samis_code,
+                $this->attributes->academic_year,
+                $this->attributes->period_code,
+                $this->attributes->occurrence,
+                $this->attributes->mab_sequence);
             try {
-                $remote_mappings = $this->samis_assessment_data->get_remote_assessment_details(
-                    $samis_attributes);
+                $remote_assessment_data = $this->samis_data->get_remote_assessment_details($samis_attributes);
+                foreach ($remote_assessment_data as $map_code => $arrayAssessments) {
+                    foreach ($arrayAssessments as $objAssessment) {
+                        var_dump($objAssessment);
+                        $remote_mapping_assessment_id = $this->construct_assessment_id($objAssessment->MAP_CODE, $objAssessment->MAB_SEQ);
+                        echo "Comparing $remote_mapping_assessment_id with $this->samis_assessment_id";
+                        if ($remote_mapping_assessment_id == $this->samis_assessment_id) {
+                            $exists = true;
+                            echo "!!!!MATCH FOUND!!!!";
+                        } else {
+
+                            $exists = false;
+                        }
+                    }
+                }
 
             } catch (\Exception $e) {
-
+                //Some error, show it on the screen and continue
+                //TODO log it
+                echo $e->getMessage();
+                echo "does not exist ! ";
+                $exists = false;
             }
-            var_dump($remote_mappings);
-            //TODO Fix this for later
-            foreach ($remote_mappings->assessments->assessment as $remote_mapping_object) {
-                $remote_mapping_assessment_id = $this->construct_assessment_id($remote_mapping_object->map_code, $remote_mapping_object->mab_seq);
-                echo "Comparing $remote_mapping_assessment_id with $samis_assessment_id";
-                if ($remote_mapping_assessment_id == $samis_assessment_id) {
-                    $exists = true;
-                } else {
-                    //Eek ! Something has changed on SAMIS , for now, set this to expired and skip it
-                    $this->set_expired($lookupid);
-                    $exists = false;
-                }
-            }
-
         }
         return $exists;
     }
@@ -388,14 +440,21 @@ class local_bath_grades_transfer_assessment_lookup
      * @param local_bath_grades_transfer_samis_attributes $attributes
      * @return array
      */
-    public function get_by_samis_details() {
+    public static function get_by_samis_details($samis_attributes) {
         global $DB;
-        $record = null;
-        return $DB->get_records($this->table, [
-            'samis_unit_code' => $this->attributes->samis_code,
-            'academic_year' => $this->attributes->academic_year,
-            'periodslotcode' => $this->attributes->period_code,
-            'occurrence' => $this->attributes->occurrence
+        $objects = null;
+        $records = $DB->get_records(self::$table, [
+            'samis_unit_code' => $samis_attributes->samis_code,
+            'academic_year' => $samis_attributes->academic_year,
+            'periodslotcode' => $samis_attributes->period_code,
+            'occurrence' => $samis_attributes->occurrence
         ]);
+        if (!empty($records)) {
+            foreach ($records as $record) {
+                $objects[] = self::instantiate($record);
+            }
+        }
+
+        return $objects;
     }
 }
