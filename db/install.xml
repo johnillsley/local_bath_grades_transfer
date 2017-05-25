@@ -26,6 +26,7 @@
                 <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="map_name" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mab_sequence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="ast_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
