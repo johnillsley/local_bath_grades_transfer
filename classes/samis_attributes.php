@@ -1,11 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 27/04/2017
- * Time: 16:53
- */
 class local_bath_grades_transfer_samis_attributes
 {
 
@@ -29,31 +37,17 @@ class local_bath_grades_transfer_samis_attributes
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
      */
-    public function __construct() {
+    public function __construct($samis_code, $academic_year, $period_code, $occurrence, $mab_sequence = null) {
+        $this->samis_code = $samis_code;
+        $this->academic_year = $academic_year;
+        $this->period_code = $period_code;
 
-    }
-
-    /**
-     * @param $moodlecourseid
-     */
-    public function set($moodlecourseid) {
-        global $DB;
-        if (isset($moodlecourseid)) {
-            //Check if course exists
-            if ($DB->record_exists('course', ['id' => $moodlecourseid])) {
-                //Check if mapping exists ( should be default only)
-                //Fetch the mapping
-                $record = $DB->get_record('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
-                if ($record) {
-                    //Return Samis attributes object
-                    $this->samis_code = $record->samis_code;
-                    $this->academic_year = $record->academic_year;
-                    $this->period_code = $record->period_code;
-                    $this->occurrence = $record->occurrence;
-                }
-
-            }
+        if ($occurrence = 'All') {
+            $this->occurrence = 'A';
+        } else {
+            $this->occurrence = $occurrence;
         }
+        $this->mab_sequence = $mab_sequence;
     }
 
 
