@@ -291,18 +291,10 @@ class local_bath_grades_transfer
      * @param $gradetransferid
      * @param $users
      */
-    public function do_transfer($gradetransferid, $users) {
+    public function do_transfer($grades) {
         global $DB;
         //This is then passed on to grade.transfer.class.php
 
-        //Fetch lookup from grade transfer
-        $userids = [];
-        foreach ($userids as $userid) {
-            //For each user I fetch grade data for that user
-            $objUser = $DB->get_record('user', ['id' => $userid]);
-            $grade_data = grade_data($objUser);
-
-        }
     }
 
     /**
@@ -343,11 +335,19 @@ class local_bath_grades_transfer
     }
 
     /** For a given mapping with users, transfer the grades to SAMIS
-     * @param $mappingid
+     * @param $mapping_id
      * @param array $users
-     * @return bool
+     * @return bool true | false
      */
     public function do_transfer_mapping($mapping_id, $users = array()) {
+
+        //Check that config is set.
+        if (!$this->is_admin_config_present()) {
+            debugging("Settings to the plugins seems to be missing. Please fix this");
+            return false;
+        }
+
+
         if (isset($mapping_id)) {
             //From mapping ID , get mapping details and the rest.
             echo "\n\n Processing MAPPING  ID : $mapping_id \n\n";
@@ -379,8 +379,9 @@ class local_bath_grades_transfer
                     } else {
                         //continue
                         if (isset($moodle_course_id)) {
-                            echo $moodle_course_id;
+
                             $samis_mappings = $this->enrol_sits_plugin->sync->samis_mapping->get_mapping_for_course($moodle_course_id);
+                            echo "\n \n SAMIS MAPPINGS FOR THIS MOODLE COURSE ";
                             var_dump($samis_mappings);
                             if (!is_null($samis_mappings)) {
                                 foreach ($samis_mappings as $samis_mapping) {
@@ -389,6 +390,7 @@ class local_bath_grades_transfer
                                         echo "FOR MAPPING $samis_mapping->id \n ";
                                         //$samis_users = array_keys($this->get_users_samis_mapping($samis_mapping->id));
                                         //GET SAMIS users
+                                        echo "!!!!!!!! SETTING DUMMY SAMIS TEST USERS .......!!!!!!! ";
                                         $samis_users = [4285, 6229, 4556]; //TODO Change this when going live
                                         var_dump($samis_users);
                                         if (!empty($users) && !empty($samis_users)) {
@@ -411,21 +413,24 @@ class local_bath_grades_transfer
                                         var_dump($grade_structure);
                                         //Now that we have go the grade structures, send this to a function to do all the prechecks
                                         $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
-
                                         debugging("FINAL GRADES TO PASS:");
                                         var_dump($grades_to_pass);
                                         //DO TRANSFER
+                                        $this->do_transfer($grades_to_pass);
                                         die();
 
                                     }
                                 }
+                            } else {
+                                //TODO log this
+                                debugging("NO SAMIS MAPPING(S) FOUND FOR THIS ASSESSMENT MAPPING. SORRY!");
+                                return false;
                             }
 
                         }
                     }
-                }
-                else{
-                    debugging("Mapping exists but no lookup associated with it !");
+                } else {
+                    debugging("Mapping exists but no lookup associated with it ! BYE ");
                     return false;
                 }
 
