@@ -319,8 +319,16 @@ class local_bath_grades_transfer_assessment_lookup
      * Get the current lookup and check it against remote to make sure it is still valid
      * @param null $objLookup
      */
-    public function housekeep($map_code,$mab_seq) {
-        global $DB;
+    public function housekeep() {
+
+        if(!$this->assessment_exists_in_samis()){
+            if (!$this->is_expired()) {
+                //TODO log it
+                $this->set_expired(true);
+            }
+            $this->update();
+        }
+       /* global $DB;
         $remote_assessment_id = null;
          if(!empty($remote_assessment)){
             $remote_assessment_id = $this->construct_assessment_id($map_code, $mab_seq);
@@ -335,7 +343,7 @@ class local_bath_grades_transfer_assessment_lookup
             $this->set_expired(true);
             //Update
         }
-        return true;
+        return true;*/
     }
 
 
