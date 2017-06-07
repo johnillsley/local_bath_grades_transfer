@@ -236,9 +236,42 @@ XML;
     }
 
     /**
+     * Given a bucs username, return the SPR code from SAMIS
+     * @param $bucs_username
+     * @return SimpleXMLElement
+     * @throws Exception
+     */
+    public function get_spr_from_bucs_id_rest($bucs_username) {
+        $method = 'MOO_SPR_EXP';
+        $data['STU_UDF1'] = $bucs_username;
+        $spr_code = null;
+        try {
+            $xml_response = $this->http_wsclient->call_samis($method, $data);
+            $response_data = simplexml_load_string($xml_response);
+            if ($response_data->status < 0) {
+                //We have an error
+                //$this->handle_error($response_data);
+                throw new \Exception("There is an error SPR. STATUS: " . (string)$response_data->status . " MESSAGE: " . (string)$response_data->messagebuffer);
+            }
+            if (isset($response_data->outdata)) {
+                $xml_assessment_data = simplexml_load_string($response_data->outdata);
+                foreach ($xml_assessment_data->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'}->{'SCJ.SRS'} as $objAssessment) {
+                    $spr_code = (string)$xml_assessment_data->{'SCJ_CODE'};
+
+                }
+            }
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            throw new Exception($e->getMessage());
+        }
+        die("SPR CODE !!!!");
+        return $spr_code;
+    }
+
+    /**
      * @param $userid
      */
-    public function set_export_grade_structure($userid) {
+    public function set_export_grade_structure($userdata, $grade) {
         //returns xml of each grade item to be passes to SAMIS
     }
 
