@@ -63,7 +63,7 @@ class local_bath_grades_transfer_rest_client
                 'debug' => false,
                 'auth' => [$this->username, $this->password],
                 'headers' => [
-                    'Content-Type' => 'text/xml',
+                    //'Content-Type' => 'text/xml', //dont need header for now as output is always JSON
                     'Cache-Control' => 'no-cache',
                 ],
             ]);
@@ -73,6 +73,7 @@ class local_bath_grades_transfer_rest_client
         catch(\GuzzleHttp\Exception\ClientException $e){
             echo "Throwing Client Exception Exception #1";
             if($e->getCode() == 400){
+                //Bad Request.
                  throw  new \Exception($e->getMessage());
             }
 
@@ -83,6 +84,7 @@ class local_bath_grades_transfer_rest_client
         }
         catch(\GuzzleHttp\Exception\ServerException $e){
             echo "Throwing Server Exception Exception #1";
+            //Treat it as we did not get any data
             echo $e->getMessage();
         }
     }
