@@ -93,12 +93,10 @@ class local_bath_grades_transfer
         //Render the header.
         $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
 
-
         /////////////////// FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING ///////////////////
 
         try {
             //TODO Do we need to query the samis API on every refresh ?
-
             $this->fetch_remote_assessments($COURSE->id);
         } catch (Exception $e) {
             $mform->addElement('html', "<p class=\"alert-danger alert\">" . $e->getMessage() . "</p>");
@@ -107,6 +105,14 @@ class local_bath_grades_transfer
         ////// BUILD CONTROLS /////////////
         //Only get settings if the course is mapped to a SAMIS code.
         if ($this->samis_mapping_exists($COURSE->id)) {
+            $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
+            //Get all the records associated with the samis mapping attributes fom Moodle table
+            $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
+            //Check if they have been expired
+            foreach($lookup_records as $lookup_record){
+                //housekeep
+                $lookup_record->housekeep();
+            }
             ////// Show Static text
             $mform->addElement('html', "<p class=\"alert-info alert\">" . get_string('samis_mapping_warning', 'local_bath_grades_transfer') . "</p>");
             $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], $dropdown_attributes);
@@ -114,9 +120,7 @@ class local_bath_grades_transfer
             $select->addOption("None", 0);
 
 
-            $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
-            //Get all the records associated with the samis mapping attributes
-            $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
+
             //var_dump($lookup_records);
             ///////////////// GET MAPPINGS ( LOCALLY ) //////
 
@@ -159,8 +163,6 @@ class local_bath_grades_transfer
                                 }
                             }
                         }
-
-
                     }
 
                 } else {
@@ -255,7 +257,20 @@ class local_bath_grades_transfer
                         $assessment_lookup->set_attributes($samis_attributes);
                         //if lookup exists, housekeep
                         // var_dump($assessment_lookup);
-                        if ($lookupid = $assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ'])) {
+                        if($assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ']) == false){
+                            echo "adding new lookup as it doesnt exist in MOODLE ";
+                            //die();
+                            $assessment_lookup->map_code = $arrayAssessment['MAP_CODE'];
+                            $assessment_lookup->mab_seq = $arrayAssessment['MAB_SEQ'];
+                            $assessment_lookup->ast_code = $arrayAssessment['AST_CODE'];
+                            $assessment_lookup->mab_perc = $arrayAssessment['MAB_PERC'];
+                            $assessment_lookup->mab_name = $arrayAssessment['MAB_NAME'];
+                            $assessment_lookup->set_attributes($samis_attributes);
+                            //var_dump($assessment_lookup);
+                            //die();
+                            $assessment_lookup->add();
+                        }
+                       /* if ($lookupid = $assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ'])) {
                             echo "lookup exists\n";
                             echo "housekeeping IT ";
                             //Get lookup object and housekeep it
@@ -276,7 +291,7 @@ class local_bath_grades_transfer
                             //var_dump($assessment_lookup);
                             //die();
                             $assessment_lookup->add();
-                        }
+                        }*/
                     }
                 }
                 return $remote_assessments_ids;
