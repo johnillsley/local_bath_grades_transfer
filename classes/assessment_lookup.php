@@ -317,7 +317,6 @@ class local_bath_grades_transfer_assessment_lookup
 
     /**
      * Get the current lookup and check it against remote to make sure it is still valid
-     * @param null $objLookup
      */
     public function housekeep() {
 
@@ -330,7 +329,6 @@ class local_bath_grades_transfer_assessment_lookup
             $this->update();
         }
     }
-
 
     /**
      * Create new assessment lookup
@@ -354,7 +352,7 @@ class local_bath_grades_transfer_assessment_lookup
     }
 
     /**
-     *
+     * Update a lookup entry
      */
     protected function update() {
         global $DB;
@@ -390,12 +388,8 @@ class local_bath_grades_transfer_assessment_lookup
             try {
                 $remote_assessment_data = $this->samis_data->get_remote_assessment_details_rest($samis_attributes);
                 foreach ($remote_assessment_data as $map_code => $arrayAssessments) {
-                    foreach ($arrayAssessments as $objAssessment) {
-                        //Compare with this
-                        var_dump($objAssessment);
-                       $remote_mapping_assessment_id = $this->construct_assessment_id($objAssessment->MAP_CODE, $objAssessment->MAB_SEQ);
-                        //$remote_mapping_assessment_id = 'CH40236A_02';//test
-                        echo "Comparing $remote_mapping_assessment_id with $this->samis_assessment_id";
+                    foreach ($arrayAssessments as $key => $arrayAssessment) {
+                        $remote_mapping_assessment_id = $this->construct_assessment_id($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ']);
                         if ($remote_mapping_assessment_id == $this->samis_assessment_id) {
                             $exists = true;
                             echo "!!!!MATCH FOUND!!!!";
