@@ -117,7 +117,7 @@ class local_bath_grades_transfer
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
             //Get all the records associated with the samis mapping attributes
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
-            var_dump($lookup_records);
+            //var_dump($lookup_records);
             ///////////////// GET MAPPINGS ( LOCALLY ) //////
 
             if ($assessment_mapping_record = $this->assessment_mapping->get_by_cm_id($cmid)) {
@@ -146,6 +146,9 @@ class local_bath_grades_transfer
                         if (!empty($lookup_records)) {
                             foreach ($lookup_records as $lrecord) {
                                 ////// 2.1 MAPPED OPTIONS /////////////
+                                if ($lrecord->is_expired()) {
+                                    continue;
+                                }
                                 if ($lrecord->id == $this->assessment_mapping->assessment_lookup_id) {
                                     //This lookup is currently mapped to this course module
                                     $this->select_option_format($assessment_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, [], $select);
@@ -251,7 +254,7 @@ class local_bath_grades_transfer
                         $assessment_lookup = new local_bath_grades_transfer_assessment_lookup();
                         $assessment_lookup->set_attributes($samis_attributes);
                         //if lookup exists, housekeep
-                        var_dump($assessment_lookup);
+                        // var_dump($assessment_lookup);
                         if ($lookupid = $assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ'])) {
                             echo "lookup exists\n";
                             echo "housekeeping IT ";
@@ -263,19 +266,18 @@ class local_bath_grades_transfer
                         } else {
                             //else ,add new lookup
                             echo "adding new lookup";
-                            die();
+                            //die();
                             $assessment_lookup->map_code = $arrayAssessment['MAP_CODE'];
                             $assessment_lookup->mab_seq = $arrayAssessment['MAB_SEQ'];
                             $assessment_lookup->ast_code = $arrayAssessment['AST_CODE'];
                             $assessment_lookup->mab_perc = $arrayAssessment['MAB_PERC'];
                             $assessment_lookup->mab_name = $arrayAssessment['MAB_NAME'];
                             $assessment_lookup->set_attributes($samis_attributes);
+                            //var_dump($assessment_lookup);
+                            //die();
                             $assessment_lookup->add();
                         }
-
-
                     }
-
                 }
                 return $remote_assessments_ids;
             } catch (Exception $e) {
@@ -864,6 +866,7 @@ class local_bath_grades_transfer
      */
     public function samis_mapping_exists($moodlecourseid) {
         global $DB;
+        //return $DB->record_exists('sits_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
         return $DB->record_exists('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
     }
 
