@@ -121,7 +121,7 @@ XML;
      * @throws Exception
      */
     public function get_remote_assessment_details(\local_bath_grades_transfer_samis_attributes $attributes) {
-        $function = 'MOO_MAB_EXP';
+        $function = 'MABS';
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
@@ -160,7 +160,7 @@ XML;
      * @throws Exception
      */
     public function get_remote_assessment_details_rest(\local_bath_grades_transfer_samis_attributes $attributes) {
-        $function = 'MAB_EXPORT';
+        $function = 'MABS';
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
@@ -172,7 +172,7 @@ XML;
         try {
             //$xml_response = $this->http_wsclient->call_samis($function, $data);
             $xml_response = $this->rest_wsclient->call_samis($function, $data);
-            var_dump($xml_response);
+            //var_dump($xml_response);
 
             //$data = simplexml_load_string($xml_response);
             $data = json_decode($xml_response, true);
