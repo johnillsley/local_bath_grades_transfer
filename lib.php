@@ -228,17 +228,18 @@ class local_bath_grades_transfer
      * @param $select
      */
     protected function display_select_options($lrecord, &$select) {
-        if ($this->assessment_mapping->exists_by_lookup_id($lrecord->id) && !$lrecord->is_expired()) {
-            //Get the mapping to get the course ID
-            $assessment_mapping = $this->assessment_mapping->get_by_lookup_id($lrecord->id);
-            if (!empty($assessment_mapping)) {
-                $this->select_option_format($lrecord->mab_name . " is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type], $select);
+        if(!$lrecord->is_expired()){
+            if ($this->assessment_mapping->exists_by_lookup_id($lrecord->id)) {
+                //Get the mapping to get the course ID
+                $assessment_mapping = $this->assessment_mapping->get_by_lookup_id($lrecord->id);
+                if (!empty($assessment_mapping)) {
+                    $this->select_option_format($lrecord->mab_name . " is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type], $select);
+                }
+
+            } else {
+                $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, [], $select);
             }
-
-        } else {
-            $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, [], $select);
         }
-
     }
 
     /** Fetches remote assessments from SAMIS
