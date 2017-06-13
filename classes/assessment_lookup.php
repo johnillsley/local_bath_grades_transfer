@@ -325,7 +325,7 @@ class local_bath_grades_transfer_assessment_lookup
             if (!$this->is_expired()) {
                 //TODO log it
                 echo "Setting it to be expired";
-                $this->set_expired(true);
+                $this->set_expired(time());
             }
             $this->update();
         }
@@ -393,8 +393,8 @@ class local_bath_grades_transfer_assessment_lookup
                     foreach ($arrayAssessments as $objAssessment) {
                         //Compare with this
                         var_dump($objAssessment);
-                       // $remote_mapping_assessment_id = $this->construct_assessment_id($objAssessment->MAP_CODE, $objAssessment->MAB_SEQ);
-                        $remote_mapping_assessment_id = 'CH40236A_02';//test
+                       $remote_mapping_assessment_id = $this->construct_assessment_id($objAssessment->MAP_CODE, $objAssessment->MAB_SEQ);
+                        //$remote_mapping_assessment_id = 'CH40236A_02';//test
                         echo "Comparing $remote_mapping_assessment_id with $this->samis_assessment_id";
                         if ($remote_mapping_assessment_id == $this->samis_assessment_id) {
                             $exists = true;
