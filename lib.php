@@ -228,7 +228,7 @@ class local_bath_grades_transfer
      * @param $select
      */
     protected function display_select_options($lrecord, &$select) {
-        if ($this->assessment_mapping->exists_by_lookup_id($lrecord->id)) {
+        if ($this->assessment_mapping->exists_by_lookup_id($lrecord->id) && !$lrecord->is_expired()) {
             //Get the mapping to get the course ID
             $assessment_mapping = $this->assessment_mapping->get_by_lookup_id($lrecord->id);
             if (!empty($assessment_mapping)) {
