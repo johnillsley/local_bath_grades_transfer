@@ -150,10 +150,14 @@ class local_bath_grades_transfer
                         if (!empty($lookup_records)) {
                             foreach ($lookup_records as $lrecord) {
                                 ////// 2.1 MAPPED OPTIONS /////////////
-                                if ($lrecord->is_expired()) {
-                                    continue;
-                                }
+
                                 if ($lrecord->id == $this->assessment_mapping->assessment_lookup_id) {
+                                    if ($lrecord->is_expired()) {
+                                        //if it is mapped and then expires , show error message
+                                        echo "YES ITS ESPIRED";
+                                        $mform->addElement('html', "<p class=\"alert-danger alert\">Mapping exists but the lookup has now expired !!! </p>");
+                                        continue;
+                                    }
                                     //This lookup is currently mapped to this course module
                                     $this->select_option_format($assessment_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, [], $select);
                                     $select->setSelected($lrecord->id);
