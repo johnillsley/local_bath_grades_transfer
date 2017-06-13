@@ -206,7 +206,7 @@ class local_bath_grades_transfer_assessment_lookup
      * @param $assessment
      * @return bool
      */
-    public function lookup_exists($map_code,$mab_seq) {
+    public function lookup_exists($map_code, $mab_seq) {
         global $DB;
         $id = null;
         $samis_assessment_id = $this->construct_assessment_id($map_code, $mab_seq);
@@ -221,8 +221,7 @@ class local_bath_grades_transfer_assessment_lookup
             'occurrence' => $this->attributes->occurrence))
         ) {
             return $id;
-        }
-        else{
+        } else {
             return false;
         }
     }
@@ -242,10 +241,12 @@ class local_bath_grades_transfer_assessment_lookup
         $data->periodslotcode = $this->attributes->period_code;
         $data->academic_year = $this->attributes->academic_year;
         $data->occurrence = $this->attributes->occurrence;
+        $data->map_code = $this->map_code;
         //new lookup has no expiry
         $this->set_expired(0);
         $data->samis_assessment_id = $this->construct_assessment_id($this->map_code, $this->mab_seq);
         $data->mab_name = $this->mab_name;
+        var_dump($data);
         $id = $DB->insert_record(self::$table, $data, true);
         return $id;
     }
@@ -300,7 +301,7 @@ class local_bath_grades_transfer_assessment_lookup
         return $samis_assessment_name . '_' . $assessment_seq;
     }
 
-    /**
+    /** Return Assessment Name by Assessment ID
      * @param $samis_assessment_id
      * @return mixed|null
      */
@@ -314,42 +315,24 @@ class local_bath_grades_transfer_assessment_lookup
     }
 
 
-
     /**
      * Get the current lookup and check it against remote to make sure it is still valid
      * @param null $objLookup
      */
     public function housekeep() {
 
-        if(!$this->assessment_exists_in_samis()){
+        if (!$this->assessment_exists_in_samis()) {
             if (!$this->is_expired()) {
                 //TODO log it
                 $this->set_expired(true);
             }
             $this->update();
         }
-       /* global $DB;
-        $remote_assessment_id = null;
-         if(!empty($remote_assessment)){
-            $remote_assessment_id = $this->construct_assessment_id($map_code, $mab_seq);
-        }
-        //Check that the lookup is still there
-        //var_dump($objLookup);
-        //var_dump($this);
-        var_dump($remote_assessment_id);
-         if(!($this->samis_assessment_id && $this->samis_assessment_id == $remote_assessment_id)){
-            //Eek ! Something has changed on SAMIS , for now, set this to expired
-            // remove the link from the mappings table to that lookup id
-            $this->set_expired(true);
-            //Update
-        }
-        return true;*/
     }
 
 
-
     /**
-     *
+     * Create new assessment lookup
      */
     protected function create() {
         global $DB;
