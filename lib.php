@@ -155,7 +155,7 @@ class local_bath_grades_transfer
                                     if ($lrecord->is_expired()) {
                                         //if it is mapped and then expires , show error message
                                         echo "YES ITS ESPIRED";
-                                        $mform->addElement('html', "<p class=\"alert-danger alert\">Mapping exists but the lookup has now expired !!! </p>");
+                                        $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
                                         continue;
                                     }
                                     //This lookup is currently mapped to this course module
@@ -394,7 +394,7 @@ class local_bath_grades_transfer
                         //Set it to be expired
                         debugging("Setting it to be expired");
                         if (!$lookup->is_expired()) {
-                            $lookup->set_expired(true);
+                            $lookup->set_expired(time());
                         }
                         $lookup->update();
                     } else {
