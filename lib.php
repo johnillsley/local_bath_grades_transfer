@@ -233,23 +233,26 @@ public function show_transfer_controls($lookup_records,$cmid,$mform){
         }
         else{
             //MAPPING IS NOT LOCKED
+            echo "MAPPING NOT LOCKED";
             $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
             $this->select_option_format("None",0,$dropdown_attributes,$select);
-
             foreach($lookup_records as $lrecord){
                 if($lrecord->id == $assessment_mapping->assessment_lookup_id){
                     //Something is mapped
-                    $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
+                    echo "MAPPED";
                     $select->setSelected($lrecord->id);
                     if ($lrecord->is_expired()) {
-                        //LOCKED AND EXPIRED
+                        echo "  EXPIRED !!";
                         $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired [locked] !!! </p>");
                         continue;
                     }
+                    $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
+
                 }
                 else{
+                    echo "NOT MAPPED";
                     if ($lrecord->is_expired()) {
-                        //LOCKED AND EXPIRED
+                        echo "  EXPIRED !!";
                         $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
                         continue;
                     }
@@ -260,12 +263,18 @@ public function show_transfer_controls($lookup_records,$cmid,$mform){
         }
     }
     else{
+        echo "NOT MAPPED";
         $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
         $this->select_option_format("None",0,$dropdown_attributes,$select);
         foreach($lookup_records as $lrecord){
+            if ($lrecord->is_expired()) {
+                echo "  EXPIRED !!";
+                $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
+                continue;
+            }
             $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
         }
-        $this->transfer_date_control($mform, $assessment_mapping->samis_assessment_end_date, $date_time_selector_options);
+        $this->transfer_date_control($mform, null, $date_time_selector_options);
 
     }
 
