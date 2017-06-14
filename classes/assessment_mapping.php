@@ -112,6 +112,7 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * Gets a grade transfer assessment by mapping ID
      * @param $id
+     * @param $get_lookup
      * @return mixed|null
      */
     public static function get($id, $get_lookup = false) {
@@ -123,14 +124,12 @@ class local_bath_grades_transfer_assessment_mapping
             $mapping_object = self::instantiate($record);
         }
         //Fetch the corresponding lookup too
-        if ($get_lookup) {
-            $objLookup = $DB->get_record('local_bath_grades_lookup', ['id' => $record->assessment_lookup_id]);
+        if ($get_lookup && isset($mapping_object->assessment_lookup_id)) {
+            $objLookup = \local_bath_grades_transfer_assessment_lookup::get($mapping_object->assessment_lookup_id);
             if ($objLookup) {
                 $mapping_object->lookup = $objLookup;
             }
         }
-
-
         return $mapping_object;
     }
 
@@ -217,9 +216,9 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $cmid
      * @return bool|mixed
      */
-    public function get_by_cm_id($cmid) {
+    public static function get_by_cm_id($cmid) {
         global $DB;
-        if ($this->exists_by_cm_id($cmid)) {
+        if (self::exists_by_cm_id($cmid)) {
             $record = $DB->get_record(self::$table, ['coursemodule' => $cmid]);
             $object = self::instantiate($record);
         } else {
@@ -233,7 +232,7 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $cmid
      * @return bool
      */
-    private function exists_by_cm_id($cmid) {
+    private static function exists_by_cm_id($cmid) {
         global $DB;
         return $DB->record_exists(self::$table, ['coursemodule' => $cmid]);
     }
@@ -272,7 +271,6 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment->timemodified = time();
         $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
-        var_dump($objAssessment);
         return $DB->update_record(self::$table, $objAssessment);
     }
 
