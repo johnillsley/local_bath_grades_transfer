@@ -915,7 +915,8 @@ private function default_samis_mapping($moodle_course_id){
             $new_assessment_mapping_data->bath_grade_transfer_time_start = $data->bath_grade_transfer_time_start;
             $new_assessment_mapping_data->assessment_lookup_id = $form_samis_assessment_lookup_id;
             var_dump($new_assessment_mapping_data);
-
+            //SET
+            $this->assessment_mapping = new local_bath_grades_transfer_assessment_mapping();
             //Only create a new mapping if something is selected
             if (!is_null($form_samis_assessment_lookup_id) || $data->bath_grade_transfer_time_start !== 0) {
                 //SET
