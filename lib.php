@@ -264,8 +264,9 @@ public function show_transfer_controls($lookup_records,$cmid,$mform){
         $this->select_option_format("None",0,$dropdown_attributes,$select);
         foreach($lookup_records as $lrecord){
             $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
-
         }
+        $this->transfer_date_control($mform, $assessment_mapping->samis_assessment_end_date, $date_time_selector_options);
+
     }
 
 
