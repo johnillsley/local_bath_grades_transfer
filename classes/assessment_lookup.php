@@ -319,7 +319,6 @@ class local_bath_grades_transfer_assessment_lookup
      * Get the current lookup and check it against remote to make sure it is still valid
      */
     public function housekeep() {
-
         if (!$this->assessment_exists_in_samis()) {
             if (!$this->is_expired()) {
                 //TODO log it
