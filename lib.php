@@ -243,7 +243,7 @@ public function show_transfer_controls($lookup_records,$cmid,$mform){
                     $select->setSelected($lrecord->id);
                     if ($lrecord->is_expired()) {
                         echo "  EXPIRED !!";
-                        $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired [locked] !!! </p>");
+                        $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired [not locked] !!! </p>");
                         continue;
                     }
                     $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
