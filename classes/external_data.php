@@ -140,8 +140,8 @@ XML;
             if (isset($data->outdata)) {
                 $xml_assessment_data = simplexml_load_string($data->outdata);
 
-                foreach ($xml_assessment_data->{'MAV'}->{'MAV.CAMS'}->{'MAP'}->{'MAP.CAMS'}->{'MAB'}->{'MAB.CAMS'} as $objAssessment) {
-                    $map_code = (string)$xml_assessment_data->{'MAV'}->{'MAV.CAMS'}->{'MAP'}->{'MAP.CAMS'}->{'MAP_CODE'};
+                foreach ($xml_assessment_data->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'mab'}->{'mab.cams'} as $objAssessment) {
+                    $map_code = (string)$xml_assessment_data->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'map_code'};
                     if (!empty($objAssessment)) {
                         $assessments[$map_code][] = $objAssessment;
                     }
@@ -182,10 +182,10 @@ XML;
                     //We have an error
                     $this->handle_error($data);
                 }
-                foreach ($data['EXCHANGE']['MAV']['MAV.CAMS'] as $arrayCam) {
-                    foreach ($arrayCam['MAP']['MAP.CAMS'] as $arrayMab) {
-                        foreach ($arrayMab['MAB']['MAB.CAMS'] as $objAssessment) {
-                            $map_code = $objAssessment['MAP_CODE'];
+                foreach ($data['exchange']['mav']['mav.cams'] as $arrayCam) {
+                    foreach ($arrayCam['map']['map.cams'] as $arrayMab) {
+                        foreach ($arrayMab['mab']['mab.cams'] as $objAssessment) {
+                            $map_code = $objAssessment['map_code'];
                             if (!empty($objAssessment)) {
                                 $assessments[$map_code][] = $objAssessment;
                             }
