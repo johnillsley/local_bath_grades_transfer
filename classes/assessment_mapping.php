@@ -68,7 +68,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public $activity_type;
     /**
-     * @var assessment_lookup
+     * @var $lookup
      */
     public $lookup;
 
@@ -86,6 +86,7 @@ class local_bath_grades_transfer_assessment_mapping
 
     /** Get all mapping records from the table
      * @param null $lasttransfertime If provided, get only mapping based on the transfertime
+     * @param bool $onlyids
      * @return array|null
      */
     public static function getAll($lasttransfertime = null, $onlyids = true) {
@@ -137,7 +138,7 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * Fetches a grade transfer assessment by samis_assessment_lookup_id
      * @param $lookupid
-     * @return mixed|null
+     * @return mixed|null $record
      */
     public static function get_by_lookup_id($lookupid) {
         global $DB;
@@ -150,9 +151,9 @@ class local_bath_grades_transfer_assessment_mapping
 
     /** Check that the assessment mapping exists by lookup ID
      * @param $lookupid
-     * @return bool
+     * @return bool true | false
      */
-    public function exists_by_lookup_id($lookupid) {
+    public static function exists_by_lookup_id($lookupid) {
         global $DB;
         if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
             return true;
@@ -214,7 +215,7 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * Fetches a grade transfer assessment by Course Module ID
      * @param $cmid
-     * @return bool|mixed
+     * @return bool|mixed false | $object
      */
     public static function get_by_cm_id($cmid) {
         global $DB;
@@ -323,6 +324,10 @@ class local_bath_grades_transfer_assessment_mapping
         $DB->insert_record(self::$table, $objAssessment);
     }
 
+    /**
+     * @param $record
+     * @return local_bath_grades_transfer_assessment_mapping
+     */
     private static function instantiate($record) {
 
         $object = new self;
@@ -334,6 +339,10 @@ class local_bath_grades_transfer_assessment_mapping
         return $object;
     }
 
+    /**
+     * @param $attribute
+     * @return bool
+     */
     private function has_attribute($attribute) {
         $object_vars = get_object_vars($this);
         return array_key_exists($attribute, $object_vars);
