@@ -16,10 +16,10 @@ $string['samis_mapping_warning'] = 'Please ensure you have contacted the SAMIS t
 $string['bath_grade_transfer_time_start'] = 'Transfer from';
 $string['bath_grade_transfer_samis_assessment_id'] = 'SAMIS Assessment to link to';
 $string['bath_grade_transfer_samis_assessment_id_help'] = $string['samis_mapping_warning'];
-$string['bath_grade_transfer_not_samis_default_mapping'] = 'Course does not seems to have a valid SAMIS Mapping.Please ensure course has a default mapping added via the SAMIS block';
-$string['bath_grade_transfer_settings_locked'] = 'Settings have been locked as atleast 1 grade has been transferred';
-$string['bath_grade_transfer_grade_not_hundred'] = 'Grades should be exactly out of 100 for Grades Transfer to work';
-$string['settings_locked'] = '!!! Settings are now locked !!!';
+$string['bath_grade_transfer_samis_assessment_expired'] = 'Assessment Link {CH40236 Exam / S2 / 2016-7} has been removed as it no longer exists in SAMIS';
+$string['bath_grade_transfer_not_samis_default_mapping'] = 'Course does not have a valid SAMIS ID. Only SAMIS coded courses can be used for Grade Transfer';
+$string['bath_grade_transfer_settings_locked'] = 'Settings have been locked as at least one grade has been transferred';
+$string['bath_grade_transfer_grade_not_hundred'] = 'Maximum points ( Grade ) must be set to 100';
 /////EVENTS ////////
 $string['grade_transferred'] = 'Grade Transferred';
 $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
