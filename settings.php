@@ -32,5 +32,7 @@ if ($hassiteconfig) {
     $options = array('mod_assign' => 'Assignment', 'mod_quiz' => 'Quiz');
     $settings->add(new admin_setting_configmulticheckbox('local_bath_grades_transfer/bath_grades_transfer_use', get_string('mod_choices', 'local_bath_grades_transfer'),
         get_string('mod_choices_desc', 'local_bath_grades_transfer'), array($options['mod_assign']), $options));
+    $settings->add(new admin_setting_configcheckbox('local_bath_grades_transfer/default_mapping_only', get_string('default_mapping_only', 'local_bath_grades_transfer'),
+        get_string('default_mapping_only_desc', 'local_bath_grades_transfer'),'1' , 1,0));
 
 }
