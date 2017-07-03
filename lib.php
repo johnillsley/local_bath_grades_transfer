@@ -88,10 +88,10 @@ class local_bath_grades_transfer
         $dropdown_attributes = $remote_assessments_ids = array();
         $date_time_selector_options = array('optional' => true);
         //$cantchangemaxgrade = get_string('modgradecantchangeratingmaxgrade', 'grades');
-        $checkmaxgradechange = function($val) {
+        $checkmaxgradechange = function ($val) {
             echo "coming into my callback";
             var_dump($val);
-            if($val < 100){
+            if ($val < 100) {
                 echo "ret false";
                 return false;
             }
@@ -132,37 +132,37 @@ class local_bath_grades_transfer
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
             //First housekeep them
-            if(!empty($lookup_record)){
-                foreach($lookup_records as $lookup_record){
+            if (!empty($lookup_record)) {
+                foreach ($lookup_records as $lookup_record) {
                     //housekeep
                     $lookup_record->housekeep();
                 }
             }
             //var_dump($lookup_records);
             ///////////////// GET MAPPINGS ( LOCALLY ) //////
-            $this->show_transfer_controls($lookup_records,$cmid,$mform);
-        }
-        else {
+            $this->show_transfer_controls($lookup_records, $cmid, $mform);
+        } else {
             // no samis mapping defined for this course.
             $mform->addElement('html', "<span class=\"alert alert-warning\">" . get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</span>");
         }
     }
-    public function show_transfer_controls($lookup_records,$cmid,$mform){
+
+    public function show_transfer_controls($lookup_records, $cmid, $mform) {
         $dropdown_attributes = array();
         $date_time_selector_options = array('optional' => true);
 
         if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
             $samis_assessment_end_date = userdate($assessment_mapping->samis_assessment_end_date == NULL ? 'Not Set' : $assessment_mapping->samis_assessment_end_date);
             $locked = $assessment_mapping->is_locked();
-            if($locked){
+            if ($locked) {
                 $mform->addElement('html', "<p class=\"alert-warning alert\">" . get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
                 $dropdown_attributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 //$select->disabledif();
 
-                $this->select_option_format("None",0,$dropdown_attributes,$select);
-                foreach($lookup_records as $lrecord){
-                    if($lrecord->id == $assessment_mapping->assessment_lookup_id){
+                $this->select_option_format("None", 0, $dropdown_attributes, $select);
+                foreach ($lookup_records as $lrecord) {
+                    if ($lrecord->id == $assessment_mapping->assessment_lookup_id) {
                         //Something is mapped
                         $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
                         $select->setSelected($lrecord->id);
@@ -170,8 +170,7 @@ class local_bath_grades_transfer
                             //LOCKED AND EXPIRED
                             $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
                         }
-                    }
-                    else{
+                    } else {
                         /*if ($lrecord->is_expired()) {
                             //LOCKED AND EXPIRED
                             $mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
@@ -183,30 +182,28 @@ class local_bath_grades_transfer
                 }
                 $mform->addElement('static', 'bath_grade_transfer_time_start_locked', 'Transfer grades from',
                     $samis_assessment_end_date);
-            }
-            else{
+            } else {
                 //MAPPING IS NOT LOCKED
                 echo "MAPPING NOT LOCKED  ";
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
-                $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq',100);
+                $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
 
                 $select->addOption("None", 0, $dropdown_attributes);
                 //var_dump($lookup_records);
-                foreach($lookup_records as $lrecord){
-                    if($lrecord->id == $assessment_mapping->assessment_lookup_id){
+                foreach ($lookup_records as $lrecord) {
+                    if ($lrecord->id == $assessment_mapping->assessment_lookup_id) {
                         //Something is mapped
                         echo "and CURRENT MAPPING EXISTS  ";
                         $select->setSelected($lrecord->id);
                         //$lrecord->set_expired(true);
                         if ($lrecord->is_expired()) {
                             echo "  AND ITS EXPIRED !!";
-                            $mform->addElement('html', "<p class=\"alert-danger alert\">".get_string('bath_grade_transfer_samis_assessment_expired','local_bath_grades_transfer')."</p>");
+                            $mform->addElement('html', "<p class=\"alert-danger alert\">" . get_string('bath_grade_transfer_samis_assessment_expired', 'local_bath_grades_transfer') . "</p>");
                             continue;
                         }
-                        $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select,$cmid);
+                        $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select, $cmid);
 
-                    }
-                    else{
+                    } else {
                         //other non-mapped lookups
                         echo "other non-mapped lookups";
                         if ($lrecord->is_expired()) {
@@ -219,13 +216,12 @@ class local_bath_grades_transfer
                 }
                 $this->transfer_date_control($mform, $assessment_mapping->samis_assessment_end_date, $date_time_selector_options);
             }
-        }
-        else{
+        } else {
             echo "NO ASSESSMENT MAPPING ";
-            if(!empty($lookup_records)){
+            if (!empty($lookup_records)) {
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
-                $this->select_option_format("None",0,$dropdown_attributes,$select);
-                foreach($lookup_records as $lrecord){
+                $this->select_option_format("None", 0, $dropdown_attributes, $select);
+                foreach ($lookup_records as $lrecord) {
                     if ($lrecord->is_expired()) {
                         //echo "  ITS EXPIRED !!";
                         //$mform->addElement('html', "<p class=\"alert-danger alert\">$lrecord->mab_name exists but the lookup has now expired !!! </p>");
@@ -234,14 +230,12 @@ class local_bath_grades_transfer
                     $this->select_option_format($lrecord->mab_name . " ( Wt: " . $lrecord->mab_perc . "% )", $lrecord->id, $dropdown_attributes, $select);
                 }
                 $this->transfer_date_control($mform, null, $date_time_selector_options);
-            }
-            else{
+            } else {
                 $mform->addElement('html', "<p class=\"alert-info alert\">No lookup records were found </p>");
             }
         }
-
-
     }
+
     /** Get the transfer form control
      * @param $mform
      * @param $date
@@ -265,18 +259,17 @@ class local_bath_grades_transfer
      * @param $select
      * @return mixed
      */
-    public function select_option_format($title, $value, $attributes, &$select,$cmid = null) {
+    public function select_option_format($title, $value, $attributes, &$select, $cmid = null) {
         //Check that the record_id is mapped to an assessment mapping
         if (\local_bath_grades_transfer_assessment_mapping::exists_by_lookup_id($value)) {
             //Fetch the mapping
             $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($value);
             if (!empty($assessment_mapping)) {
-                if($cmid != $assessment_mapping->coursemodule){
+                if ($cmid != $assessment_mapping->coursemodule) {
                     //It is not mapped to the current course module
-                    return $select->addOption($title. " is in use", $value, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type]);
+                    return $select->addOption($title . " is in use", $value, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type]);
                 }
             }
-
         }
         //Lookup is not mapped, show as is
         return $select->addOption($title, $value, $attributes);
@@ -321,7 +314,7 @@ class local_bath_grades_transfer
                         $assessment_lookup->set_attributes($samis_attributes);
                         //if lookup exists, housekeep
                         // var_dump($assessment_lookup);
-                        if($assessment_lookup->lookup_exists($arrayAssessment['map_code'], $arrayAssessment['mab_seq']) == false){
+                        if ($assessment_lookup->lookup_exists($arrayAssessment['map_code'], $arrayAssessment['mab_seq']) == false) {
                             echo "adding new lookup as it doesnt exist in MOODLE ";
                             //die();
                             $assessment_lookup->map_code = $arrayAssessment['map_code'];
@@ -334,28 +327,6 @@ class local_bath_grades_transfer
                             //die();
                             $assessment_lookup->add();
                         }
-                        /* if ($lookupid = $assessment_lookup->lookup_exists($arrayAssessment['MAP_CODE'], $arrayAssessment['MAB_SEQ'])) {
-                             echo "lookup exists\n";
-                             echo "housekeeping IT ";
-                             //Get lookup object and housekeep it
-                             $objLookup = \local_bath_grades_transfer_assessment_lookup::get($lookupid);
-                             if ($objLookup) {
-                                 $objLookup->housekeep();
-                             }
-                         } else {
-                             //else ,add new lookup
-                             echo "adding new lookup";
-                             //die();
-                             $assessment_lookup->map_code = $arrayAssessment['MAP_CODE'];
-                             $assessment_lookup->mab_seq = $arrayAssessment['MAB_SEQ'];
-                             $assessment_lookup->ast_code = $arrayAssessment['AST_CODE'];
-                             $assessment_lookup->mab_perc = $arrayAssessment['MAB_PERC'];
-                             $assessment_lookup->mab_name = $arrayAssessment['MAB_NAME'];
-                             $assessment_lookup->set_attributes($samis_attributes);
-                             //var_dump($assessment_lookup);
-                             //die();
-                             $assessment_lookup->add();
-                         }*/
                     }
                 }
                 return $remote_assessments_ids;
@@ -365,7 +336,6 @@ class local_bath_grades_transfer
                 throw new Exception($e->getMessage());
             }
         }
-
     }
 
     /**
@@ -401,18 +371,6 @@ class local_bath_grades_transfer
         } catch (\Exception $e) {
 
         }
-        //1.1 Check for lookups that have been expired in SAMIS
-
-        //2. Transfer grades
-
-        // Expired ?
-        //Set expired in lookup
-        //Get related mapping
-        //Send email to user for modifier id
-        // Name change ?
-        //Change name ; end //
-        //
-
     }
 
     /** For a given mapping with users, transfer the grades to SAMIS
@@ -526,23 +484,25 @@ class local_bath_grades_transfer
         }
 
     }
+
     /**
      * Return default samis mapping for a Moodle course
      * @param $moodle_course_id Moodle Course ID
      * @return $default_mapping
      */
-    private function default_samis_mapping($moodle_course_id){
+    private function default_samis_mapping($moodle_course_id) {
         $default_mapping = null;
         $samis_mappings = $this->enrol_sits_plugin->sync->samis_mapping->get_mapping_for_course($moodle_course_id);
         if (!is_null($samis_mappings)) {
             foreach ($samis_mappings as $samis_mapping) {
                 if ($samis_mapping->active = 1 and $samis_mapping->default = 1) {
-                    $default_mapping =  $samis_mapping;
+                    $default_mapping = $samis_mapping;
                 }
             }
         }
         return $default_mapping;
     }
+
     /**
      *
      */
@@ -563,7 +523,7 @@ class local_bath_grades_transfer
                 if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
                     //From course module ID , get course
                     $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
-                    $default_samis_mapping =$this->default_samis_mapping($moodle_course_id);
+                    $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
                     echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessment_mapping->id +++++++++++++++++ \n\n";
                     //$this->assessment_mapping->set_data($assessment_mapping);
                     var_dump($assessment_mapping);
@@ -578,7 +538,7 @@ class local_bath_grades_transfer
                         $lookup->housekeep();
                         if (isset($moodle_course_id)) {
                             echo $moodle_course_id;
-                            if(!is_null($default_samis_mapping)){
+                            if (!is_null($default_samis_mapping)) {
                                 echo "\n\n +++++++ DEFAULT SAMIS MAPPING FOUND  $default_samis_mapping->id  +++++++++++++\n ";
                                 $samis_users = [4285, 6229, 4556]; //TODO Change this when going live
                                 echo "\n\n +++++++ SAMIS USERS: \n\n";
@@ -600,8 +560,7 @@ class local_bath_grades_transfer
                                     //DO TRANSFER
                                     die();
 
-                                }
-                                else{
+                                } else {
                                     mtrace("no samis users found for this course!!!");
                                 }
                             }
@@ -614,22 +573,6 @@ class local_bath_grades_transfer
 
             }
         }
-
-
-        //from object, get the lookup
-
-
-        //[12345/1] => grade_structure
-        //[42555/1] => grade_structure
-        //For each assessment mapping
-        //If mapping is valid
-        //Get grade structure from LOOKUP SAMIS DETAILS
-        //[12345/1] => grade_structure
-        //[42555/1] => grade_structure
-
-        //Get the users from the mapping {coursemoduleid->course->gg}
-
-
     }
 
     /**
@@ -832,12 +775,12 @@ class local_bath_grades_transfer
 
         $form_samis_assessment_lookup_id = $data->bath_grade_transfer_samis_lookup_id == '0' ? NULL : $data->bath_grade_transfer_samis_lookup_id;
         //Mapping is already defined
-        if($form_samis_assessment_lookup_id != 0){
+        if ($form_samis_assessment_lookup_id != 0) {
             //Check that the grade is set to be 100
-            if ($data->grade < 100){
+            if ($data->grade < 100) {
                 //display an error message ?
                 echo "<p class='alert alert-danger'>Grades need to be 100 for grades transfer to work !</p>";
-                return ;
+                return;
             }
         }
         //Get previous mapping
