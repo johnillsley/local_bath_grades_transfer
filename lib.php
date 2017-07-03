@@ -54,6 +54,7 @@ class local_bath_grades_transfer
         $this->samis_data = new \local_bath_grades_transfer_external_data();
         //$this->assessment_mapping = new local_bath_grades_transfer_assessment_mapping();
         $this->allowed_mods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
+        $this->default_mapping_only = get_config('local_bath_grades_transfer','default_mapping_only');
         $this->outcome = new  \local_bath_grades_transfer_outcome();
     }
 
