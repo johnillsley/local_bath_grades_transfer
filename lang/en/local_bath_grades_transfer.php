@@ -22,6 +22,7 @@ $string['bath_grade_transfer_settings_locked'] = 'Settings have been locked as a
 $string['bath_grade_transfer_grade_not_hundred'] = 'Maximum points ( Grade ) must be set to 100';
 $string['default_mapping_only'] = 'Default mapping only';
 $string['default_mapping_only_desc'] = 'Consider only default mappings or all mappings?';
+$string['housekeep_lookup'] = 'Housekeep Lookup (Grades Transfer)';
 /////EVENTS ////////
 $string['grade_transferred'] = 'Grade Transferred';
 $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
