@@ -15,7 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
-
+//TODO -- Show unlock button to teacher once the mappings are locked
+//TODO - check for assessment title changes in housekeep()
+//TODO - MAP is now obsolete ( how do we know ?) - Ask Martin
+//TODO - check for unenrolled students in SAMIS ( Ask Martin )
 
 /**
  * Class local_bath_grades_transfer
@@ -54,7 +57,6 @@ class local_bath_grades_transfer
         $this->samis_data = new \local_bath_grades_transfer_external_data();
         //$this->assessment_mapping = new local_bath_grades_transfer_assessment_mapping();
         $this->allowed_mods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
-        $this->default_mapping_only = get_config('local_bath_grades_transfer','default_mapping_only');
         $this->outcome = new  \local_bath_grades_transfer_outcome();
     }
 
@@ -70,7 +72,22 @@ class local_bath_grades_transfer
         }
         return false;
     }
-
+    public function housekeep_lookup($lookup_record = null){
+        if(isset($lookup_record)){
+            echo "Houskeeping Lookup $lookup_record->id";
+            $lookup_record->housekeep();
+        }
+        else{
+            //Get all lookups to housekeep from the current academic year
+            $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_lookup_by_academic_year('2016-7');
+            if (!empty($lookup_records)) {
+                foreach ($lookup_records as $lookup_record) {
+                    //housekeep
+                    $lookup_record->housekeep();
+                }
+            }
+        }
+    }
     /**
      * Form API method to display under module settings
      * @param $mform
@@ -81,8 +98,11 @@ class local_bath_grades_transfer
     public function get_form_elements_module($mform, $context, $modulename = "") {
 
         global $COURSE, $CFG;
-        require($CFG->dirroot . '/enrol/samisv2/lib.php');
-        $this->enrol_sits_plugin = new \enrol_samisv2_plugin();
+        //require($CFG->dirroot . '/enrol/samisv2/lib.php');
+        require($CFG->dirroot . '/enrol/sits/lib.php');
+        //$this->enrol_sits_plugin = new \enrol_samisv2_plugin();
+        $this->enrol_sits_plugin = new \enrol_sits_plugin();
+
         $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         //Optional cmid param.
         $cmid = optional_param('update', 0, PARAM_INT);
@@ -133,10 +153,10 @@ class local_bath_grades_transfer
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
             //First housekeep them
-            if (!empty($lookup_record)) {
+            if (!empty($lookup_records)) {
                 foreach ($lookup_records as $lookup_record) {
                     //housekeep
-                    $lookup_record->housekeep();
+                    $this->housekeep_lookup($lookup_record);
                 }
             }
             //var_dump($lookup_records);
@@ -493,13 +513,13 @@ class local_bath_grades_transfer
      */
     private function default_samis_mapping($moodle_course_id) {
         $default_mapping = null;
-        $samis_mappings = $this->enrol_sits_plugin->sync->samis_mapping->get_mapping_for_course($moodle_course_id);
-        if (!is_null($samis_mappings)) {
-            foreach ($samis_mappings as $samis_mapping) {
-                if ($samis_mapping->active = 1 and $samis_mapping->default = 1) {
-                    $default_mapping = $samis_mapping;
-                }
-            }
+        global $DB;
+        $sql = "SELECT * FROM {sits_mappings} WHERE courseid = ?  AND active = 1 and default_map = 1";
+        //$samis_mappings = $this->enrol_sits_plugin->sync->samis_mapping->get_mapping_for_course($moodle_course_id);
+        $samis_mapping = $DB->get_record_sql($sql,array($moodle_course_id));
+        var_dump($samis_mapping);
+        if (!is_null($samis_mapping) &&  $samis_mapping->active = 1 && $samis_mapping->default = 1 ) {
+            $default_mapping = $samis_mapping;
         }
         return $default_mapping;
     }
@@ -513,18 +533,18 @@ class local_bath_grades_transfer
         $now = new DateTime();
         $time = 1490967029;
         global $CFG;
-        require($CFG->dirroot . '/enrol/samisv2/lib.php');
-        $this->enrol_sits_plugin = new \enrol_samisv2_plugin();
+        require($CFG->dirroot . '/enrol/sits/lib.php');
+        $this->enrol_sits_plugin = new \enrol_sits_plugin();
         require($CFG->dirroot . '/mod/assign/locallib.php');
         //Get me all mapping whose transfer time is null ( they've never been transferred )
-        $assessment_mapping_ids = $this->assessment_mapping->getAll(null, true);
+        $assessment_mapping_ids = \local_bath_grades_transfer_assessment_mapping::getAll(null, true);
+        var_dump($assessment_mapping_ids);
         foreach ($assessment_mapping_ids as $mapping_id) {
             if (isset($mapping_id)) {
                 //For each assessment mapping id , get the mapping object
                 if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
                     //From course module ID , get course
                     $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
-                    $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
                     echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessment_mapping->id +++++++++++++++++ \n\n";
                     //$this->assessment_mapping->set_data($assessment_mapping);
                     var_dump($assessment_mapping);
@@ -536,9 +556,10 @@ class local_bath_grades_transfer
                     if (isset($assessment_mapping->lookup) && $objLookup = $assessment_mapping->lookup) {
                         //Check that the lookup exists in SAMIS
                         $lookup = \local_bath_grades_transfer_assessment_lookup::get($objLookup->id);
-                        $lookup->housekeep();
+                        $this->housekeep_lookup($lookup);
+
                         if (isset($moodle_course_id)) {
-                            echo $moodle_course_id;
+                            $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
                             if (!is_null($default_samis_mapping)) {
                                 echo "\n\n +++++++ DEFAULT SAMIS MAPPING FOUND  $default_samis_mapping->id  +++++++++++++\n ";
                                 $samis_users = [4285, 6229, 4556]; //TODO Change this when going live
@@ -599,7 +620,6 @@ class local_bath_grades_transfer
      * @return mixed
      */
     public function precheck_conditions($moodleusergrades, $remote_grade_structure) {
-        var_dump($moodleusergrades);
         $ok_to_transfer = true;
         //TODO Change this when going LIVE -- DEV TESTING
         /* $moodleusergrades = array();
@@ -626,26 +646,33 @@ class local_bath_grades_transfer
                 //Not dealing with empty grades
                 $this->outcome->set_outcome(0); // No grade to transfer
                 $ok_to_transfer = false;
+                continue;
             } elseif ($objMoodleGrade->rawgrademax != MAX_GRADE) {
                 //Max grade not satisfied
                 echo "Setting OUTCOME to 1";
                 $this->outcome->set_outcome(1);
                 $ok_to_transfer = false;
+                continue;
             }
             //get student spr
             //$spr_code = $this->get_spr_from_bucs_id($moodleuserid);
-            $spr_code = $objMoodleGrade->spr_code;
+            //$spr_code = "169156431/1";
+            //var_dump($objMoodleGrade);die;
+            //$spr_code = $objMoodleGrade->student;
             // 2. Check against remote grade structure for that student
-            if (array_key_exists($spr_code, $remote_grade_structure)) {
+            if (array_key_exists("169156431/1", $remote_grade_structure)) {
                 // OK, Student found in the RGS
                 foreach ($remote_grade_structure as $spr_key => $objStructure) {
                     //1. Check if the GRADE already exists in SAMIS
                     if (!empty($objStructure->getMark())) {
-                        echo "There is already a GRADE in SAMIS for $spr_code \n \n";
-                        echo "Setting OUTCOME to 3 for $spr_code \n \n ";
+                        echo "There is already a GRADE in SAMIS for \"169156431/1\" \n \n";
+                        echo "Setting OUTCOME to 3 for \"169156431/1\" \n \n ";
                         $this->outcome->set_outcome(3);
                         $ok_to_transfer = false;
+                        continue;
                     } else {
+                        //Check if there is a grade in Moodle to pass
+
                         $ok_to_transfer = true;
                     }
                     echo "FINAL VERDICT for : " . $spr_key;
@@ -878,14 +905,14 @@ class local_bath_grades_transfer
                 //Check if mapping exists ( should be default only)
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     //Fetch the mapping
-                    $record = $DB->get_record('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
+                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1]);
                     if ($record) {
                         //Return Samis attributes object
                         $samis_attributes = new local_bath_grades_transfer_samis_attributes(
-                            $record->samis_code,
-                            $record->academic_year,
+                            $record->sits_code,
+                            $record->acyear,
                             $record->period_code,
-                            $record->occurrence);
+                            'A');
                     }
                 }
             }
@@ -899,8 +926,8 @@ class local_bath_grades_transfer
      */
     public function samis_mapping_exists($moodlecourseid) {
         global $DB;
-        //return $DB->record_exists('sits_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
-        return $DB->record_exists('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
+        return $DB->record_exists('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1]);
+        //return $DB->record_exists('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
     }
 
     /**
