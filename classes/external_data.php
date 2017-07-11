@@ -54,48 +54,33 @@ class local_bath_grades_transfer_external_data
     }
 
     /**
-     * @param local_bath_grades_transfer_samis_attributes $attributes
+     * Output from this is still XML.
+     * @param \local_bath_grades_transfer_assessment_lookup $lookup
+     * @return array|SimpleXMLElement
      * @throws Exception
      */
-    public function get_remote_grade_structure($attributes, $samis_assessment_id) {
-        $function = 'MOO_SAS_EXP';
-        list($mab_name, $mab_seq) = explode("_", $samis_assessment_id);
-        echo $mab_name;
+    public function get_remote_grade_structure(\local_bath_grades_transfer_assessment_lookup $lookup) {
+        $function = 'ASSESSMENTS';
         $data = array();
+        $lookup_attributes = $lookup->attributes;
+        /*$data['P04'] = $lookup_attributes->academic_year ;
+        $data['P05'] = $lookup_attributes->period_code;
+        $data['P06'] = $lookup_attributes->samis_code;
+        $data['P07'] = $lookup_attributes->occurrence;
+        $data['P08'] = $lookup->map_code;
+        $data['P09'] = $lookup->mab_seq;*/
+
+        //DEV DATA FOR TESTING
+        $data['P04'] = '2016-7';
+        $data['P05'] = 'S1';
+        $data['P06'] = 'ME10003';
+        $data['P07'] = 'A';
+        $data['P08'] = 'ME10003A';
+        $data['P09'] = '01';
+
+
         try {
-            //$xml_response = $this->http_wsclient->call_samis($function, $data);
-            $xml_response = <<<XML
-<records>
-    <assessments>
-        <assessment>
-            <student>169156431/1</student>
-            <name>ADLER NICKLAS</name>
-            <year>2016/7</year>
-            <period>S1</period>
-            <module>MN10008</module>
-            <occurrence>A</occurrence>
-            <assess_pattern>MN10008C</assess_pattern>
-            <assess_item>01</assess_item>
-            <attempt>1</attempt>
-            <mark></mark>
-            <grade>F</grade>
-</assessment>
-        <assessment>
-            <student>159124064/1</student>
-            <name>AFFORD HANNAH N</name>
-            <year>2016/7</year>
-            <period>S1</period>
-            <module>MN10008</module>
-            <occurrence>A</occurrence>
-            <assess_pattern>MN10008C</assess_pattern>
-            <assess_item>01</assess_item>
-            <attempt>1</attempt>
-            <mark>95</mark>
-            <grade>P</grade>
-        </assessment>
-</assessments>
-</records>
-XML;
+            $xml_response = $this->rest_wsclient->call_samis($function, $data);
             $data = simplexml_load_string($xml_response);
             return $data;
             if ($data->status < 0) {
@@ -165,7 +150,7 @@ XML;
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['MOD_CODE'] = $attributes->samis_code; //P06
-        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
+        $data['AYR_CODE'] = $attributes->academic_year;
         $data['PSL_CODE'] = $attributes->period_code; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
@@ -201,40 +186,6 @@ XML;
         return $assessments;
     }
 
-
-    /**
-     * Given a bucs username, return the SPR code from SAMIS
-     * @param $bucs_username
-     * @return SimpleXMLElement
-     * @throws Exception
-     */
-    public function get_spr_from_bucs_id($bucs_username) {
-        $method = 'MOO_SPR_EXP';
-        $data['STU_UDF1'] = $bucs_username;
-        $spr_code = null;
-        try {
-            $xml_response = $this->http_wsclient->call_samis($method, $data);
-            $response_data = simplexml_load_string($xml_response);
-            if ($response_data->status < 0) {
-                //We have an error
-                //$this->handle_error($response_data);
-                throw new \Exception("There is an error SPR. STATUS: " . (string)$response_data->status . " MESSAGE: " . (string)$response_data->messagebuffer);
-            }
-            if (isset($response_data->outdata)) {
-                $xml_assessment_data = simplexml_load_string($response_data->outdata);
-                foreach ($xml_assessment_data->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'}->{'SCJ.SRS'} as $objAssessment) {
-                    $spr_code = (string)$xml_assessment_data->{'SCJ_CODE'};
-
-                }
-            }
-
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            throw new Exception($e->getMessage());
-        }
-        die("SPR CODE !!!!");
-        return $spr_code;
-    }
-
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucs_username
@@ -246,7 +197,7 @@ XML;
         $data['STU_UDF1'] = $bucs_username;
         $spr_code = null;
         try {
-            $xml_response = $this->http_wsclient->call_samis($method, $data);
+            $xml_response = $this->rest_wsclient->call_samis($method, $data);
             $response_data = simplexml_load_string($xml_response);
             if ($response_data->status < 0) {
                 //We have an error
@@ -268,30 +219,60 @@ XML;
         return $spr_code;
     }
 
+
     /**
-     * @param $userid
+     * Collate and set the grades that next to be export grades to SAMIS
+     * @param $grades
      */
-    public function set_export_grade_structure($userdata, $grade) {
-        //returns xml of each grade item to be passes to SAMIS
+    public function set_export_grades($grades) {
+        $method = 'ASSESSMENTS';
+        echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
+        foreach ($grades as $spr_code => $arrayAssessment) {
+            //$recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
+            //$recordsSimpleXMLObject->addChild('assessments');
+            echo "\nGENERATING XML FOR $spr_code \n  ";
+            $objGrade = $arrayAssessment['assessment'];
+
+            $recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
+            $assessments = $recordsSimpleXMLObject->addChild('assessments');
+            $assessment = $assessments->addChild('assessment');
+            $this->array_to_xml($objGrade, $assessment);
+            $data['body'] = $recordsSimpleXMLObject->asXML();
+            $data['P04'] = $objGrade->year;
+            $data['P05'] = $objGrade->period;
+            $data['P06'] = $objGrade->module;
+            $data['P07'] = $objGrade->occurrence;
+            $data['P08'] = $objGrade->assess_pattern;
+            $data['P09'] = $objGrade->assess_item;
+            //var_dump($data);
+            //$this->array_to_xml($assessment,$recordsSimpleXMLObject);
+            //Generate XML
+            //$data['body'] = $xml;
+            try {
+                $starttime = microtime(true);
+                $this->rest_wsclient->call_samis($method, $data, 'POST');
+                echo "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objGrade->name +++++";
+                $endtime = microtime(true);
+                $timediff = $endtime - $starttime;
+                echo "\n TIME DIFF: " . $timediff . "\n\n";
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+
+            }
+        }
+        die("GRADES DONE!");
+
+
     }
 
-
     /**
-     * @param $userdata
-     * @param $samisdetails
+     * Convert PHP Array to XMl
+     * @param $array
+     * @param $simplexmlobj
      */
-    public function grade_transfer($userdata, $samisdetails) {
-
-        // Unpack samis details
-        $year = $samisdetails->academic_year;
-        $module = $samisdetails->samis_unit_code;
-        $period = $samisdetails->periodslotcode;
-        //Pass data for one user
-        $student = $userdata->spr_code;
-        $mark = $userdata->mark;
-        //Assessment details
-        $assess_item = $samisdetails->samis_assessment_id;
-
+    private function array_to_xml($array, &$simplexmlobj) {
+        foreach ($array as $key => $value) {
+            $simplexmlobj->addChild("$key", htmlspecialchars("$value"));
+        }
     }
 
 }
