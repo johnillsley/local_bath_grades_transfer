@@ -34,12 +34,18 @@ class local_bath_grades_transfer_samis_attributes
      */
     public $occurrence;
 
+
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
+     * @param $samis_code
+     * @param $academic_year
+     * @param $period_code
+     * @param $occurrence
+     * @param null $mab_sequence
      */
-    public function __construct($samis_code, $academic_year, $period_code, $occurrence, $mab_sequence = null) {
+    public function __construct($samis_code, $academic_year, $period_code, $occurrence) {
         $this->samis_code = $samis_code;
-        $this->academic_year = $academic_year;
+        $this->academic_year = str_replace('/','-',$academic_year);
         $this->period_code = $period_code;
 
         if ($occurrence = 'All') {
@@ -47,7 +53,6 @@ class local_bath_grades_transfer_samis_attributes
         } else {
             $this->occurrence = $occurrence;
         }
-        $this->mab_sequence = $mab_sequence;
     }
 
 
