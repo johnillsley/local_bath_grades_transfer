@@ -91,12 +91,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public static function getAll($lasttransfertime = null, $onlyids = true) {
         global $DB;
-        $conditions = "lasttransfertime IS NULL";
-        $return = null;
-        if (!is_null($lasttransfertime)) {
-            $conditions = "lasttransfertime < " . time();
-
-        }
+        $conditions = null;
         $rs = $DB->get_recordset_select(self::$table, $conditions, null, '', 'id');
         if ($rs->valid()) {
             foreach ($rs as $record) {
