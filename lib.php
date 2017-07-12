@@ -102,7 +102,7 @@ class local_bath_grades_transfer
     public function get_form_elements_module($mform, $context, $modulename = "") {
 
         global $COURSE, $CFG, $PAGE;
-        $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
+          $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
         //require($CFG->dirroot . '/enrol/samisv2/lib.php');
         require($CFG->dirroot . '/enrol/sits/lib.php');
         //$this->enrol_sits_plugin = new \enrol_samisv2_plugin();
@@ -115,10 +115,8 @@ class local_bath_grades_transfer
         $date_time_selector_options = array('optional' => true);
         //$cantchangemaxgrade = get_string('modgradecantchangeratingmaxgrade', 'grades');
         $checkmaxgradechange = function ($val) {
-            echo "coming into my callback";
             var_dump($val);
             if ($val < 100) {
-                echo "ret false";
                 return false;
             }
             return true;
@@ -141,6 +139,7 @@ class local_bath_grades_transfer
             //TODO Think about when a lookup comes back ( un-expires?)
 
             $this->fetch_remote_assessments($COURSE->id);
+            $mform->addElement('html', "<p class=\"alert-info alert alert-dismissable \"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> Fetched any new assessments from SAMIS</p>");
         } catch (Exception $e) {
             $mform->addElement('html', "<p class=\"alert-danger alert\">" . $e->getMessage() . "</p>");
             //Show error to the user but continue with the rest of the page
@@ -153,7 +152,6 @@ class local_bath_grades_transfer
 
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
-            var_dump($samis_attributes);
             //Get all the records associated with the samis mapping attributes fom Moodle table
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
@@ -188,6 +186,7 @@ class local_bath_grades_transfer
             $locked = $assessment_mapping->is_locked();
             if ($locked) {
                 $mform->addElement('checkbox', 'unlock_assessment', '', get_string('unlock', 'local_bath_grades_transfer'));
+                $mform->addElement('html', "<div id = 'unlock-msg' style='display: none;'><p class=\"alert-warning alert\">" . get_string('unlock_warning', 'local_bath_grades_transfer') . "</p></div>");
                 $mform->addElement('html', "<p class=\"alert-warning alert\">" . get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
                 $dropdown_attributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
