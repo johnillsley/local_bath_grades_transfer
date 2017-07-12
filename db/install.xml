@@ -67,6 +67,10 @@
                 <INDEX NAME="index_gradetransfermappingid" UNIQUE="false" FIELDS="gradetransfermappingid"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="local_bath_grades_error" COMMENT="Used to log any grade transfer errors">
+            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+            <FIELD NAME="error_message" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        </TABLE>
         <TABLE NAME="local_bath_grades_outcome" COMMENT="Different grade outcomes to show to the client for every grade transfer">
             <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
             <FIELD NAME="outcome" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
