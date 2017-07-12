@@ -14,6 +14,7 @@
                 <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="locked" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="lasttransfertime" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
@@ -53,6 +54,7 @@
                 <FIELD NAME="timetransferred" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="outcomeid" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false"
                        COMMENT="1 => Success 2 => No grade to transfer 3 => Transfer error 4 => Grade already exists in SAMIS"/>
+                <FIELD NAME="gradetransferred" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="grade_transfer_error_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
@@ -64,6 +66,10 @@
                 <INDEX NAME="index_outcomeid" UNIQUE="false" FIELDS="outcomeid"/>
                 <INDEX NAME="index_gradetransfermappingid" UNIQUE="false" FIELDS="gradetransfermappingid"/>
             </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_bath_grades_outcome" COMMENT="Different grade outcomes to show to the client for every grade transfer">
+            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+            <FIELD NAME="outcome" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
         </TABLE>
 
     </TABLES>
