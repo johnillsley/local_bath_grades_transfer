@@ -172,7 +172,7 @@ class local_bath_grades_transfer
         }
     }
 
-    /**
+    /** Display transfer controls to the user
      * @param $lookup_records
      * @param $cmid
      * @param $mform
@@ -190,9 +190,6 @@ class local_bath_grades_transfer
                 $mform->addElement('html', "<p class=\"alert-warning alert\">" . get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
                 $dropdown_attributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
-                //$select->disabledif();
-                //Show unlock tick box
-
                 $this->select_option_format("None", 0, $dropdown_attributes, $select);
                 foreach ($lookup_records as $lrecord) {
                     if ($lrecord->id == $assessment_mapping->assessment_lookup_id) {
@@ -435,86 +432,125 @@ class local_bath_grades_transfer
         global $CFG;
         require($CFG->dirroot . '/enrol/sits/lib.php');
         $this->enrol_sits_plugin = new \enrol_sits_plugin();
-        require($CFG->dirroot . '/mod/assign/locallib.php');
-        //Get me all mapping whose transfer time is null ( they've never been transferred )
+         //Get me all mapping whose transfer time is null ( they've never been transferred )
         $assessment_mapping_ids = \local_bath_grades_transfer_assessment_mapping::getAll(null, true);
         var_dump($assessment_mapping_ids);
-        foreach ($assessment_mapping_ids as $mapping_id) {
-            if (isset($mapping_id)) {
-                //For each assessment mapping id , get the mapping object
-                if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
-                    //From course module ID , get course
-                    $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
-                    echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessment_mapping->id +++++++++++++++++ \n\n";
-                    //$this->assessment_mapping->set_data($assessment_mapping);
-                    //If the end date is null, we leave it to the users to transfer it from the interface
-                    if (is_null($assessment_mapping->samis_assessment_end_date)) {
-                        debugging("No END date,skipping : " . $assessment_mapping->id);
-                        continue;
-                    }
-                    if (isset($assessment_mapping->lookup) && $objLookup = $assessment_mapping->lookup) {
-                        //Check that the lookup exists in SAMIS
-                        $lookup = \local_bath_grades_transfer_assessment_lookup::get($objLookup->id);
-                        $this->housekeep_lookup($lookup);
-                        if (isset($moodle_course_id)) {
-                            $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
-                            if (!is_null($default_samis_mapping)) {
-                                echo "\n\n +++++++ DEFAULT SAMIS MAPPING FOUND  $default_samis_mapping->id  +++++++++++++\n ";
-                                $samis_users = [4285, 6229, 4556]; //TODO Change this when going live
-                                echo "\n\n +++++++ SAMIS USERS: \n\n";
-                                //var_dump($samis_users);
-                                if (!empty($samis_users)) {
-                                    foreach ($samis_users as $userid) {
-                                        //For a single user , get the grade
-                                        echo "Getting GRADE for USER: " . $userid . " \n \n";
-                                        //$usergrades[$userid] = $this->get_moodle_grade($userid, $assessment_mapping->coursemodule);
-                                        $dummygradeobj = new stdClass();
-                                        $dummygradeobj->finalgrade = 77;
-                                        $dummygradeobj->spr_code = '1234';
-                                        $dummygradeobj->rawgrademax = 100;
-                                        if ($userid == 4285) {
-                                            $dummygradeobj->spr_code = '169068411/1';
-                                            $dummygradeobj->finalgrade = 75;
-                                        } elseif ($userid == 6229) {
-                                            $dummygradeobj->spr_code = '169050494/1';
-                                            $dummygradeobj->finalgrade = 76;
+        if(!empty($assessment_mapping_ids)){
+            foreach ($assessment_mapping_ids as $mapping_id) {
+                if (isset($mapping_id)) {
+                    //For each assessment mapping id , get the mapping object
+                    if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
+                        //From course module ID , get course
+                        var_dump($assessment_mapping);
+                        $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
+                        echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessment_mapping->id +++++++++++++++++ \n\n";
+                        //$this->assessment_mapping->set_data($assessment_mapping);
+                        //If the end date is null, we leave it to the users to transfer it from the interface
+                        if (is_null($assessment_mapping->samis_assessment_end_date)) {
+                            debugging("Manual grade transfer enabled. Skipping : " . $assessment_mapping->id);
+                            continue;
+                        }
+                        if (isset($assessment_mapping->lookup) && $objLookup = $assessment_mapping->lookup) {
+                            //Check that the lookup exists in SAMIS
+                            $lookup = \local_bath_grades_transfer_assessment_lookup::get($objLookup->id);
+                            //$this->housekeep_lookup($lookup);
+                            if (isset($moodle_course_id)) {
+                                $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
+                                if (!is_null($default_samis_mapping)) {
+                                    echo "\n\n +++++++ DEFAULT SAMIS MAPPING FOUND  $default_samis_mapping->id  +++++++++++++\n ";
+                                    $samis_users = [4285, 6229, 4556]; //TODO Change this when going live
+                                    echo "\n\n +++++++ SAMIS USERS: \n\n";
+                                    //var_dump($samis_users);
+                                    if (!empty($samis_users)) {
+                                        foreach ($samis_users as $userid) {
+                                            //For a single user , get the grade
+                                            echo "Getting GRADE for USER: " . $userid . " \n \n";
+                                            //$usergrades[$userid] = $this->get_moodle_grade($userid, $assessment_mapping->coursemodule);
+                                            $dummygradeobj = new stdClass();
+                                            $dummygradeobj->finalgrade = 77;
+                                            $dummygradeobj->spr_code = '1234';
+                                            $dummygradeobj->rawgrademax = 100;
+                                            if ($userid == 4285) {
+                                                $dummygradeobj->spr_code = '169068411/1';
+                                                $dummygradeobj->finalgrade = 75;
+                                            } elseif ($userid == 6229) {
+                                                $dummygradeobj->spr_code = '169050494/1';
+                                                $dummygradeobj->finalgrade = 76;
+                                            }
+
+                                            $usergrades[$userid] = $dummygradeobj; //DEV TESTING
+
                                         }
+                                        //var_dump($usergrades);
+                                        /**** GRADE STRUCTURE ***/
+                                        $grade_structure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($lookup);
+                                        //Now that we have go the grade structures, send this to a function to do all the prechecks
+                                        //var_dump($grade_structure);
+                                        //die();
+                                        //die("GIVE ME GRADE STR");
+                                        $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
+                                        echo("FINAL GRADES TO PASS:");
+                                        //var_dump($grades_to_pass);
+                                        die();
+                                        //DO TRANSFER
+                                        $this->do_transfer($grades_to_pass);
+                                        die();
 
-                                        $usergrades[$userid] = $dummygradeobj; //DEV TESTING
-
+                                    } else {
+                                        mtrace("no samis users found for this course!!!");
                                     }
-                                    //var_dump($usergrades);
-                                    /**** GRADE STRUCTURE ***/
-                                    $grade_structure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($lookup);
-                                    //Now that we have go the grade structures, send this to a function to do all the prechecks
-                                    //var_dump($grade_structure);
-                                    //die();
-                                    //die("GIVE ME GRADE STR");
-                                    $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
-                                    echo("FINAL GRADES TO PASS:");
-                                    //var_dump($grades_to_pass);
-                                    //die();
-                                    //DO TRANSFER
-                                    $this->do_transfer($grades_to_pass);
-                                    die();
-
-                                } else {
-                                    mtrace("no samis users found for this course!!!");
                                 }
                             }
+                        } else {
+                            //continue
+                            die("no lookup for this mapping.skipping");
+
                         }
-                    } else {
-                        //continue
-                        die("no lookup for that mapping");
-
                     }
-                }
 
+                }
             }
+        }
+        else{
+            mtrace("No Assessment Mappings to transfer");
         }
         die("Never leave me !!!!");
     }
+    public function transfer_mapping($mappingid,$userids = array()){
+        //Get the mapping object for the ID
+        $usergrades = array();
+        $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
+        if (isset($assessment_mapping->lookup) && $objLookup = $assessment_mapping->lookup) {
+            $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
+            //Check that the lookup exists in SAMIS
+            $lookup = \local_bath_grades_transfer_assessment_lookup::get($objLookup->id);
+            if (isset($moodle_course_id)) {
+                $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
+                if (!is_null($default_samis_mapping)) {
+                    echo "\n\n +++++++ DEFAULT SAMIS MAPPING FOUND  $default_samis_mapping->id  +++++++++++++\n ";
+                    //Get SAMIS USERS FOR THIS MAPPING
+                    if(!empty($userids)){
+                        foreach($userids as $userid){
+                            echo "Getting GRADE for USER: " . $userid . " \n \n";
+                            $usergrades[$userid] = $this->get_moodle_grade($userid, $assessment_mapping->coursemodule);
+                        }
+                    }
+                    $grade_structure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($lookup);
+                    $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
+                    $this->do_transfer($grades_to_pass);
+                }
+            }
+        }
+        else {
+            //continue
+            mtrace("no lookup for this mapping.skipping");
 
+        }
+
+        ///From the mapping
+
+
+    }
     /**
      * @param $moodleuserid
      * @return null|SimpleXMLElement
