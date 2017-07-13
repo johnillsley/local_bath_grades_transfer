@@ -114,7 +114,7 @@ class local_bath_grades_transfer
         //require($CFG->dirroot . '/enrol/samisv2/lib.php');
         require($CFG->dirroot . '/enrol/sits/lib.php');
         //$this->enrol_sits_plugin = new \enrol_samisv2_plugin();
-        $this->enrol_sits_plugin = new \enrol_sits_plugin();
+        //$this->enrol_sits_plugin = new \enrol_sits_plugin();
 
         $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         //Optional cmid param.
