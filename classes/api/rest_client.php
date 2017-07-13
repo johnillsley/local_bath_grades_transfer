@@ -18,7 +18,7 @@ class local_bath_grades_transfer_rest_client
     /**
      * @var
      */
-    private $response;
+    public $response;
     /**
      * @var
      */
@@ -126,6 +126,9 @@ class local_bath_grades_transfer_rest_client
             //success Callback
                 function (ResponseInterface $res) {
                     echo "PROMISE FULFILLED !";
+                    //return code and response
+                    $this->response['status'] = $res->getStatusCode();
+                    $this->response['contents'] = $res->getBody()->getContents();
                     return $res->getBody()->getContents();
                 },
                 //error handling
