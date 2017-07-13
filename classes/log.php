@@ -52,12 +52,12 @@ class local_bath_grades_transfer_log
     /**
      * @var string
      */
-    private static $table  ='local_bath_grades_log';
+    private static $table = 'local_bath_grades_log';
 
     /**
      *
      */
-    public static function get_logs(){
+    public static function get_logs() {
         global $DB;
 
     }
@@ -65,15 +65,18 @@ class local_bath_grades_transfer_log
     /**
      * @param $id
      */
-    public static function get_log_by_id($id){
+    public static function get_log_by_id($id) {
 
     }
 
+    public function __construct() {
+
+    }
 
     /**
      *
      */
-    public function save(){
+    public function save() {
         global $DB;
         $data = new stdClass();
         $data->coursemoduleid = $this->coursemoduleid;
@@ -81,7 +84,7 @@ class local_bath_grades_transfer_log
         $data->gradetransfermappingid = $this->gradetransfermappingid;
         $data->assessment_lookup_id = $this->assessment_lookup_id;
         $data->timetransferred = $this->timetransferred;
-        $data->outcomeid= $this->outcomeid;
+        $data->outcomeid = $this->outcomeid;
         $data->gradetransferred = $this->gradetransferred;
         $data->grade_transfer_error_id = $this->grade_transfer_error_id;
         $DB->insert_record(self::$table, $data);
