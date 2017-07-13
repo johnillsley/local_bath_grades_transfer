@@ -24,6 +24,12 @@
  * Class local_bath_grades_transfer
  */
 const MAX_GRADE = 100;
+const TRANSFER_SUCCESS = 1;
+const GRADE_MISSING = 2;
+const TRANSFER_FAILURE = 3;
+const GRADE_ALREADY_EXISTS = 4;
+const GRADE_NOT_IN_MOODLE_COURSE = 5;
+const GRADE_NOT_OUT_OF_100 = 6;
 /**
  * Class local_bath_grades_transfer
  */
@@ -57,7 +63,8 @@ class local_bath_grades_transfer
         $this->samis_data = new \local_bath_grades_transfer_external_data();
         //$this->assessment_mapping = new local_bath_grades_transfer_assessment_mapping();
         $this->allowed_mods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
-        $this->outcome = new  \local_bath_grades_transfer_outcome();
+        $this->local_grades_transfer_log = new \local_bath_grades_transfer_log();
+        $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
     }
 
     /**
@@ -241,7 +248,6 @@ class local_bath_grades_transfer
                 $this->transfer_date_control($mform, $assessment_mapping->samis_assessment_end_date, $date_time_selector_options);
             }
         } else {
-            echo "NO ASSESSMENT MAPPING ";
             if (!empty($lookup_records)) {
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $this->select_option_format("None", 0, $dropdown_attributes, $select);
@@ -371,7 +377,29 @@ class local_bath_grades_transfer
         echo "+++++++++++++ INITIATING TRANSFER ++++++++ ";
         //This is then passed on to grade.transfer.class.php
         if (!empty($grades)) {
-            $this->samis_data->set_export_grades($grades);
+            foreach($grades as $spr_code => $arrayAssessment ){
+                $objGrade = $arrayAssessment['assessment'];
+                try{
+                    if($this->samis_data->set_export_grade($objGrade)){
+                        //log success
+                        $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
+                        $this->local_grades_transfer_log->gradetransferred = $objGrade->mark;
+                        $this->local_grades_transfer_log->timetransferred = time();
+                    }
+
+                }
+                catch(\Exception $e){
+                    //log failure
+                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                    //get error id
+                    $this->local_grades_transfer_error->error_message = $e->getMessage();
+                    $this->local_grades_transfer_error->save();
+                    $this->local_grades_transfer_log->grade_transfer_error_id = $this->local_grades_transfer_error->id;
+                 }
+                //save success / failure
+                $this->local_grades_transfer_log->save();
+
+            }
         }
         die ("END OF DO TRANSFER");
 
@@ -442,6 +470,9 @@ class local_bath_grades_transfer
                     if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mapping_id, true)) {
                         //From course module ID , get course
                         var_dump($assessment_mapping);
+                        $this->local_grades_transfer_log->coursemoduleid = $assessment_mapping->coursemodule;
+                        $this->local_grades_transfer_log->gradetransfermappingid = $assessment_mapping->id;
+
                         $moodle_course_id = $this->get_moodle_course_id_coursemodule($assessment_mapping->coursemodule);
                         echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessment_mapping->id +++++++++++++++++ \n\n";
                         //$this->assessment_mapping->set_data($assessment_mapping);
@@ -454,6 +485,7 @@ class local_bath_grades_transfer
                             //Check that the lookup exists in SAMIS
                             $lookup = \local_bath_grades_transfer_assessment_lookup::get($objLookup->id);
                             //$this->housekeep_lookup($lookup);
+                            $this->local_grades_transfer_log->assessment_lookup_id = $lookup->id;
                             if (isset($moodle_course_id)) {
                                 $default_samis_mapping = $this->default_samis_mapping($moodle_course_id);
                                 if (!is_null($default_samis_mapping)) {
@@ -489,11 +521,13 @@ class local_bath_grades_transfer
                                         //die();
                                         //die("GIVE ME GRADE STR");
                                         $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
-                                        echo("FINAL GRADES TO PASS:");
+                                         var_dump($grades_to_pass);
+                                         echo("FINAL GRADES TO PASS:");
                                         //var_dump($grades_to_pass);
-                                        die();
                                         //DO TRANSFER
-                                        $this->do_transfer($grades_to_pass);
+                                        if(!empty($grades_to_pass)){
+                                            $this->do_transfer($grades_to_pass);
+                                        }
                                         die();
 
                                     } else {
@@ -547,8 +581,6 @@ class local_bath_grades_transfer
 
         }
 
-        ///From the mapping
-
 
     }
     /**
@@ -574,33 +606,37 @@ class local_bath_grades_transfer
      * @return mixed
      */
     public function precheck_conditions($moodleusergrades, $remote_grade_structure) {
-
+        $ok_to_transfer = false;
         $final_grade_struct = array();
         //TODO Change this when going LIVE -- DEV TESTING
         echo "+++++++++++ PRECHECKING CONDITIONS+++++++++++++++ \n\n";
         // ##################  EMPTY MOODLE GRADES OR EMPTY STRUCTURE
         if (empty($moodleusergrades) || empty($remote_grade_structure)) {
+            echo "EMPTY MOODLE GRADES OR EMPTY STRUCTURE";
             return true;
         }
 
         //1. Check against Moodle grades
         foreach ($moodleusergrades as $moodleuserid => $objMoodleGrade) {
             $ok_to_transfer = true;
+            $this->local_grades_transfer_log->userid = $moodleuserid;
             //echo "CHECKING CONDITIONS FOR $moodleuserid \n\n";
             // ##################  CONDITION 1 : EMPTY MOODLE GRADE
             if (is_null($objMoodleGrade->finalgrade)) {
                 //Not dealing with empty grades
-                $this->outcome->set_outcome(0); // No grade to transfer
-                $ok_to_transfer = false;
+                $this->local_grades_transfer_log->outcomeid = GRADE_NOT_IN_MOODLE_COURSE;
+                $this->local_grades_transfer_log->save();
+
                 echo "No grade to transfer";
                 continue;
             } // ##################  CONDITION 2 : MAX GRADE NOT OUT OF 100
             elseif ($objMoodleGrade->rawgrademax != MAX_GRADE) {
                 //Max grade not satisfied
                 echo "Setting OUTCOME to 1";
-                $this->outcome->set_outcome(1);
-                echo "Not out of 100";
-                $ok_to_transfer = false;
+                $this->local_grades_transfer_log->outcomeid = GRADE_NOT_OUT_OF_100;
+                 echo "Not out of 100";
+                $this->local_grades_transfer_log->timetransferred = time();
+                $this->local_grades_transfer_log->save();
                 continue;
             }
             if (array_key_exists($objMoodleGrade->spr_code, $remote_grade_structure)) {
@@ -612,7 +648,9 @@ class local_bath_grades_transfer
                 var_dump($samis_grade);
                 // ##################  CONDITION 4 : GRADE ALREADY EXISTS IN SAMIS
                 if (!empty($samis_grade)) {
-                    $ok_to_transfer = false;
+                    $this->local_grades_transfer_log->outcomeid = GRADE_ALREADY_EXISTS;
+                    $this->local_grades_transfer_log->timetransferred = time();
+                    $this->local_grades_transfer_log->save();
                     echo "Grade already exists in SAMIS . skipping \n\n";
                     continue;
                 }
@@ -642,7 +680,6 @@ class local_bath_grades_transfer
                 echo "Something else $objMoodleGrade->spr_code . skipping\n\n";
                 continue;
             }
-
         }
         return $final_grade_struct;
 
