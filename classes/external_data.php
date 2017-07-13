@@ -157,12 +157,10 @@ class local_bath_grades_transfer_external_data
         //If for some reason we cant connect to the client ,report error
         try {
             //$xml_response = $this->http_wsclient->call_samis($function, $data);
-            $xml_response = $this->rest_wsclient->call_samis($function, $data);
-            //var_dump($xml_response);
-
-            //$data = simplexml_load_string($xml_response);
-            $data = json_decode($xml_response, true);
-
+             $this->rest_wsclient->call_samis($function, $data);
+             if($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']){
+                 $data = json_decode($this->rest_wsclient->response['contents'], true);
+             }
             if (isset($data) && !empty($data)) {
                 if (isset($data['status']) && $data['status'] < 0) {
                     //We have an error
