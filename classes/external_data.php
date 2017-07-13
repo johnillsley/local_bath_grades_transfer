@@ -77,12 +77,13 @@ class local_bath_grades_transfer_external_data
         $data['P07'] = 'A';
         $data['P08'] = 'ME10003A';
         $data['P09'] = '01';
-
-
         try {
-            $xml_response = $this->rest_wsclient->call_samis($function, $data);
-            $data = simplexml_load_string($xml_response);
-            return $data;
+            $this->rest_wsclient->call_samis($function, $data);
+            if ($this->rest_wsclient->response['status'] = 200 && $this->rest_wsclient->response['contents']) {
+                $data = simplexml_load_string($this->rest_wsclient->response['contents']);
+                return $data;
+            }
+
             if ($data->status < 0) {
                 $this->handle_error($data);
             }
@@ -224,42 +225,31 @@ class local_bath_grades_transfer_external_data
      * Collate and set the grades that next to be export grades to SAMIS
      * @param $grades
      */
-    public function set_export_grades($grades) {
+    public function set_export_grade($objGrade) {
         $method = 'ASSESSMENTS';
         echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
-        foreach ($grades as $spr_code => $arrayAssessment) {
-            //$recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
-            //$recordsSimpleXMLObject->addChild('assessments');
-            echo "\nGENERATING XML FOR $spr_code \n  ";
-            $objGrade = $arrayAssessment['assessment'];
-
-            $recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
-            $assessments = $recordsSimpleXMLObject->addChild('assessments');
-            $assessment = $assessments->addChild('assessment');
-            $this->array_to_xml($objGrade, $assessment);
-            $data['body'] = $recordsSimpleXMLObject->asXML();
-            $data['P04'] = $objGrade->year;
-            $data['P05'] = $objGrade->period;
-            $data['P06'] = $objGrade->module;
-            $data['P07'] = $objGrade->occurrence;
-            $data['P08'] = $objGrade->assess_pattern;
-            $data['P09'] = $objGrade->assess_item;
-            //var_dump($data);
-            //$this->array_to_xml($assessment,$recordsSimpleXMLObject);
-            //Generate XML
-            //$data['body'] = $xml;
-            try {
-                $starttime = microtime(true);
-                $this->rest_wsclient->call_samis($method, $data, 'POST');
+        $recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
+        $assessments = $recordsSimpleXMLObject->addChild('assessments');
+        $assessment = $assessments->addChild('assessment');
+        $this->array_to_xml($objGrade, $assessment);
+        $data['body'] = $recordsSimpleXMLObject->asXML();
+        $data['P04'] = $objGrade->year;
+        $data['P05'] = $objGrade->period;
+        $data['P06'] = $objGrade->module;
+        $data['P07'] = $objGrade->occurrence;
+        $data['P08'] = $objGrade->assess_pattern;
+        $data['P09'] = $objGrade->assess_item;
+        try {
+            $starttime = microtime(true);
+            $this->rest_wsclient->call_samis($method, $data, 'POST');
+            if ($this->rest_wsclient->response['status'] == 201) {
                 echo "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objGrade->name +++++";
-                $endtime = microtime(true);
-                $timediff = $endtime - $starttime;
-                echo "\n TIME DIFF: " . $timediff . "\n\n";
-            } catch (\GuzzleHttp\Exception\ClientException $e) {
-
+                return true;
             }
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+
         }
-        die("GRADES DONE!");
+        //die("GRADES DONE!");
 
 
     }
