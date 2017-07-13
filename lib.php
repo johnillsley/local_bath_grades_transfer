@@ -40,6 +40,7 @@ class local_bath_grades_transfer
      * @var local_bath_grades_transfer_assessment_mapping
      */
     public $assessment_mapping;
+    public $current_academic_year;
     /**
      * Moodle Course ID
      * @var
@@ -896,8 +897,8 @@ class local_bath_grades_transfer
                 //Check if mapping exists ( should be default only)
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     //Fetch the mapping for current year
-                    $academic_year = $this->enrol_sits_plugin->get_current_academic_year();
-                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,'acyear'=>$academic_year]);
+                    $this->set_current_academic_year();
+                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,'acyear'=>$this->current_academic_year]);
                     if ($record) {
                         //Return Samis attributes object
                         $samis_attributes = new local_bath_grades_transfer_samis_attributes(
@@ -911,7 +912,21 @@ class local_bath_grades_transfer
         }
         return $samis_attributes;
     }
-
+    /**
+     * sets current academic year in the format 'yyyy/+1' style, such as 2010/1, 2011/2 and the lke
+     */
+    protected function set_current_academic_year(){
+        $date_array = explode('-', $this->date->format('m-Y'));
+        if(intval($date_array[0]) > 7){
+            $this->current_academic_year = strval(intval($date_array[1])) . '/' . substr(strval(intval($date_array[1]) + 1), -1);
+            $this->current_academic_year_start = new DateTime($date_array[1] . '-07-31 00:00:00');
+            $this->academic_year_end = new DateTime($date_array[1] + 1 . '-07-31 00:00:00');
+        }else{
+            $this->current_academic_year = strval(intval($date_array[1]) - 1) . '/' . substr(strval(intval($date_array[1])), -1);
+            $this->current_academic_year_start = new DateTime($date_array[1] - 1 . '-07-31 00:00:00');
+            $this->current_academic_year_end = new DateTime($date_array[1] . '-07-31 00:00:00');
+        }
+    }
     /**
      * @param $moodlecourseid
      * @return bool
