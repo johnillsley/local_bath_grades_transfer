@@ -895,8 +895,9 @@ class local_bath_grades_transfer
             if ($DB->record_exists('course', ['id' => $moodlecourseid])) {
                 //Check if mapping exists ( should be default only)
                 if ($this->samis_mapping_exists($moodlecourseid)) {
-                    //Fetch the mapping
-                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1]);
+                    //Fetch the mapping for current year
+                    $academic_year = $this->enrol_sits_plugin->get_current_academic_year();
+                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,'acyear'=>$academic_year]);
                     if ($record) {
                         //Return Samis attributes object
                         $samis_attributes = new local_bath_grades_transfer_samis_attributes(
