@@ -161,8 +161,7 @@ class local_bath_grades_transfer
 
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
-            var_dump($samis_attributes);
-            //Get all the records associated with the samis mapping attributes fom Moodle table
+             //Get all the records associated with the samis mapping attributes fom Moodle table
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
             //First housekeep them
@@ -201,7 +200,6 @@ class local_bath_grades_transfer
                 $dropdown_attributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $this->select_option_format("None", 0, $dropdown_attributes, $select);
-                var_dump($lookup_records);die();
                 foreach ($lookup_records as $lrecord) {
                     if ($lrecord->id == $assessment_mapping->assessment_lookup_id) {
                         //Something is mapped
