@@ -135,11 +135,17 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $lookupid
      * @return mixed|null $record
      */
-    public static function get_by_lookup_id($lookupid) {
+    public static function get_by_lookup_id($lookupid,$cmid = null) {
         global $DB;
         $record = null;
         if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
-            $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid]);
+            if(!is_null($cmid)){
+                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid,'coursemodule'=>$cmid]);
+            }
+            else{
+                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid]);
+            }
+
         }
         return $record;
     }
@@ -315,8 +321,7 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
         $objAssessment->locked = 0;
-        var_dump($objAssessment);
-        $DB->insert_record(self::$table, $objAssessment);
+         $DB->insert_record(self::$table, $objAssessment);
     }
 
     /**

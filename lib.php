@@ -120,8 +120,6 @@ class local_bath_grades_transfer
         $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         //Optional cmid param.
         $cmid = optional_param('update', 0, PARAM_INT);
-        $dropdown_attributes = $remote_assessments_ids = array();
-        $date_time_selector_options = array('optional' => true);
         //$cantchangemaxgrade = get_string('modgradecantchangeratingmaxgrade', 'grades');
         $checkmaxgradechange = function ($val) {
             var_dump($val);
@@ -295,11 +293,11 @@ class local_bath_grades_transfer
         //Check that the record_id is mapped to an assessment mapping
         if (\local_bath_grades_transfer_assessment_mapping::exists_by_lookup_id($value)) {
             //Fetch the mapping
-            $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($value);
+             $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($value,$cmid);
             if (!empty($assessment_mapping)) {
                 if ($cmid != $assessment_mapping->coursemodule) {
                     //It is not mapped to the current course module
-                    return $select->addOption($title . " is in use", $value, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type]);
+                     return $select->addOption($title . " is in use", $value, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' . $assessment_mapping->coursemodule . ' AND TYPE : ' . $assessment_mapping->activity_type]);
                 }
             }
         }
