@@ -165,14 +165,14 @@ class local_bath_grades_transfer
             //Get all the records associated with the samis mapping attributes fom Moodle table
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
-            // var_dump($lookup_records);
             //First housekeep them
-            if (!empty($lookup_records)) {
+            //TODO Think if you need to this later ??
+            /*if (!empty($lookup_records)) {
                 foreach ($lookup_records as $lookup_record) {
                     //housekeep
                     $this->housekeep_lookup($lookup_record);
                 }
-            }
+            }*/
 
             ///////////////// GET MAPPINGS ( LOCALLY ) //////
             $this->show_transfer_controls($lookup_records, $cmid, $mform);
@@ -201,6 +201,7 @@ class local_bath_grades_transfer
                 $dropdown_attributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $this->select_option_format("None", 0, $dropdown_attributes, $select);
+                var_dump($lookup_records);die();
                 foreach ($lookup_records as $lrecord) {
                     if ($lrecord->id == $assessment_mapping->assessment_lookup_id) {
                         //Something is mapped
@@ -445,7 +446,7 @@ class local_bath_grades_transfer
         $sql = "SELECT * FROM {sits_mappings} WHERE courseid = ?  AND active = 1 and default_map = 1";
         //$samis_mappings = $this->enrol_sits_plugin->sync->samis_mapping->get_mapping_for_course($moodle_course_id);
         $samis_mapping = $DB->get_record_sql($sql, array($moodle_course_id));
-        var_dump($samis_mapping);
+        //var_dump($samis_mapping);
         if (!is_null($samis_mapping) && $samis_mapping->active = 1 && $samis_mapping->default = 1) {
             $default_mapping = $samis_mapping;
         }
@@ -465,7 +466,7 @@ class local_bath_grades_transfer
         $this->enrol_sits_plugin = new \enrol_sits_plugin();
          //Get me all mapping whose transfer time is null ( they've never been transferred )
         $assessment_mapping_ids = \local_bath_grades_transfer_assessment_mapping::getAll(null, true);
-        var_dump($assessment_mapping_ids);
+        //var_dump($assessment_mapping_ids);
         if(!empty($assessment_mapping_ids)){
             foreach ($assessment_mapping_ids as $mapping_id) {
                 if (isset($mapping_id)) {
