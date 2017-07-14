@@ -105,6 +105,9 @@ class local_bath_grades_transfer_rest_client
                 $this->promise = $this->client->postAsync( $method . '/' . $data_raw, [
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
+                    'connect_timeout' => 3.14,
+                    'read_timeout' => 3,
+                    'timeout' => 3.14,
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
@@ -114,6 +117,8 @@ class local_bath_grades_transfer_rest_client
             } else {
                 $this->promise = $this->client->getAsync( $method . '/' . $data_raw, [
                     'debug' => false,
+                    'connect_timeout' => 6,
+                    'timeout' => 6,
                     'auth' => [$this->username, $this->password],
                     'headers' => [
                         'Content-Type' => 'text/xml',
@@ -125,7 +130,6 @@ class local_bath_grades_transfer_rest_client
             return $this->promise->then(
             //success Callback
                 function (ResponseInterface $res) {
-                    echo "PROMISE FULFILLED !";
                     //return code and response
                     $this->response['status'] = $res->getStatusCode();
                     $this->response['contents'] = $res->getBody()->getContents();
@@ -133,13 +137,16 @@ class local_bath_grades_transfer_rest_client
                 },
                 //error handling
                 function (RequestException $e) {
-                    if ($e->getCode() == 400) {
+                     if ($e->getCode() == 400) {
                         //Bad Request.
                         throw  new \Exception($e->getMessage());
                     }
 
-                    if ($e->getCode() == 404) {
+                    elseif ($e->getCode() == 404) {
                         throw  new \Exception("Cant connect to SAMIS");
+                    }
+                    else{
+                        throw  new \Exception($e->getMessage());
                     }
                 }
             )->wait();
