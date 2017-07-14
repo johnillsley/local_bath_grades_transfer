@@ -159,14 +159,14 @@ class local_bath_grades_transfer_external_data
             //$xml_response = $this->http_wsclient->call_samis($function, $data);
              $this->rest_wsclient->call_samis($function, $data);
              if($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']){
-                 $data = json_decode($this->rest_wsclient->response['contents'], true);
+                 $retdata = json_decode($this->rest_wsclient->response['contents'], true);
              }
-            if (isset($data) && !empty($data)) {
-                if (isset($data['status']) && $data['status'] < 0) {
+            if (isset($retdata) && !empty($retdata)) {
+                if (isset($retdata['status']) && $retdata['status'] < 0) {
                     //We have an error
                     $this->handle_error($data);
                 }
-                foreach ($data['exchange']['mav']['mav.cams'] as $arrayCam) {
+                 foreach ($retdata['exchange']['mav']['mav.cams'] as $arrayCam) {
                     foreach ($arrayCam['map']['map.cams'] as $arrayMab) {
                         foreach ($arrayMab['mab']['mab.cams'] as $objAssessment) {
                             $map_code = $objAssessment['map_code'];
