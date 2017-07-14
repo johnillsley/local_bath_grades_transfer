@@ -161,6 +161,7 @@ class local_bath_grades_transfer
 
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
+            var_dump($samis_attributes);
             //Get all the records associated with the samis mapping attributes fom Moodle table
 
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
