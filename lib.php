@@ -66,6 +66,7 @@ class local_bath_grades_transfer
         $this->allowed_mods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
         $this->local_grades_transfer_log = new \local_bath_grades_transfer_log();
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
+        $this->date = new DateTime();
     }
 
     /**
