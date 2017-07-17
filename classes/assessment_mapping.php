@@ -71,6 +71,7 @@ class local_bath_grades_transfer_assessment_mapping
      * @var $lookup
      */
     public $lookup;
+    public $expired;
 
     /**
      * @var string
@@ -98,7 +99,11 @@ class local_bath_grades_transfer_assessment_mapping
                 if ($onlyids) {
                     $return[] = $record->id;
                 } else {
-                    $return[] = self::instantiate($record);
+                    if (!$record->expired) {
+                        //Dont show expired lookups
+                        $return[] = self::instantiate($record);
+                    }
+
                 }
             }
         }
@@ -135,15 +140,14 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $lookupid
      * @return mixed|null $record
      */
-    public static function get_by_lookup_id($lookupid,$cmid = null) {
+    public static function get_by_lookup_id($lookupid, $cmid = null) {
         global $DB;
         $record = null;
-        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
-            if(!is_null($cmid)){
-                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid,'coursemodule'=>$cmid]);
-            }
-            else{
-                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid]);
+        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0])) {
+            if (!is_null($cmid)) {
+                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid, 'coursemodule' => $cmid, 'expired' => 0]);
+            } else {
+                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0]);
             }
 
         }
@@ -156,7 +160,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public static function exists_by_lookup_id($lookupid) {
         global $DB;
-        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid])) {
+        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0])) {
             return true;
         }
         return false;
@@ -197,6 +201,9 @@ class local_bath_grades_transfer_assessment_mapping
             if (isset($data->activity_type)) {
                 $this->activity_type = $data->activity_type;
             }
+            if (isset($data->expired)) {
+                $this->expired = $data->expired;
+            }
             //set modifier id
             $this->modifierid = $data->modifierid;
         }
@@ -221,7 +228,7 @@ class local_bath_grades_transfer_assessment_mapping
     public static function get_by_cm_id($cmid) {
         global $DB;
         if (self::exists_by_cm_id($cmid)) {
-            $record = $DB->get_record(self::$table, ['coursemodule' => $cmid]);
+            $record = $DB->get_record(self::$table, ['coursemodule' => $cmid, 'expired' => 0]);
             $object = self::instantiate($record);
         } else {
             return false;
@@ -265,6 +272,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function update() {
         global $DB;
+
         $objAssessment = new stdClass();
         $objAssessment->id = $this->id;
         $objAssessment->coursemodule = $this->coursemodule;
@@ -273,6 +281,7 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment->timemodified = time();
         $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
+        $objAssessment->expired = $this->expired;
         return $DB->update_record(self::$table, $objAssessment);
     }
 
@@ -321,7 +330,7 @@ class local_bath_grades_transfer_assessment_mapping
         $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
         $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
         $objAssessment->locked = 0;
-         $DB->insert_record(self::$table, $objAssessment);
+        $DB->insert_record(self::$table, $objAssessment);
     }
 
     /**
