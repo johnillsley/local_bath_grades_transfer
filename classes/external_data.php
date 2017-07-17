@@ -111,7 +111,7 @@ class local_bath_grades_transfer_external_data
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['AYR_CODE'] = $attributes->academic_year;
+        $data['AYR_CODE'] = str_replace('/','-',$attributes->academic_year);
         $data['MOD_CODE'] = $attributes->samis_code; //P06
         $data['PSL_CODE'] = $attributes->period_code; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
@@ -151,7 +151,7 @@ class local_bath_grades_transfer_external_data
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['MOD_CODE'] = $attributes->samis_code; //P06
-        $data['AYR_CODE'] = $attributes->academic_year;
+        $data['AYR_CODE'] = str_replace('/','-',$attributes->academic_year);
         $data['PSL_CODE'] = $attributes->period_code; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
@@ -191,31 +191,36 @@ class local_bath_grades_transfer_external_data
      * @return SimpleXMLElement
      * @throws Exception
      */
-    public function get_spr_from_bucs_id_rest($bucs_username) {
-        $method = 'MOO_SPR_EXP';
+        public function get_spr_from_bucs_id_rest($bucs_username) {
+        $method = 'USERS';
         $data['STU_UDF1'] = $bucs_username;
         $spr_code = null;
         try {
-            $xml_response = $this->rest_wsclient->call_samis($method, $data);
-            $response_data = simplexml_load_string($xml_response);
-            if ($response_data->status < 0) {
-                //We have an error
-                //$this->handle_error($response_data);
-                throw new \Exception("There is an error SPR. STATUS: " . (string)$response_data->status . " MESSAGE: " . (string)$response_data->messagebuffer);
+            $this->rest_wsclient->call_samis($method, $data);
+            if ($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']) {
+                $retdata = simplexml_load_string($this->rest_wsclient->response['contents']);
             }
-            if (isset($response_data->outdata)) {
-                $xml_assessment_data = simplexml_load_string($response_data->outdata);
-                foreach ($xml_assessment_data->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'}->{'SCJ.SRS'} as $objAssessment) {
-                    $spr_code = (string)$xml_assessment_data->{'SCJ_CODE'};
 
+            if (isset($retdata) && !empty($retdata)) {
+                if (isset($retdata['status']) && $retdata['status'] < 0) {
+                    //We have an error
+                    $this->handle_error($data);
                 }
-            }
 
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            throw new Exception($e->getMessage());
+                  foreach($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objSPR) {
+                    //var_dump($objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'});
+                     $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                }
+                var_dump($spr_code);
+            }
         }
+        catch
+            (\GuzzleHttp\Exception\ClientException $e) {
+                throw new Exception($e->getMessage());
+            }
         die("SPR CODE !!!!");
         return $spr_code;
+
     }
 
 
@@ -231,7 +236,7 @@ class local_bath_grades_transfer_external_data
         $assessment = $assessments->addChild('assessment');
         $this->array_to_xml($objGrade, $assessment);
         $data['body'] = $recordsSimpleXMLObject->asXML();
-        $data['P04'] = $objGrade->year;
+        $data['P04'] = str_replace('/','-',$objGrade->year);
         $data['P05'] = $objGrade->period;
         $data['P06'] = $objGrade->module;
         $data['P07'] = $objGrade->occurrence;
