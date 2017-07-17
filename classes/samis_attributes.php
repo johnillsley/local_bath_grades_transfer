@@ -45,7 +45,7 @@ class local_bath_grades_transfer_samis_attributes
      */
     public function __construct($samis_code, $academic_year, $period_code, $occurrence) {
         $this->samis_code = $samis_code;
-        $this->academic_year = str_replace('/','-',$academic_year);
+        $this->academic_year = $academic_year;
         $this->period_code = $period_code;
 
         if ($occurrence = 'All') {
