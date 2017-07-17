@@ -111,7 +111,7 @@ class local_bath_grades_transfer_external_data
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['AYR_CODE'] = str_replace('/','-',$attributes->academic_year);
+        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
         $data['MOD_CODE'] = $attributes->samis_code; //P06
         $data['PSL_CODE'] = $attributes->period_code; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
@@ -151,22 +151,21 @@ class local_bath_grades_transfer_external_data
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['MOD_CODE'] = $attributes->samis_code; //P06
-        $data['AYR_CODE'] = str_replace('/','-',$attributes->academic_year);
+        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
         $data['PSL_CODE'] = $attributes->period_code; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
         try {
-            //$xml_response = $this->http_wsclient->call_samis($function, $data);
-             $this->rest_wsclient->call_samis($function, $data);
-             if($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']){
-                 $retdata = json_decode($this->rest_wsclient->response['contents'], true);
-             }
+            $this->rest_wsclient->call_samis($function, $data);
+            if ($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']) {
+                $retdata = json_decode($this->rest_wsclient->response['contents'], true);
+            }
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
                     //We have an error
                     $this->handle_error($data);
                 }
-                 foreach ($retdata['exchange']['mav']['mav.cams'] as $arrayCam) {
+                foreach ($retdata['exchange']['mav']['mav.cams'] as $arrayCam) {
                     foreach ($arrayCam['map']['map.cams'] as $arrayMab) {
                         foreach ($arrayMab['mab']['mab.cams'] as $objAssessment) {
                             $map_code = $objAssessment['map_code'];
@@ -191,7 +190,7 @@ class local_bath_grades_transfer_external_data
      * @return SimpleXMLElement
      * @throws Exception
      */
-        public function get_spr_from_bucs_id_rest($bucs_username) {
+    public function get_spr_from_bucs_id_rest($bucs_username) {
         $method = 'USERS';
         $data['STU_UDF1'] = $bucs_username;
         $spr_code = null;
@@ -207,18 +206,17 @@ class local_bath_grades_transfer_external_data
                     $this->handle_error($data);
                 }
 
-                  foreach($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objSPR) {
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objSPR) {
                     //var_dump($objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'});
-                     $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                    $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
                 }
                 var_dump($spr_code);
             }
+        } catch
+        (\GuzzleHttp\Exception\ClientException $e) {
+            throw new Exception($e->getMessage());
         }
-        catch
-            (\GuzzleHttp\Exception\ClientException $e) {
-                throw new Exception($e->getMessage());
-            }
-        die("SPR CODE !!!!");
+        // die("SPR CODE !!!!");
         return $spr_code;
 
     }
@@ -236,7 +234,7 @@ class local_bath_grades_transfer_external_data
         $assessment = $assessments->addChild('assessment');
         $this->array_to_xml($objGrade, $assessment);
         $data['body'] = $recordsSimpleXMLObject->asXML();
-        $data['P04'] = str_replace('/','-',$objGrade->year);
+        $data['P04'] = str_replace('/', '-', $objGrade->year);
         $data['P05'] = $objGrade->period;
         $data['P06'] = $objGrade->module;
         $data['P07'] = $objGrade->occurrence;
