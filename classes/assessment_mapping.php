@@ -372,13 +372,6 @@ class local_bath_grades_transfer_assessment_mapping
         return $this->locked;
     }
 
-    /**
-     * @param $name
-     * @param $value
-     */
-    function __set($name, $value) {
-        // TODO: Implement __set() method.
-    }
 
 
 }
