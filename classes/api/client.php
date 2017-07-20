@@ -162,9 +162,9 @@ class samis_http_client
         try {
             $this->response = $this->client->request('POST', 'local/bath_grades_transfer/web-service.php', [
                 'debug' => false,
-                'body' => $data,//TODO make this work later
+                'body' => $data,
                 //'body'=> 'P04=<<@SRS_QAEO_042>>~P05=S1~P06=MN10001~P07=A~P08=MN10001A~P09=01',
-                'auth' => ['username', 'password'], //TODO change this to dynamic
+                'auth' => ['username', 'password'],
                 'query' => ['method' => $method],
                 'headers' => [
                     'Content-Type' => 'text/xml',
