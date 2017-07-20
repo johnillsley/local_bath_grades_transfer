@@ -17,7 +17,7 @@ $string['bath_grade_transfer_time_start'] = 'Transfer from';
 $string['bath_grade_transfer_samis_assessment_id'] = 'SAMIS Assessment to link to';
 $string['bath_grade_transfer_samis_assessment_id_help'] = $string['samis_mapping_warning'];
 $string['bath_grade_transfer_samis_assessment_expired'] = 'Assessment Link <span class="label label-warning">{$a->mab_name}</span> has been removed as it no longer exists in SAMIS';
-$string['bath_grade_transfer_not_samis_default_mapping'] = 'Course does not have a valid SAMIS ID. Only SAMIS coded courses can be used for Grade Transfer';
+$string['bath_grade_transfer_not_samis_default_mapping'] = '<strong>Function not available: </strong> Course is not coded with a valid SAMIS code';
 $string['bath_grade_transfer_settings_locked'] = 'Settings have been locked as at least one grade has been transferred';
 $string['bath_grade_transfer_grade_not_hundred'] = 'Maximum points ( Grade ) must be set to 100';
 $string['default_mapping_only'] = 'Default mapping only';
