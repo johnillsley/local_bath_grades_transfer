@@ -28,7 +28,7 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @var
      */
-    public $grade; //TODO this might be removed in the future
+    public $grade;
     /**
      * @var
      */
