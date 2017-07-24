@@ -1,11 +1,18 @@
 <?php
-
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 03/05/2017
- * Time: 15:55
- */
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 class local_bath_grades_transfer_assessment_grades
 {
     /**
@@ -73,6 +80,7 @@ class local_bath_grades_transfer_assessment_grades
     public function getOccurrence() {
         return $this->occurrence;
     }
+
     /**
      * @var
      */
@@ -83,35 +91,6 @@ class local_bath_grades_transfer_assessment_grades
     public static $samis_data;
 
 
-    /**
-     * local_bath_grades_transfer_assessment_grades constructor.
-     * @internal param $student
-     * @internal param local_bath_grades_transfer_samis_attributes $samis_attributes
-     * @internal param $assess_pattern
-     * @internal param $assess_item
-     * @internal param $attempt
-     * @internal param $mark
-     * @internal param $grade
-     */
-    /*public function __construct($student,
-                                \local_bath_grades_transfer_samis_attributes $samis_attributes,
-                                $assess_pattern,
-                                $assess_item,
-                                $attempt,
-                                $mark,
-                                $grade) {
-        $this->assess_item = $assess_item;
-        $this->samis_attributes = $samis_attributes;
-        $this->student = $student;
-        $this->mark = $mark;
-        $this->grade = $grade;
-        $this->attempt = $attempt;
-        $this->assess_pattern = $assess_pattern;
-        $this->samis_data = new \local_bath_grades_transfer_external_data();
-    }*/
-    /**
-     * local_bath_grades_transfer_assessment_grades constructor.
-     */
     public function __construct() {
     }
 
@@ -128,11 +107,13 @@ class local_bath_grades_transfer_assessment_grades
     public function getMark() {
         return $this->mark;
     }
-    public function getName(){
+
+    public function getName() {
         return $this->name;
     }
 
     /**
+     * Set a mark for the grade structure
      * @param $mark
      */
     public function setMark($mark) {
@@ -140,6 +121,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     *
      * @return mixed
      */
     public function getAssessmentItem() {
@@ -147,6 +129,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     * Get Assessment Pattern
      * @return mixed
      */
     public function getAssessPattern() {
@@ -154,6 +137,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     * Get assess item
      * @return mixed
      */
     public function getAssessItem() {
@@ -167,7 +151,7 @@ class local_bath_grades_transfer_assessment_grades
         return $this->attempt;
     }
 
-    /**
+    /** Get grade mark
      * @return mixed
      */
     public function getGrade() {
@@ -180,24 +164,24 @@ class local_bath_grades_transfer_assessment_grades
      */
     public static function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
         //Check that it is a valid lookup
-        echo "\n\n+++++++++GETTING GRADE STRUCUTURE FROM SAMIS +++++++++  \n\n";
+        //echo "\n\n+++++++++GETTING GRADE STRUCUTURE FROM SAMIS +++++++++  \n\n";
         $structure = array();
 
         self::$samis_data = new \local_bath_grades_transfer_external_data();
-            //From the attributes and map_code, get the grade structure.
-            $remote_grade_structure = self::$samis_data->get_remote_grade_structure($lookup);
-            if (!empty($remote_grade_structure)) {
-                foreach ($remote_grade_structure->assessments as $assessment) {
-                    foreach ($assessment as $objAssessmentData) {
-                        $structure[(string)$objAssessmentData->student] = array('assessment'=>self::instantiate($objAssessmentData));
-                    }
+        //From the attributes and map_code, get the grade structure.
+        $remote_grade_structure = self::$samis_data->get_remote_grade_structure($lookup);
+        if (!empty($remote_grade_structure)) {
+            foreach ($remote_grade_structure->assessments as $assessment) {
+                foreach ($assessment as $objAssessmentData) {
+                    $structure[(string)$objAssessmentData->student] = array('assessment' => self::instantiate($objAssessmentData));
                 }
             }
+        }
 
         return $structure;
     }
 
-    /**
+    /** Instantiate a new class object
      * @param $record
      * @return local_bath_grades_transfer_assessment_grades
      */
@@ -211,7 +195,7 @@ class local_bath_grades_transfer_assessment_grades
         return $object;
     }
 
-    /**
+    /** Check if it has the attribute
      * @param $attribute
      * @return bool
      */
