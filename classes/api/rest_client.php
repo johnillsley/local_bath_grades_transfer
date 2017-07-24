@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 global $CFG;
 require_once $CFG->dirroot . '/local/bath_grades_transfer/vendor/autoload.php';
 use \GuzzleHttp\Client;
@@ -7,12 +22,6 @@ use \GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use \GuzzleHttp\Exception\RequestException;
 
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 30/03/2017
- * Time: 15:54
- */
 class local_bath_grades_transfer_rest_client
 {
     /**
@@ -102,12 +111,10 @@ class local_bath_grades_transfer_rest_client
             if ($verb == 'POST') {
                 //post changes
 
-                $this->promise = $this->client->postAsync( $method . '/' . $data_raw, [
+                $this->promise = $this->client->postAsync($method . '/' . $data_raw, [
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
-                    'connect_timeout' => 3.14,
-                    'read_timeout' => 3,
-                    'timeout' => 3.14,
+                    'timeout' => 40,
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
@@ -115,9 +122,8 @@ class local_bath_grades_transfer_rest_client
                     'body' => $data['body']
                 ]);
             } else {
-                $this->promise = $this->client->getAsync( $method . '/' . $data_raw, [
+                $this->promise = $this->client->getAsync($method . '/' . $data_raw, [
                     'debug' => false,
-                    'connect_timeout' => 6,
                     'timeout' => 6,
                     'auth' => [$this->username, $this->password],
                     'headers' => [
@@ -126,26 +132,23 @@ class local_bath_grades_transfer_rest_client
                     ]
                 ]);
             }
-            echo "\n\n++++++++++++REQUEST SENT !! WAITING FOR PROMISE TO COME BACK++++++++++++\n\n";
+            //echo "\n\n++++++++++++REQUEST SENT !! WAITING FOR PROMISE TO COME BACK++++++++++++\n\n";
             return $this->promise->then(
             //success Callback
                 function (ResponseInterface $res) {
                     //return code and response
                     $this->response['status'] = $res->getStatusCode();
                     $this->response['contents'] = $res->getBody()->getContents();
-                    return $res->getBody()->getContents();
+                    //return $res->getBody()->getContents();
                 },
                 //error handling
                 function (RequestException $e) {
-                     if ($e->getCode() == 400) {
+                    if ($e->getCode() == 400) {
                         //Bad Request.
-                        throw  new \Exception($e->getMessage());
-                    }
-
-                    elseif ($e->getCode() == 404) {
+                        throw  new \Exception($e->getMessage("Bad Request"));
+                    } elseif ($e->getCode() == 404) {
                         throw  new \Exception("Cant connect to SAMIS");
-                    }
-                    else{
+                    } else {
                         throw  new \Exception($e->getMessage());
                     }
                 }
