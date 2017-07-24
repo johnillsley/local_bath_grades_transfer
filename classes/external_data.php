@@ -17,12 +17,6 @@
 require_once 'api/client.php';
 require_once 'api/rest_client.php';
 
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 03/03/2017
- * Time: 17:05
- */
 class local_bath_grades_transfer_external_data
 {
     /**
@@ -141,6 +135,7 @@ class local_bath_grades_transfer_external_data
     }
 
     /**
+     * Get remote assessment details from SAMIS
      * @param local_bath_grades_transfer_samis_attributes $attributes
      * @return array
      * @throws Exception
@@ -187,12 +182,12 @@ class local_bath_grades_transfer_external_data
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucs_username
-     * @return SimpleXMLElement
+     * @return string $spr_code
      * @throws Exception
      */
     public function get_spr_from_bucs_id_rest($bucs_username) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucs_username;
+        $data['STU_UDF1'] = $bucs_username . '-xx-xx';//TODO Change this when going live
         $spr_code = null;
         try {
             $this->rest_wsclient->call_samis($method, $data);
@@ -210,25 +205,23 @@ class local_bath_grades_transfer_external_data
                     //var_dump($objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'});
                     $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
                 }
-                var_dump($spr_code);
             }
         } catch
         (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
-        // die("SPR CODE !!!!");
         return $spr_code;
-
     }
 
 
     /**
      * Collate and set the grades that next to be export grades to SAMIS
-     * @param $grades
+     * @param $objGrade
+     * @return boolean true or false
      */
     public function set_export_grade($objGrade) {
         $method = 'ASSESSMENTS';
-        echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
+        //echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
         $recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
         $assessments = $recordsSimpleXMLObject->addChild('assessments');
         $assessment = $assessments->addChild('assessment');
@@ -241,18 +234,14 @@ class local_bath_grades_transfer_external_data
         $data['P08'] = $objGrade->assess_pattern;
         $data['P09'] = $objGrade->assess_item;
         try {
-            $starttime = microtime(true);
             $this->rest_wsclient->call_samis($method, $data, 'POST');
             if ($this->rest_wsclient->response['status'] == 201) {
-                echo "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objGrade->name +++++";
+                //echo "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objGrade->name +++++";
                 return true;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-
+            die("Got an error from WS Client!");
         }
-        //die("GRADES DONE!");
-
-
     }
 
     /**
