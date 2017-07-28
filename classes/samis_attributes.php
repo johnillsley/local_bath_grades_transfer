@@ -20,7 +20,7 @@ class local_bath_grades_transfer_samis_attributes
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
      */
-    public $samis_code;
+    public $samis_unit_code;
     /**
      * @var
      */
@@ -28,7 +28,7 @@ class local_bath_grades_transfer_samis_attributes
     /**
      * @var
      */
-    public $period_code;
+    public $periodslotcode;
     /**
      * @var
      */
@@ -37,16 +37,20 @@ class local_bath_grades_transfer_samis_attributes
 
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
-     * @param $samis_code
+     * @param $samis_unit_code
      * @param $academic_year
-     * @param $period_code
+     * @param $periodslotcode
      * @param $occurrence
      * @param null $mab_sequence
      */
-    public function __construct($samis_code, $academic_year, $period_code, $occurrence) {
-        $this->samis_code = $samis_code;
-        $this->academic_year = $academic_year;
-        $this->period_code = $period_code;
+    public function __construct( $samis_unit_code, $academic_year, $periodslotcode, $occurrence ) {
+
+        $this->samis_unit_code  = $samis_unit_code;
+        $this->academic_year    = $academic_year;
+        $this->periodslotcode   = $periodslotcode;
+
+        //$this->samis_code = $samis_code;
+        //$this->period_code = $period_code;
 
         if ($occurrence = 'All') {
             $this->occurrence = 'A';
@@ -55,5 +59,24 @@ class local_bath_grades_transfer_samis_attributes
         }
     }
 
+    static function attributes_list( $current_year ) {
+        global $DB;
 
+        $all_units = $DB->get_records_sql( "
+            SELECT DISTINCT 
+              samis_unit_code
+            , periodslotcode
+            , academic_year
+            , occurrence
+            FROM {local_bath_grades_lookup}
+            WHERE academic_year = '".$current_year."'
+            AND expired IS NULL
+            ");
+
+        $samis_attributes_list = array();
+        foreach( $all_units as $unit ) {
+            $samis_attributes_list[] = new self( $unit->samis_unit_code, $unit->academic_year, $unit->periodslotcode, $unit->occurrence);
+        }
+        return $samis_attributes_list;
+    }
 }

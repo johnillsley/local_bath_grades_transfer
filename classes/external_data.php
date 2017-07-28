@@ -64,8 +64,8 @@ class local_bath_grades_transfer_external_data
         $data = array();
         $lookup_attributes = $lookup->attributes;
         /*$data['P04'] = $lookup_attributes->academic_year ;
-        $data['P05'] = $lookup_attributes->period_code;
-        $data['P06'] = $lookup_attributes->samis_code;
+        $data['P05'] = $lookup_attributes->periodslotcode;
+        $data['P06'] = $lookup_attributes->samis_unit_code;
         $data['P07'] = $lookup_attributes->occurrence;
         $data['P08'] = $lookup->map_code;
         $data['P09'] = $lookup->mab_seq;*/
@@ -112,8 +112,8 @@ class local_bath_grades_transfer_external_data
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['MOD_CODE'] = $attributes->samis_code; //P06
-        $data['PSL_CODE'] = $attributes->period_code; //P05
+        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
+        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
         try {
@@ -147,12 +147,13 @@ class local_bath_grades_transfer_external_data
      */
     public function get_remote_assessment_details_rest(\local_bath_grades_transfer_samis_attributes $attributes) {
         $function = 'MABS';
+
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['MOD_CODE'] = $attributes->samis_code; //P06
+        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['PSL_CODE'] = $attributes->period_code; //P05
+        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
         try {
@@ -176,7 +177,6 @@ class local_bath_grades_transfer_external_data
                     }
                 }
             }
-
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             //var_dump($e);
             throw new Exception($e->getMessage());

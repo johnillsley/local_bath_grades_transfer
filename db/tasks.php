@@ -27,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = array(
     array(
-        'classname' => 'local_bath_grades_transfer\task\transfer_grades',
+        'classname' => 'local_bath_grades_transfer\task\housekeep_lookup',
         'blocking' => 0,
         'minute' => '*',
-        'hour' => '*',
+        'hour' => '2',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'

@@ -7,6 +7,7 @@
  * Time: 16:22
  */
 namespace local_bath_grades_transfer\task;
+
 class housekeep_lookup extends \core\task\scheduled_task
 {
     public function get_name() {
@@ -17,8 +18,6 @@ class housekeep_lookup extends \core\task\scheduled_task
         require_once($CFG->dirroot . '/local/bath_grades_transfer/lib.php');
         //local_bath_grades_transfer_scheduled_task();
         $lib = new \local_bath_grades_transfer();
-        $lib->housekeep_lookup();
-
-
+        $lib->sync_remote_assessments();
     }
 }
