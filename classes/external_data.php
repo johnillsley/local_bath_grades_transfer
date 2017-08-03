@@ -201,7 +201,7 @@ class local_bath_grades_transfer_external_data
                     $this->handle_error($data);
                 }
 
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objSPR) {
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'} as $objSPR) {
                     //var_dump($objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'});
                     $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
                 }
