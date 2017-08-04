@@ -565,7 +565,7 @@ class local_bath_grades_transfer
         $samis_mapping = $DB->get_record_sql($sql, array(
             'courseid' => $moodle_course_id,
             'academic_year' => $attributes->academic_year,
-            'periodslotcode' => $attributes->period_code));
+            'periodslotcode' => $attributes->periodslotcode));
         if (!is_null($samis_mapping) && $samis_mapping->active = 1 && $samis_mapping->default = 1) {
             $default_mapping = $samis_mapping;
         }
@@ -692,6 +692,10 @@ class local_bath_grades_transfer
     }
     public function transfer_mapping($mappingid,$userids = array()){
         //Get the mapping object for the ID
+        global $DB;
+        ini_set('display_errors', 1);
+        error_reporting(E_ALL);
+        echo "coming into transfer mapping func";
         $usergrades = array();
         $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
         $this->local_grades_transfer_log->coursemoduleid = $assessment_mapping->coursemodule;
@@ -770,7 +774,25 @@ class local_bath_grades_transfer
 
 
     }
-
+    protected function get_samis_users($samis_mapping_id) {
+        global $DB;
+        $users = null;
+        $sql = " SELECT ue.userid,u.username FROM {sits_mappings} AS sm
+        JOIN {sits_mappings_enrols} AS me ON me.map_id = sm.id
+        JOIN {user_enrolments} AS ue ON ue.id = me.u_enrol_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
+        JOIN {user} AS u ON u.id = ue.userid
+        WHERE sm.active = 1 AND sm.default_map = 1 AND sm.id = :sits_mapping_id";
+        try {
+            $users_recordset = $DB->get_recordset_sql($sql, ['sits_mapping_id' => $samis_mapping_id]);
+            foreach ($users_recordset as $user_record) {
+                $users[] = $user_record;
+            }
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+            throw new \Exception($e->getMessage());
+        }
+        return $users;
+    }
     /**
      * @param $moodleuserid
      * @return null|SimpleXMLElement
