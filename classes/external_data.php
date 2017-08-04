@@ -57,12 +57,6 @@ class local_bath_grades_transfer_external_data
         $function = 'ASSESSMENTS';
         $data = array();
         $lookup_attributes = $lookup->attributes;
-        /*$data['P04'] = $lookup_attributes->academic_year ;
-        $data['P05'] = $lookup_attributes->period_code;
-        $data['P06'] = $lookup_attributes->samis_code;
-        $data['P07'] = $lookup_attributes->occurrence;
-        $data['P08'] = $lookup->map_code;
-        $data['P09'] = $lookup->mab_seq;*/
 
         //DEV DATA FOR TESTING
         $data['P04'] = '2016-7';
@@ -106,8 +100,8 @@ class local_bath_grades_transfer_external_data
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['MOD_CODE'] = $attributes->samis_code; //P06
-        $data['PSL_CODE'] = $attributes->period_code; //P05
+        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
+        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
         try {
@@ -135,19 +129,19 @@ class local_bath_grades_transfer_external_data
     }
 
     /**
-     * Get remote assessment details from SAMIS
      * @param local_bath_grades_transfer_samis_attributes $attributes
      * @return array
      * @throws Exception
      */
     public function get_remote_assessment_details_rest(\local_bath_grades_transfer_samis_attributes $attributes) {
         $function = 'MABS';
+
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['MOD_CODE'] = $attributes->samis_code; //P06
+        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['PSL_CODE'] = $attributes->period_code; //P05
+        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
         $data['MAV_OCCUR'] = $attributes->occurrence; //P07
         //If for some reason we cant connect to the client ,report error
         try {
@@ -171,7 +165,6 @@ class local_bath_grades_transfer_external_data
                     }
                 }
             }
-
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             //var_dump($e);
             throw new Exception($e->getMessage());
@@ -182,12 +175,12 @@ class local_bath_grades_transfer_external_data
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucs_username
-     * @return string $spr_code
+     * @return SimpleXMLElement
      * @throws Exception
      */
     public function get_spr_from_bucs_id_rest($bucs_username) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucs_username . '-xx-xx';//TODO Change this when going live
+        $data['STU_UDF1'] = $bucs_username.'-xx-xx';
         $spr_code = null;
         try {
             $this->rest_wsclient->call_samis($method, $data);
