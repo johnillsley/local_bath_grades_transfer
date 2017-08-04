@@ -693,9 +693,6 @@ class local_bath_grades_transfer
     public function transfer_mapping($mappingid,$userids = array()){
         //Get the mapping object for the ID
         global $DB;
-        ini_set('display_errors', 1);
-        error_reporting(E_ALL);
-        echo "coming into transfer mapping func";
         $usergrades = array();
         $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
         $this->local_grades_transfer_log->coursemoduleid = $assessment_mapping->coursemodule;
