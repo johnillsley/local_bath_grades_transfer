@@ -30,7 +30,6 @@ const TRANSFER_FAILURE = 3;
 const GRADE_ALREADY_EXISTS = 4;
 const GRADE_NOT_IN_MOODLE_COURSE = 5;
 const GRADE_NOT_OUT_OF_100 = 6;
-const CURRENT_YEAR = '2016/7';
 /**
  * Class local_bath_grades_transfer
  */
@@ -69,6 +68,7 @@ class local_bath_grades_transfer
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
         $this->assessment_mapping = new \local_bath_grades_transfer_assessment_mapping();
+        $this->set_current_academic_year();
     }
 
     /**
@@ -164,7 +164,7 @@ class local_bath_grades_transfer
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
 
-             //Get all the records associated with the samis mapping attributes fom Moodle table
+            //Get all the records associated with the samis mapping attributes fom Moodle table
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
 
             ///////////////// GET MAPPINGS ( LOCALLY ) //////
@@ -386,7 +386,7 @@ class local_bath_grades_transfer
         //$moodlecourseid=null;
 
         if( is_null( $moodlecourseid ) ) {
-            $samis_attributes_list = local_bath_grades_transfer_samis_attributes::attributes_list( CURRENT_YEAR );
+            $samis_attributes_list = local_bath_grades_transfer_samis_attributes::attributes_list( $this->current_academic_year );
         } else {
             $samis_attributes_list = array( $this->get_samis_mapping_attributes( $moodlecourseid ) );
         }
@@ -400,7 +400,7 @@ class local_bath_grades_transfer
                     $local_data = $this->get_local_assessment_details($samis_attributes);
                     $remote_assessments = array_map("self::lookup_transform", $remote_data);
                     $local_assessments = array_map("self::lookup_transform", $local_data);
-
+                    
                     // Expire obsolete lookups
                     $update = array();
                     $update['expired'] = time();
@@ -451,10 +451,10 @@ class local_bath_grades_transfer
     function get_local_assessment_details($samis_attributes) {
         global $DB;
         $conditions = array();
-        $conditions['expired']          = null;
+        $conditions['expired']          = 0;
         $conditions['samis_unit_code']  = $samis_attributes->samis_unit_code;
         $conditions['occurrence']       = $samis_attributes->occurrence;
-        $conditions['academic_year']    = CURRENT_YEAR;
+        $conditions['academic_year']    = $samis_attributes->academic_year;
         $conditions['periodslotcode']   = $samis_attributes->periodslotcode;
 
         $local_assessments = $DB->get_records( 'local_bath_grades_lookup', $conditions, '', 'id, map_code, mab_seq, ast_code, mab_perc, mab_name');
@@ -512,6 +512,7 @@ class local_bath_grades_transfer
     /**
      * @return bool
      */
+    /*
     public function local_bath_grades_transfer_scheduled_task() {
 
         if (!$this->is_admin_config_present()) {
@@ -525,7 +526,7 @@ class local_bath_grades_transfer
 
         }
     }
-
+    */
 
     /**
      * Return default samis mapping for a Moodle course
@@ -996,7 +997,6 @@ class local_bath_grades_transfer
                 //Check if mapping exists ( should be default only)
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     //Fetch the mapping for current year
-                    $this->set_current_academic_year();
                     $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,'acyear'=>$this->current_academic_year]);
                     if ($record) {
                         //Return Samis attributes object
@@ -1016,7 +1016,7 @@ class local_bath_grades_transfer
      */
     protected function set_current_academic_year(){
         $date_array = explode('-', $this->date->format('m-Y'));
-        if(intval($date_array[0]) > 7){
+        if(intval($date_array[0]) > 9){ //TODO change academic year end to 7 (end of July)
             $this->current_academic_year = strval(intval($date_array[1])) . '/' . substr(strval(intval($date_array[1]) + 1), -1);
             $this->current_academic_year_start = new DateTime($date_array[1] . '-07-31 00:00:00');
             $this->academic_year_end = new DateTime($date_array[1] + 1 . '-07-31 00:00:00');
