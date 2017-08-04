@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
+//TODO -- Show unlock button to teacher once the mappings are locked
 //TODO - check for assessment title changes in housekeep()
 //TODO - MAB is now obsolete ( how do we know ?) - Ask Martin
 //TODO - check for unenrolled students in SAMIS ( Ask Martin )
@@ -66,6 +67,8 @@ class local_bath_grades_transfer
         $this->local_grades_transfer_log = new \local_bath_grades_transfer_log();
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
+        $this->assessment_mapping = new \local_bath_grades_transfer_assessment_mapping();
+        $this->set_current_academic_year();
     }
 
     /**
@@ -84,13 +87,14 @@ class local_bath_grades_transfer
     /**
      * @param null $lookup_record
      */
+    /*
     public function housekeep_lookup($lookup_record = null) {
         if (isset($lookup_record)) {
             echo "Houskeeping Lookup $lookup_record->id";
             $lookup_record->housekeep();
         } else {
             //Get all lookups to housekeep from the current academic year
-            $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_lookup_by_academic_year('2016-7');
+            $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_lookup_by_academic_year(CURRENT_YEAR);
             if (!empty($lookup_records)) {
                 foreach ($lookup_records as $lookup_record) {
                     //housekeep
@@ -99,6 +103,7 @@ class local_bath_grades_transfer
             }
         }
     }
+    */
 
     /**
      * Form API method to display under module settings
@@ -109,7 +114,7 @@ class local_bath_grades_transfer
      */
     public function get_form_elements_module($mform, $context, $modulename = "") {
         global $COURSE, $CFG, $PAGE;
-        $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
+          $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
         //require($CFG->dirroot . '/enrol/samisv2/lib.php');
         require($CFG->dirroot . '/enrol/sits/lib.php');
         //$this->enrol_sits_plugin = new \enrol_samisv2_plugin();
@@ -143,17 +148,16 @@ class local_bath_grades_transfer
             //TODO Do we need to query the samis API on every refresh ?
             //TODO Think about when a lookup comes back ( un-expires?)
 
-            $this->fetch_remote_assessments($COURSE->id);
+            $this->sync_remote_assessments($COURSE->id);
             $mform->addElement('html', "<p class=\"alert-info alert alert-dismissable \"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> Fetched any new assessments from SAMIS</p>");
         } catch (Exception $e) {
             $mform->addElement('html', "<p class=\"alert-danger alert\">" . $e->getMessage() . "</p>");
             //Show error to the user but continue with the rest of the page
         }
+
         ////// BUILD CONTROLS /////////////
         //Only get settings if the course is mapped to a SAMIS code.
         if ($this->samis_mapping_exists($COURSE->id)) {
-            ////// Show Static text
-            //$mform->addElement('html', "<p class=\"alert-info alert\">" . get_string('samis_mapping_warning', 'local_bath_grades_transfer') . "</p>");
 
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
@@ -175,9 +179,7 @@ class local_bath_grades_transfer
             // no samis mapping defined for this course.
             $mform->addElement('html', "<span class=\"alert alert-warning\">" . get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</span>");
         }
-
     }
-
     /** Display transfer controls to the user
      * @param $lookup_records
      * @param $cmid
@@ -190,7 +192,6 @@ class local_bath_grades_transfer
         if ($assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
             $samis_assessment_end_date = userdate($assessment_mapping->samis_assessment_end_date == NULL ? 'Not Set' : $assessment_mapping->samis_assessment_end_date);
             $locked = $assessment_mapping->is_locked();
-
             if ($locked) {
                 //TODO only admins can unlock mappings for now
                 $mform->addElement('checkbox', 'unlock_assessment', '', get_string('unlock', 'local_bath_grades_transfer'));
@@ -216,6 +217,7 @@ class local_bath_grades_transfer
                     $samis_assessment_end_date);
             } else {
                 //MAPPING IS NOT LOCKED
+                echo "MAPPING NOT LOCKED  ";
                 $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
 
@@ -382,7 +384,6 @@ class local_bath_grades_transfer
             }
         }
     }
-
     /**
      * @param $gradetransferid
      * @param $users
@@ -392,36 +393,44 @@ class local_bath_grades_transfer
         //echo "+++++++++++++ INITIATING TRANSFER ++++++++ ";
         if (!empty($grades)) {
             foreach ($grades as $spr_code => $arrayAssessment) {
-                $objGrade = $arrayAssessment['assessment'];
-                try {
-                    if ($this->samis_data->set_export_grade($objGrade)) {
-                        //log success
-                        //var_dump($objGrade);
-                        //echo "\nlogging success\n";
-                        $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
-                        $this->local_grades_transfer_log->gradetransferred = $objGrade->mark;
-                        $this->local_grades_transfer_log->timetransferred = time();
+                foreach($arrayAssessment as $key => $obj){
+                    if($key == 'assessment'){
+                        $objGrade = $obj;
+                        try {
+                            if ($this->samis_data->set_export_grade($objGrade)) {
+                                //log success
+                                //var_dump($objGrade);
+                                //echo "\nlogging success\n";
+                                $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
+                                $this->local_grades_transfer_log->gradetransferred = $objGrade->mark;
+                                $this->local_grades_transfer_log->timetransferred = time();
+                                $this->local_grades_transfer_log->save();
 
-                        if ($web) {
-                            //Display result to the user
-                            $status[] = new \gradereport_transfer\output\transfer_status($objGrade->userid, 'success', $objGrade->mark);
+                                if ($web) {
+                                    //Display result to the user
+                                    $status = new \gradereport_transfer\output\transfer_status($objGrade->userid, 'success', $objGrade->mark);
+                                }
+                            }
+
+                        } catch (\Exception $e) {
+                            //log failure
+                            echo "logging failure";
+                            $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                            //get error id
+                            $this->local_grades_transfer_error->error_message = $e->getMessage();
+                            $this->local_grades_transfer_error->save();
+                            $this->local_grades_transfer_log->grade_transfer_error_id = $this->local_grades_transfer_error->id;
+
+                            if ($web) {
+                                //Display result to the user
+                                echo "setting status 2";
+                                $status = new \gradereport_transfer\output\transfer_status($objGrade->userid, 'failure', $objGrade->mark, 'SYSTEM FAILURE');
+                            }
                         }
                     }
 
-                } catch (\Exception $e) {
-                    //log failure
-                    echo "logging failure";
-                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
-                    //get error id
-                    $this->local_grades_transfer_error->error_message = $e->getMessage();
-                    $this->local_grades_transfer_error->save();
-                    $this->local_grades_transfer_log->grade_transfer_error_id = $this->local_grades_transfer_error->id;
-
-                    if ($web) {
-                        //Display result to the user
-                        $status[] = new \gradereport_transfer\output\transfer_status($objGrade->userid, 'failure', $objGrade->mark, 'SYSTEM FAILURE');
-                    }
                 }
+
                 //save success / failure
                 //$this->local_grades_transfer_log->save();
 
@@ -623,7 +632,6 @@ class local_bath_grades_transfer
         $transfer_statuses = array();
         //Get the mapping object for the ID
         $usergrades = array();
-
         $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
         $this->local_grades_transfer_log->coursemoduleid = $assessment_mapping->coursemodule;
         $this->local_grades_transfer_log->gradetransfermappingid = $assessment_mapping->id;
@@ -654,7 +662,7 @@ class local_bath_grades_transfer
                                     try {
                                         $usergrades[$userid]->spr_code = $this->samis_data->get_spr_from_bucs_id_rest($bucs_username);
                                     } catch (\Exception $e) {
-                                        $transfer_statuses[] = new \gradereport_transfer\output\transfer_status($userid, 'failure', null, "Could not get SPR CODE for $objUser->username");
+                                        $transfer_statuses = new \gradereport_transfer\output\transfer_status($userid, 'failure', null, "Could not get SPR CODE for $bucs_username");
                                         continue;
                                     }
                                 } else {
@@ -665,6 +673,8 @@ class local_bath_grades_transfer
                                     $this->local_grades_transfer_log->save();
                                     //remove them from the list
                                     unset($usergrades[$userid]);
+                                    $transfer_statuses = new \gradereport_transfer\output\transfer_status($userid, 'failure', null,'No grade to transfer');
+                                    //$transfer_statuses[] = $status;
                                 }
                                 //var_dump($usergrades);
 
@@ -672,18 +682,23 @@ class local_bath_grades_transfer
 
                         }
                         //$start = microtime(true);
-                        $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure);
-                        //var_dump($grades_to_pass);
-                        if (!empty($grades_to_pass)) {
-                            $transfer_statuses[] = $this->do_transfer($grades_to_pass, true);
+                        if(!empty($usergrades)){
+                            $grades_to_pass = $this->precheck_conditions($usergrades, $grade_structure,true);
+                            if (!empty($grades_to_pass)) {
+                                if(array_key_exists('statuses',$grades_to_pass)){
+                                    if(!empty($grades_to_pass['statuses'])){
+                                        $transfer_statuses = $grades_to_pass['statuses'];
+                                    }
+                                    else{
+                                        $transfer_statuses = $this->do_transfer($grades_to_pass, true);
+
+                                    }
+                                }
+
+                            }
                         }
-                        //$total = microtime(true) - $start;
-
-                        //echo $total;
-
-                        return $transfer_statuses;
-
                     }
+                    return $transfer_statuses;
                 }
             }
         } else {
@@ -717,7 +732,7 @@ class local_bath_grades_transfer
      * @param $remote_grade_structure
      * @return mixed
      */
-    public function precheck_conditions($moodleusergrades, $remote_grade_structure) {
+    public function precheck_conditions($moodleusergrades, $remote_grade_structure,$web =false) {
         $ok_to_transfer = false;
         $final_grade_struct = array();
         //TODO Change this when going LIVE -- DEV TESTING
@@ -733,22 +748,17 @@ class local_bath_grades_transfer
             $ok_to_transfer = true;
             $this->local_grades_transfer_log->userid = $moodleuserid;
             //echo "CHECKING CONDITIONS FOR $moodleuserid \n\n";
-            // ##################  CONDITION 1 : EMPTY MOODLE GRADE
-            if (is_null($objMoodleGrade->finalgrade)) {
-                //Not dealing with empty grades
-                $this->local_grades_transfer_log->outcomeid = GRADE_NOT_IN_MOODLE_COURSE;
-                $this->local_grades_transfer_log->save();
-
-                echo "No grade to transfer";
-                continue;
-            } // ##################  CONDITION 2 : MAX GRADE NOT OUT OF 100
-            elseif ($objMoodleGrade->rawgrademax != MAX_GRADE) {
+            // ##################  CONDITION 1 : EMPTY MOODLE GRADE// ##################  CONDITION 2 : MAX GRADE NOT OUT OF 100
+            if ($objMoodleGrade->rawgrademax != MAX_GRADE) {
                 //Max grade not satisfied
                 echo "Setting OUTCOME to 1";
                 $this->local_grades_transfer_log->outcomeid = GRADE_NOT_OUT_OF_100;
                 echo "Not out of 100";
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->save();
+                if($web){
+                    $status = new \gradereport_transfer\output\transfer_status($objMoodleGrade->userid, 'failure', null,'Grade not OUT of 100');
+                }
                 continue;
             }
             if (array_key_exists($objMoodleGrade->spr_code, $remote_grade_structure)) {
@@ -763,6 +773,10 @@ class local_bath_grades_transfer
                     $this->local_grades_transfer_log->outcomeid = GRADE_ALREADY_EXISTS;
                     $this->local_grades_transfer_log->timetransferred = time();
                     $this->local_grades_transfer_log->save();
+                    if($web){
+                        $status = new \gradereport_transfer\output\transfer_status($moodleuserid, 'failure', null,'Grade Already Exists in SAMIS');
+                    }
+
                     //echo "Grade already exists in SAMIS . skipping \n\n";
                     continue;
                 }
@@ -793,6 +807,9 @@ class local_bath_grades_transfer
                 echo "Something else $objMoodleGrade->spr_code . skipping\n\n";
                 continue;
             }
+        }
+        if($web){
+            $final_grade_struct['statuses'] = $status;
         }
         return $final_grade_struct;
 
