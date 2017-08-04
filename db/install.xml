@@ -21,6 +21,9 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="index_expired" UNIQUE="false" FIELDS="expired"/>
+            </INDEXES>
         </TABLE>
         <TABLE NAME="local_bath_grades_lookup" COMMENT="Lookup/Store assessments from SAMIS">
             <FIELDS>
@@ -28,20 +31,27 @@
                 <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="map_name" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="map_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="mab_sequence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mab_seq" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="ast_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mab_perc" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="expired" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-                <FIELD NAME="samis_assessment_id" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="samis_assessment_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
+                <FIELD NAME="samis_assessment_id" TYPE="char" LENGTH="21" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="mab_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
                        COMMENT="SAMIS Assessment Name"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="index_samis_unit_code" UNIQUE="false" FIELDS="samis_unit_code"/>
+                <INDEX NAME="index_periodslotcode" UNIQUE="false" FIELDS="periodslotcode"/>
+                <INDEX NAME="index_academic_year" UNIQUE="false" FIELDS="academic_year"/>
+                <INDEX NAME="index_occurrence" UNIQUE="false" FIELDS="occurrence"/>
+                <INDEX NAME="index_expired" UNIQUE="false" FIELDS="expired"/>
+            </INDEXES>
         </TABLE>
         <TABLE NAME="local_bath_grades_log" COMMENT="Record of all grade transfers initiated by Moodle.">
             <FIELDS>
@@ -69,12 +79,22 @@
             </INDEXES>
         </TABLE>
         <TABLE NAME="local_bath_grades_error" COMMENT="Used to log any grade transfer errors">
-            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-            <FIELD NAME="error_message" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="error_message" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
         </TABLE>
         <TABLE NAME="local_bath_grades_outcome" COMMENT="Different grade outcomes to show to the client for every grade transfer">
-            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-            <FIELD NAME="outcome" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="outcome" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
         </TABLE>
 
     </TABLES>
