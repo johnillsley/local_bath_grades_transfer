@@ -17,16 +17,20 @@
 class local_bath_grades_transfer_outcome
 {
     public $id;
-    public $outcomes = array('GRADE_MISSING', 'GRADE_NOT_OUT_OF_100', 'NOT_IN_SITS_STRUCTURE', 'GRADE_ALREADY_EXISTS',
+    public $outcomes = array(
+        //before transfer
+        'GRADE_MISSING', 'GRADE_NOT_OUT_OF_100', 'NOT_IN_SITS_STRUCTURE', 'GRADE_ALREADY_EXISTS',
+        //after transfer
         'TRANSFER_SUCCESSFUL', 'TRANSFER_FAILED');
     private static $table = 'local_bath_grades_outcome';
 
     public function get_all_outcomes() {
         return $this->outcomes;
     }
+    public function get_outcome(){
 
+    }
     public function set_outcome($outcome) {
-        global $DB;
-        $outcomevalue = $this->outcomes[$outcome];
+        $this->id = $outcome;
     }
 }
