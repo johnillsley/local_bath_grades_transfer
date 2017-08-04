@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/bath_grades_transfer/db" VERSION="20120122" COMMENT="XMLDB file for local/bath_grades_transfer"
+<XMLDB PATH="local/bath_grades_transfer/db" VERSION="2017031201.5" COMMENT="XMLDB file for local/bath_grades_transfer"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -14,8 +14,8 @@
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="locked" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-                <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="lasttransfertime" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="lasttransfertime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>

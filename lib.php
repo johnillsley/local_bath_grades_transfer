@@ -161,8 +161,7 @@ class local_bath_grades_transfer
 
             // GET SAMIS MAPPING ATTRIBUTES.
             $samis_attributes = $this->get_samis_mapping_attributes($COURSE->id);
-            //Get all the records associated with the samis mapping attributes fom Moodle table
-
+             //Get all the records associated with the samis mapping attributes fom Moodle table
             $lookup_records = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samis_attributes);
             //First housekeep them
             //TODO Think if you need to this later ??
@@ -270,8 +269,7 @@ class local_bath_grades_transfer
         $mform->disabledIf('bath_grade_transfer_time_start', 'bath_grade_transfer_samis_assessment_id', 'eq', 0);
     }
 
-
-    private function display_option($lrecord, $assessment_mapping, $attributes, &$select, $cmid) {
+    private function display_option($lrecord,$assessment_mapping,$attributes,&$select,$cmid){
 
         if (!empty($assessment_mapping) && $lrecord->id == $assessment_mapping->assessment_lookup_id) {
             $select->setSelected($lrecord->id);
@@ -345,6 +343,7 @@ class local_bath_grades_transfer
      * @param $moodlecourseid
      * @return array
      */
+    /*
     protected function fetch_remote_assessments($moodlecourseid) {
         $remote_assessments_ids = array();
         $samis_attributes = $this->get_samis_mapping_attributes($moodlecourseid);
@@ -383,6 +382,90 @@ class local_bath_grades_transfer
                 throw new Exception($e->getMessage());
             }
         }
+    }
+    */
+    protected function sync_remote_assessments( $moodlecourseid=null ) {
+        global $DB;
+        //$moodlecourseid=null;
+
+        if( is_null( $moodlecourseid ) ) {
+            $samis_attributes_list = local_bath_grades_transfer_samis_attributes::attributes_list( $this->current_academic_year );
+        } else {
+            $samis_attributes_list = array( $this->get_samis_mapping_attributes( $moodlecourseid ) );
+        }
+
+        if (!empty($samis_attributes_list)) {
+            try {
+                foreach( $samis_attributes_list as $samis_attributes ) {
+
+                    $remote_data = $this->samis_data->get_remote_assessment_details_rest($samis_attributes);
+                    $remote_data = array_pop($remote_data);
+                    $local_data = $this->get_local_assessment_details($samis_attributes);
+                    $remote_assessments = array_map("self::lookup_transform", $remote_data);
+                    $local_assessments = array_map("self::lookup_transform", $local_data);
+                    
+                    // Expire obsolete lookups
+                    $update = array();
+                    $update['expired'] = time();
+                    $expire_lookups = array_diff($local_assessments, $remote_assessments);
+                    foreach ($expire_lookups as $k => $v) {
+                        $update['id'] = $k;
+                        $DB->update_record('local_bath_grades_lookup', $update);
+                    }
+
+                    // Add new lookups
+                    $add_lookups = array_diff($remote_assessments, $local_assessments);
+                    foreach ($add_lookups as $k => $add_lookup) {
+                        $lookup = array_merge($remote_data[$k], (array)$samis_attributes);
+                        $lookup["samis_assessment_id"] = $lookup["map_code"] . '_' . $lookup["mab_seq"];
+                        $lookup["timecreated"] = time();
+                        $DB->insert_record('local_bath_grades_lookup', $lookup);
+                    }
+
+                    // Check for updates in lookups
+                    $check_updates = array_intersect($local_assessments, $remote_assessments);
+                    foreach ($check_updates as $local_key => $check_update) {
+                        $remote_key = array_search($check_update, $remote_assessments);
+                        if ($local_data[$local_key] != $remote_data[$remote_key]) {
+                            // At least one field has changed so update
+                            $local_data[$local_key] = $remote_data[$remote_key];
+                            $local_data[$local_key]["id"] = $local_key;
+                            $DB->update_record('local_bath_grades_lookup', $local_data[$local_key]);
+                        }
+                    }
+                }
+                return true;
+            } catch (Exception $e) {
+                echo "Throwing Exception #4";
+                var_dump($e->getMessage());
+                throw new Exception($e->getMessage());
+            }
+        }
+    }
+
+    private static function lookup_transform( $mapping ) {
+        $mapping = (array) $mapping;
+        $a = array();
+        $a["map_code"] = $mapping["map_code"];
+        $a["mab_seq"] = $mapping["mab_seq"];
+        return serialize( $a );
+    }
+
+    function get_local_assessment_details($samis_attributes) {
+        global $DB;
+        $conditions = array();
+        $conditions['expired']          = 0;
+        $conditions['samis_unit_code']  = $samis_attributes->samis_unit_code;
+        $conditions['occurrence']       = $samis_attributes->occurrence;
+        $conditions['academic_year']    = $samis_attributes->academic_year;
+        $conditions['periodslotcode']   = $samis_attributes->periodslotcode;
+
+        $local_assessments = $DB->get_records( 'local_bath_grades_lookup', $conditions, '', 'id, map_code, mab_seq, ast_code, mab_perc, mab_name');
+
+        foreach( $local_assessments as $k=>$v ) {
+            unset( $local_assessments[$k]->id );
+        }
+        return $local_assessments;
     }
     /**
      * @param $gradetransferid
@@ -451,6 +534,7 @@ class local_bath_grades_transfer
     /**
      * @return bool
      */
+    /*
     public function local_bath_grades_transfer_scheduled_task() {
 
         if (!$this->is_admin_config_present()) {
@@ -464,7 +548,7 @@ class local_bath_grades_transfer
 
         }
     }
-
+    */
 
     /**
      * Return default samis mapping for a Moodle course
@@ -606,30 +690,7 @@ class local_bath_grades_transfer
         }
         die("Never leave me !!!!");
     }
-
-    protected function get_samis_users($samis_mapping_id) {
-        global $DB;
-        $users = null;
-        $sql = " SELECT ue.userid,u.username FROM {sits_mappings} AS sm
-        JOIN {sits_mappings_enrols} AS me ON me.map_id = sm.id
-        JOIN {user_enrolments} AS ue ON ue.id = me.u_enrol_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
-        JOIN {user} AS u ON u.id = ue.userid
-        WHERE sm.active = 1 AND sm.default_map = 1 AND sm.id = :sits_mapping_id";
-        try {
-            $users_recordset = $DB->get_recordset_sql($sql, ['sits_mapping_id' => $samis_mapping_id]);
-            foreach ($users_recordset as $user_record) {
-                $users[] = $user_record;
-            }
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-            throw new \Exception($e->getMessage());
-        }
-        return $users;
-    }
-
-    public function transfer_mapping($mappingid, $userids = array()) {
-        global $DB;
-        $transfer_statuses = array();
+    public function transfer_mapping($mappingid,$userids = array()){
         //Get the mapping object for the ID
         $usergrades = array();
         $assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
@@ -844,6 +905,27 @@ class local_bath_grades_transfer
         return $grade;
     }
 
+    /**
+     * @param $samis_mapping_id
+     * @return array
+     */
+    private function get_users_samis_mapping($samis_mapping_id) {
+        global $DB;
+        $users = array();
+        //TODO Change this to samisv1 when going live !!!!
+        $sql = "SELECT DISTINCT (u.id) FROM {samis_mapping} AS sm JOIN {samis_mapping_enrolments} AS me ON me.mapping_id = $samis_mapping_id
+                                        JOIN {user_enrolments} AS ue ON ue.id = me.user_enrolment_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
+                                        JOIN {user} AS u ON u.id = ue.userid";
+        $rs = $DB->get_recordset_sql($sql);
+        if ($rs->valid()) {
+            // The recordset contains records.
+            foreach ($rs as $record) {
+                $users[] = $record->id;
+            }
+        }
+        return $users;
+    }
+
     /***
      * Get Moodle COURSE ID from Coursemodule ID
      * @param $coursemoduleid
@@ -1009,8 +1091,7 @@ class local_bath_grades_transfer
                 //Check if mapping exists ( should be default only)
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     //Fetch the mapping for current year
-                    $this->set_current_academic_year();
-                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->current_academic_year]);
+                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,'acyear'=>$this->current_academic_year]);
                     if ($record) {
                         //Return Samis attributes object
                         $samis_attributes = new local_bath_grades_transfer_samis_attributes(
@@ -1030,7 +1111,7 @@ class local_bath_grades_transfer
      */
     protected function set_current_academic_year() {
         $date_array = explode('-', $this->date->format('m-Y'));
-        if (intval($date_array[0]) > 7) {
+        if(intval($date_array[0]) > 9){ //TODO change academic year end to 7 (end of July)
             $this->current_academic_year = strval(intval($date_array[1])) . '/' . substr(strval(intval($date_array[1]) + 1), -1);
             $this->current_academic_year_start = new DateTime($date_array[1] . '-07-31 00:00:00');
             $this->academic_year_end = new DateTime($date_array[1] + 1 . '-07-31 00:00:00');
