@@ -49,17 +49,17 @@ class samis_http_client
     /**
      * @var
      */
-    private $is_connected;
+    private $isconnected;
 
     /**
      * samis_http_client constructor.
      */
     public function __construct() {
-        $api_url = get_config('local_bath_grades_transfer', 'samis_api_url');
+        $apiurl = get_config('local_bath_grades_transfer', 'samis_api_url');
         $this->username = get_config('local_bath_grades_transfer', 'samis_api_user');
         $this->password = get_config('local_bath_grades_transfer', 'samis_api_password');
         $this->client = new Client([
-                'base_uri' => $api_url
+                'base_uri' => $apiurl
             ]
         );
 
@@ -80,8 +80,8 @@ class samis_http_client
     /**
      * @return mixed
      */
-    public function is_connected() {
-        return $this->is_connected;
+    public function isconnected() {
+        return $this->isconnected;
     }
 
     /**
@@ -90,8 +90,8 @@ class samis_http_client
      */
     private function construct_body(array $pieces) {
         $glue = '~';
-        $body_raw = urldecode(http_build_query($pieces, '', $glue));
-        return $body_raw;
+        $bodyraw = urldecode(http_build_query($pieces, '', $glue));
+        return $bodyraw;
     }
 
     /**
@@ -102,9 +102,9 @@ class samis_http_client
     private function get_calculated_hash($method, $message) {
         $query = 'function=' . $method;
         $auth = "Basic " . base64_encode($this->username . ':' . $this->password);
-        $slr_string = $auth . "|" . SECRET_WORD_1 . "|" . $query . "|" . SECRET_WORD_2 . "|" . $message;
-        echo "\n BODY: " . $slr_string . "\n\n ";
-        $hash = strtoupper(hash(ALGO, $slr_string));
+        $slrstring = $auth . "|" . SECRET_WORD_1 . "|" . $query . "|" . SECRET_WORD_2 . "|" . $message;
+        echo "\n BODY: " . $slrstring . "\n\n ";
+        $hash = strtoupper(hash(ALGO, $slrstring));
         echo "\n HASH: " . $hash . "\n\n";
         return $hash;
     }
@@ -117,13 +117,13 @@ class samis_http_client
      */
     public function call_samis($method, $data) {
         //Convert the data into SAMIS format
-        $data_raw = $this->construct_body($data);
-        $hash = $this->get_calculated_hash($method, $data_raw);
+        $dataraw = $this->construct_body($data);
+        $hash = $this->get_calculated_hash($method, $dataraw);
         $hash = '12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9';
         try {
             $this->response = $this->client->request('POST', '/samis-dev/urd/sits.urd/run/siw_wsf.http_action', [
                 'debug' => false,
-                'body' => $data_raw,
+                'body' => $dataraw,
                 'auth' => [$this->username, $this->password],
                 'query' => ['FUNCTION' => $method, 'hash' => $hash],
                 'headers' => [

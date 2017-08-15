@@ -9,14 +9,14 @@
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="expired" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
                 <FIELD NAME="coursemodule" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="activity_type" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="activitytype" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="modifierid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="locked" TYPE="int" LENGTH="6" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-                <FIELD NAME="samis_assessment_end_date" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="samisassessmentenddate" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="lasttransfertime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="assessmentlookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -28,27 +28,27 @@
         <TABLE NAME="local_bath_grades_lookup" COMMENT="Lookup/Store assessments from SAMIS">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="samis_unit_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="samisunitcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="academic_year" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="map_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="academicyear" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mapcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="mab_seq" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="ast_code" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="mab_perc" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mabseq" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="astcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mabperc" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="expired" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0"/>
-                <FIELD NAME="samis_assessment_id" TYPE="char" LENGTH="21" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="mab_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
+                <FIELD NAME="samisassessmentid" TYPE="char" LENGTH="21" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="mabname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
                        COMMENT="SAMIS Assessment Name"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="index_samis_unit_code" UNIQUE="false" FIELDS="samis_unit_code"/>
+                <INDEX NAME="index_samisunitcode" UNIQUE="false" FIELDS="samisunitcode"/>
                 <INDEX NAME="index_periodslotcode" UNIQUE="false" FIELDS="periodslotcode"/>
-                <INDEX NAME="index_academic_year" UNIQUE="false" FIELDS="academic_year"/>
+                <INDEX NAME="index_academicyear" UNIQUE="false" FIELDS="academicyear"/>
                 <INDEX NAME="index_occurrence" UNIQUE="false" FIELDS="occurrence"/>
                 <INDEX NAME="index_expired" UNIQUE="false" FIELDS="expired"/>
             </INDEXES>
@@ -60,13 +60,13 @@
                        COMMENT="moodle.course_module.id"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="moodle.user.id"/>
                 <FIELD NAME="gradetransfermappingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="assessment_lookup_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+                <FIELD NAME="assessmentlookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
                        COMMENT="moodle.user.id"/>
                 <FIELD NAME="timetransferred" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="outcomeid" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false"
                        COMMENT="1 => Success 2 => No grade to transfer 3 => Transfer error 4 => Grade already exists in SAMIS"/>
                 <FIELD NAME="gradetransferred" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="grade_transfer_error_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="gradetransfererrorid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -81,7 +81,7 @@
         <TABLE NAME="local_bath_grades_error" COMMENT="Used to log any grade transfer errors">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="error_message" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="errormessage" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

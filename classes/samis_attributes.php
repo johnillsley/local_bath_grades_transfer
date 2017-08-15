@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+defined('MOODLE_INTERNAL') || die();
 
 class local_bath_grades_transfer_samis_attributes
 {
@@ -20,11 +21,11 @@ class local_bath_grades_transfer_samis_attributes
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
      */
-    public $samis_unit_code;
+    public $samisunitcode;
     /**
      * @var
      */
-    public $academic_year;
+    public $academicyear;
     /**
      * @var
      */
@@ -37,21 +38,17 @@ class local_bath_grades_transfer_samis_attributes
 
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
-     * @param $samis_unit_code
-     * @param $academic_year
+     * @param $samisunitcode
+     * @param $academicyear
      * @param $periodslotcode
      * @param $occurrence
      * @param null $mab_sequence
      */
-    public function __construct( $samis_unit_code, $academic_year, $periodslotcode, $occurrence ) {
+    public function __construct($samisunitcode, $academicyear, $periodslotcode, $occurrence) {
 
-        $this->samis_unit_code  = $samis_unit_code;
-        $this->academic_year    = $academic_year;
-        $this->periodslotcode   = $periodslotcode;
-
-        //$this->samis_code = $samis_code;
-        //$this->period_code = $period_code;
-
+        $this->samisunitcode = $samisunitcode;
+        $this->academicyear = $academicyear;
+        $this->periodslotcode = $periodslotcode;
         if ($occurrence = 'All') {
             $this->occurrence = 'A';
         } else {
@@ -59,24 +56,24 @@ class local_bath_grades_transfer_samis_attributes
         }
     }
 
-    static function attributes_list( $current_year ) {
+    public static function attributes_list($currentyear) {
         global $DB;
 
-        $all_units = $DB->get_records_sql( "
+        $allunits = $DB->get_records_sql("
             SELECT DISTINCT 
-              samis_unit_code
+              samisunitcode
             , periodslotcode
-            , academic_year
+            , academicyear
             , occurrence
             FROM {local_bath_grades_lookup}
-            WHERE academic_year = '".$current_year."'
+            WHERE academicyear = '" . $currentyear . "'
             AND expired IS NULL
             ");
 
-        $samis_attributes_list = array();
-        foreach( $all_units as $unit ) {
-            $samis_attributes_list[] = new self( $unit->samis_unit_code, $unit->academic_year, $unit->periodslotcode, $unit->occurrence);
+        $samisattributeslist = array();
+        foreach ($allunits as $unit) {
+            $samisattributeslist[] = new self($unit->samisunitcode, $unit->academicyear, $unit->periodslotcode, $unit->occurrence);
         }
-        return $samis_attributes_list;
+        return $samisattributeslist;
     }
 }

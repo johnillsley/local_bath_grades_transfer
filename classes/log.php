@@ -36,7 +36,7 @@ class local_bath_grades_transfer_log
      * @var
      */
     public $gradetransferred;
-    public $assessment_lookup_id;
+    public $assessmentlookupid;
     /**
      * @var
      */
@@ -48,7 +48,7 @@ class local_bath_grades_transfer_log
     /**
      * @var
      */
-    public $grade_transfer_error_id;
+    public $gradetransfererrorid;
     /**
      * @var string
      */
@@ -82,11 +82,11 @@ class local_bath_grades_transfer_log
         $data->coursemoduleid = $this->coursemoduleid;
         $data->userid = $this->userid;
         $data->gradetransfermappingid = $this->gradetransfermappingid;
-        $data->assessment_lookup_id = $this->assessment_lookup_id;
+        $data->assessmentlookupid = $this->assessmentlookupid;
         $data->timetransferred = $this->timetransferred;
         $data->outcomeid = $this->outcomeid;
         $data->gradetransferred = $this->gradetransferred;
-        $data->grade_transfer_error_id = $this->grade_transfer_error_id;
+        $data->gradetransfererrorid = $this->gradetransfererrorid;
         $DB->insert_record(self::$table, $data);
     }
 

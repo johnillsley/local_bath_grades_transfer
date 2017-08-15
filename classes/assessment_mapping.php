@@ -13,10 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Class local_bath_grades_transfer_assessment_mapping
- */
+defined('MOODLE_INTERNAL') || die();
 class local_bath_grades_transfer_assessment_mapping
 {
     /**
@@ -49,24 +46,24 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * @var
      */
-    public $samis_assessment_end_date;
+    public $samisassessmentenddate;
     /**
      * @var
      */
-    public $samis_assessment_id;
+    public $samisassessmentid;
     /**
      * @var
      */
-    public $assessment_lookup_id;
+    public $assessmentlookupid;
     /**
      * @var
      */
     public $coursemodule;
 
     /**
-     * @var $activity_type
+     * @var $activitytype
      */
-    public $activity_type;
+    public $activitytype;
     /**
      * @var $lookup
      */
@@ -100,7 +97,7 @@ class local_bath_grades_transfer_assessment_mapping
                     $return[] = $record->id;
                 } else {
                     if (!$record->expired) {
-                        //Dont show expired lookups
+                        // Dont show expired lookups.
                         $return[] = self::instantiate($record);
                     }
 
@@ -113,41 +110,41 @@ class local_bath_grades_transfer_assessment_mapping
     /**
      * Gets a grade transfer assessment by mapping ID
      * @param $id
-     * @param $get_lookup
+     * @param $getlookup
      * @return mixed|null
      */
-    public static function get($id, $get_lookup = false) {
+    public static function get($id, $getlookup = false) {
         global $DB;
-        $mapping_object = array();
-        $objLookup = null;
+        $mappingobject = array();
+        $objlookup = null;
         if ($DB->record_exists(self::$table, ['id' => $id])) {
             $record = $DB->get_record(self::$table, ['id' => $id]);
-            $mapping_object = self::instantiate($record);
+            $mappingobject = self::instantiate($record);
         }
         //Fetch the corresponding lookup too
-        if ($get_lookup && isset($mapping_object->assessment_lookup_id)) {
-            $objLookup = \local_bath_grades_transfer_assessment_lookup::get($mapping_object->assessment_lookup_id);
-            if ($objLookup) {
-                $mapping_object->lookup = $objLookup;
+        if ($getlookup && isset($mappingobject->assessmentlookupid)) {
+            $objlookup = \local_bath_grades_transfer_assessment_lookup::get($mappingobject->assessmentlookupid);
+            if ($objlookup) {
+                $mappingobject->lookup = $objlookup;
             }
         }
-        return $mapping_object;
+        return $mappingobject;
     }
 
 
     /**
-     * Fetches a grade transfer assessment by samis_assessment_lookup_id
+     * Fetches a grade transfer assessment by samis_assessmentlookupid
      * @param $lookupid
      * @return mixed|null $record
      */
     public static function get_by_lookup_id($lookupid, $cmid = null) {
         global $DB;
         $record = null;
-        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0])) {
+        if ($DB->record_exists(self::$table, ['assessmentlookupid' => $lookupid, 'expired' => 0])) {
             if (!is_null($cmid)) {
-                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid, 'coursemodule' => $cmid, 'expired' => 0]);
+                $record = $DB->get_record(self::$table, ['assessmentlookupid' => $lookupid, 'coursemodule' => $cmid, 'expired' => 0]);
             } else {
-                $record = $DB->get_record(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0]);
+                $record = $DB->get_record(self::$table, ['assessmentlookupid' => $lookupid, 'expired' => 0]);
             }
 
         }
@@ -160,7 +157,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public static function exists_by_lookup_id($lookupid) {
         global $DB;
-        if ($DB->record_exists(self::$table, ['assessment_lookup_id' => $lookupid, 'expired' => 0])) {
+        if ($DB->record_exists(self::$table, ['assessmentlookupid' => $lookupid, 'expired' => 0])) {
             return true;
         }
         return false;
@@ -182,29 +179,29 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function set_data($data) {
         if (!empty($data)) {
-            //Set id
+            // Set id.
             if (isset($data->id)) {
-                $this->id = $data->id; // local_bath_grades_transfer ID
+                $this->id = $data->id; // Local_bath_grades_transfer ID.
             }
-            //Set assessment end date
-            if (isset($data->samis_assessment_end_date)) {
-                $this->samis_assessment_end_date = $data->samis_assessment_end_date;
+            // Set assessment end date.
+            if (isset($data->samisassessmentenddate)) {
+                $this->samisassessmentenddate = $data->samisassessmentenddate;
             }
-            //set coursemodule
-            $this->coursemodule = $data->coursemodule; //settings.php
-            //set lookup id
-            $this->assessment_lookup_id = $data->assessment_lookup_id;
-            //set locked status
+            // Set coursemodule.
+            $this->coursemodule = $data->coursemodule; // Settings.php
+            // Set lookup id.
+            $this->assessmentlookupid = $data->assessmentlookupid;
+            // Set locked status.
             if (isset($data->locked)) {
                 $this->locked = $data->locked;
             }
-            if (isset($data->activity_type)) {
-                $this->activity_type = $data->activity_type;
+            if (isset($data->activitytype)) {
+                $this->activitytype = $data->activitytype;
             }
             if (isset($data->expired)) {
                 $this->expired = $data->expired;
             }
-            //set modifier id
+            // Set modifier id.
             $this->modifierid = $data->modifierid;
         }
     }
@@ -215,8 +212,9 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function get_assessment_name($mappingid) {
         global $DB;
-        //From mapping id, get lookup id, get mab_name
-        $sql = "SELECT l.mab_name FROM {local_bath_grades_mapping} m JOIN {local_bath_grades_lookup} l ON m.assessment_lookup_id = l.id WHERE m.id = ? AND l.expired IS NULL  ";
+        // From mapping id, get lookup id, get mab_name.
+        $sql = "SELECT l.mab_name FROM {local_bath_grades_mapping} m
+JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? AND l.expired IS NULL  ";
         return $DB->get_field_sql($sql, [$mappingid], MUST_EXIST);
     }
 
@@ -257,12 +255,12 @@ class local_bath_grades_transfer_assessment_mapping
     }
 
     /**
-     * @param $map_code
+     * @param $mapcode
      * @return bool
      */
-    public function exists_by_samis_assessment_id($map_code) {
+    public function exists_by_samisassessmentid($mapcode) {
         global $DB;
-        return $DB->record_exists(self::$table, ['coursemodule' => $map_code]);
+        return $DB->record_exists(self::$table, ['coursemodule' => $mapcode]);
     }
 
 
@@ -273,45 +271,45 @@ class local_bath_grades_transfer_assessment_mapping
     public function update() {
         global $DB;
 
-        $objAssessment = new stdClass();
-        $objAssessment->id = $this->id;
-        $objAssessment->coursemodule = $this->coursemodule;
-        $objAssessment->activity_type = $this->activity_type;
-        $objAssessment->modifierid = $this->modifierid;
-        $objAssessment->timemodified = time();
-        $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
-        $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
-        $objAssessment->expired = $this->expired;
-        return $DB->update_record(self::$table, $objAssessment);
+        $objassessment = new stdClass();
+        $objassessment->id = $this->id;
+        $objassessment->coursemodule = $this->coursemodule;
+        $objassessment->activitytype = $this->activitytype;
+        $objassessment->modifierid = $this->modifierid;
+        $objassessment->timemodified = time();
+        $objassessment->assessmentlookupid = $this->assessmentlookupid;
+        $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
+        $objassessment->expired = $this->expired;
+        return $DB->update_record(self::$table, $objassessment);
     }
 
     /**
      * This method looks after any redundant mapping and deals with it
-     * @param $remoteAssessment
-     * @param $samisAttributes
+     * @param $remoteassessment
+     * @param $samisattributes
      */
-    public function housekeeping_mapping($remoteAssessment, $samisAttributes) {
-        //From remote mapping get the local mapping and compare the following:
-        //1. If their assesment name has changed
-        //2. That mapping does not exist in remote anymore
-        //3. Which means we have to compare it first against the local mappings
-        //4. If a mapping has been removed from remote but still exists in local
-        //5. Remove it from the lookup table , remove its foreign link from the transfer table
+    public function housekeeping_mapping($remoteassessment, $samisattributes) {
+        // From remote mapping get the local mapping and compare the following:.
+        // 1. If their assessment name has changed.
+        // 2. That mapping does not exist in remote anymore.
+        // 3. Which means we have to compare it first against the local mappings.
+        // 4. If a mapping has been removed from remote but still exists in local.
+        // 5. Remove it from the lookup table , remove its foreign link from the transfer table.
 
 
-        //Get all asessments locally based on SAMIS code, period, ac yr and mav_occur
-        if (!empty($samisAttributes)) {
-            $local_assessments = $this->lookup->get_by_samis_details($samisAttributes->samis_unit_code,
-                $samisAttributes->academic_year,
-                $samisAttributes->periodslotcode,
-                $samisAttributes->occurrence);
+        // Get all asessments locally based on SAMIS code, period, ac yr and mav_occur.
+        if (!empty($samisattributes)) {
+            $localassessments = $this->lookup->get_by_samis_details($samisattributes->samisunitcode,
+                $samisattributes->academicyear,
+                $samisattributes->periodslotcode,
+                $samisattributes->occurrence);
         }
-        var_dump($remoteAssessment);
+        var_dump($remoteassessment);
         //Compare this to the remote assessment to see if anything has gone missing.
-        foreach ($local_assessments as $assessment) {
+        foreach ($localassessments as $assessment) {
 
         }
-        var_dump($local_assessments);
+        var_dump($localassessments);
         die();
 
     }
@@ -321,16 +319,16 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public function save() {
         global $DB;
-        $objAssessment = new stdClass();
-        $objAssessment->coursemodule = $this->coursemodule;
-        $objAssessment->activity_type = $this->activity_type;
-        $objAssessment->timecreated = time(); //now
-        $objAssessment->modifierid = $this->modifierid;
-        $objAssessment->timemodified = time(); //now
-        $objAssessment->assessment_lookup_id = $this->assessment_lookup_id;
-        $objAssessment->samis_assessment_end_date = $this->samis_assessment_end_date;
-        $objAssessment->locked = 0;
-        $DB->insert_record(self::$table, $objAssessment);
+        $objassessment = new stdClass();
+        $objassessment->coursemodule = $this->coursemodule;
+        $objassessment->activitytype = $this->activitytype;
+        $objassessment->timecreated = time(); // Now.
+        $objassessment->modifierid = $this->modifierid;
+        $objassessment->timemodified = time(); // Now.
+        $objassessment->assessmentlookupid = $this->assessmentlookupid;
+        $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
+        $objassessment->locked = 0;
+        $DB->insert_record(self::$table, $objassessment);
     }
 
     /**
@@ -353,8 +351,8 @@ class local_bath_grades_transfer_assessment_mapping
      * @return bool
      */
     private function has_attribute($attribute) {
-        $object_vars = get_object_vars($this);
-        return array_key_exists($attribute, $object_vars);
+        $objectvars = get_object_vars($this);
+        return array_key_exists($attribute, $objectvars);
     }
 
     /**
@@ -376,7 +374,7 @@ class local_bath_grades_transfer_assessment_mapping
      * @param $name
      * @param $value
      */
-    function __set($name, $value) {
+    public function __set($name, $value) {
         // TODO: Implement __set() method.
     }
 

@@ -13,27 +13,28 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace local_bath_grades_transfer\task;
 defined('MOODLE_INTERNAL') || die();
-
-class local_bath_grades_transfer_outcome
+/**
+ * Class transfer_grades
+ * @package local_bath_grades_transfer\task
+ */
+class transfer_grades extends \core\task\scheduled_task
 {
-    public $id;
-    public $outcomes = array(
-        // Before transfer.
-        'GRADE_MISSING', 'GRADE_NOT_OUT_OF_100', 'NOT_IN_SITS_STRUCTURE', 'GRADE_ALREADY_EXISTS',
-        // After transfer.
-        'TRANSFER_SUCCESSFUL', 'TRANSFER_FAILED');
-    private static $table = 'local_bath_grades_outcome';
-
-    public function get_all_outcomes() {
-        return $this->outcomes;
+    /**
+     * @return string
+     */
+    public function get_name() {
+        return get_string('pluginname', 'local_bath_grades_transfer');
     }
 
-    public function get_outcome() {
-
-    }
-
-    public function set_outcome($outcome) {
-        $this->id = $outcome;
+    /**
+     * Execute Scheduled Task
+     */
+    public function execute() {
+        global $CFG;
+        require_once($CFG->dirroot . '/local/bath_grades_transfer/lib.php');
+        $lib = new \local_bath_grades_transfer();
+        $lib->cron();
     }
 }

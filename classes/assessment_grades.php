@@ -56,28 +56,28 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @return mixed
      */
-    public function getYear() {
+    public function getyear() {
         return $this->year;
     }
 
     /**
      * @return mixed
      */
-    public function getPeriod() {
+    public function getperiod() {
         return $this->period;
     }
 
     /**
      * @return mixed
      */
-    public function getModule() {
+    public function getmodule() {
         return $this->module;
     }
 
     /**
      * @return mixed
      */
-    public function getOccurrence() {
+    public function getoccurrence() {
         return $this->occurrence;
     }
 
@@ -88,7 +88,7 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @var
      */
-    public static $samis_data;
+    public static $samisdata;
 
 
     public function __construct() {
@@ -116,7 +116,7 @@ class local_bath_grades_transfer_assessment_grades
      * Set a mark for the grade structure
      * @param $mark
      */
-    public function setMark($mark) {
+    public function setmark($mark) {
         $this->mark = $mark;
     }
 
@@ -124,7 +124,7 @@ class local_bath_grades_transfer_assessment_grades
      *
      * @return mixed
      */
-    public function getAssessmentItem() {
+    public function getassessmentitem() {
         return $this->assess_item;
     }
 
@@ -132,7 +132,7 @@ class local_bath_grades_transfer_assessment_grades
      * Get Assessment Pattern
      * @return mixed
      */
-    public function getAssessPattern() {
+    public function getassesspattern() {
         return $this->assess_pattern;
     }
 
@@ -147,14 +147,14 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @return mixed
      */
-    public function getAttempt() {
+    public function getattempt() {
         return $this->attempt;
     }
 
     /** Get grade mark
      * @return mixed
      */
-    public function getGrade() {
+    public function getgrade() {
         return $this->grade;
     }
 
@@ -167,13 +167,13 @@ class local_bath_grades_transfer_assessment_grades
         //echo "\n\n+++++++++GETTING GRADE STRUCUTURE FROM SAMIS +++++++++  \n\n";
         $structure = array();
 
-        self::$samis_data = new \local_bath_grades_transfer_external_data();
+        self::$samisdata = new \local_bath_grades_transfer_external_data();
         //From the attributes and map_code, get the grade structure.
-        $remote_grade_structure = self::$samis_data->get_remote_grade_structure($lookup);
-        if (!empty($remote_grade_structure)) {
-            foreach ($remote_grade_structure->assessments as $assessment) {
-                foreach ($assessment as $objAssessmentData) {
-                    $structure[(string)$objAssessmentData->student] = array('assessment' => self::instantiate($objAssessmentData));
+        $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
+        if (!empty($remotegradestructure)) {
+            foreach ($remotegradestructure->assessments as $assessment) {
+                foreach ($assessment as $objassessmentdata) {
+                    $structure[(string)$objassessmentdata->student] = array('assessment' => self::instantiate($objassessmentdata));
                 }
             }
         }

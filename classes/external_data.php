@@ -26,15 +26,14 @@ class local_bath_grades_transfer_external_data
     /**
      * @var array
      */
-    public $assessment_data = array();
+    public $assessmentdata = array();
 
     /**
      * local_bath_grades_transfer_external_data constructor.
      */
     public function __construct() {
-        //$this->http_ws_client = new local_bath_grades_transfer_samis_api_client();
-        $this->http_wsclient = new samis_http_client();
-        $this->rest_wsclient = new local_bath_grades_transfer_rest_client();
+        $this->httpwsclient = new samis_http_client();
+        $this->restwsclient = new local_bath_grades_transfer_rest_client();
 
     }
 
@@ -43,7 +42,7 @@ class local_bath_grades_transfer_external_data
      * @throws Exception
      */
     private function handle_error($data) {
-        //We have an error
+        // We have an error.
         throw new \Exception("There is an error. STATUS: " . (string)$data->status . " MESSAGE: " . (string)$data->messagebuffer);
     }
 
@@ -58,7 +57,7 @@ class local_bath_grades_transfer_external_data
         $data = array();
         $lookup_attributes = $lookup->attributes;
 
-        //DEV DATA FOR TESTING
+        // DEV DATA FOR TESTING.
         $data['P04'] = '2016-7';
         $data['P05'] = 'S1';
         $data['P06'] = 'ME10003';
@@ -66,9 +65,9 @@ class local_bath_grades_transfer_external_data
         $data['P08'] = 'ME10003A';
         $data['P09'] = '01';
         try {
-            $this->rest_wsclient->call_samis($function, $data);
-            if ($this->rest_wsclient->response['status'] = 200 && $this->rest_wsclient->response['contents']) {
-                $data = simplexml_load_string($this->rest_wsclient->response['contents']);
+            $this->restwsclient->call_samis($function, $data);
+            if ($this->restwsclient->response['status'] = 200 && $this->restwsclient->response['contents']) {
+                $data = simplexml_load_string($this->restwsclient->response['contents']);
                 return $data;
             }
 
@@ -78,9 +77,9 @@ class local_bath_grades_transfer_external_data
             if (isset($data->records)) {
                 $assessments = $data->records->assessments;
                 if (!empty($assessments)) {
-                    $assessment_grade_structure = simplexml_load_string($assessments);
+                    $assessmentgradestructure = simplexml_load_string($assessments);
                 }
-                return $assessment_grade_structure;
+                return $assessmentgradestructure;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
@@ -98,26 +97,26 @@ class local_bath_grades_transfer_external_data
         $function = 'MABS';
         $data = array();
         $assessments = array();
-        //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
-        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
-        $data['MAV_OCCUR'] = $attributes->occurrence; //P07
-        //If for some reason we cant connect to the client ,report error
+        // TODO Overwrite this with only a working value as SAMIS team is still setting this up.
+        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academicyear);
+        $data['MOD_CODE'] = $attributes->samisunitcode; // P06.
+        $data['PSL_CODE'] = $attributes->periodslotcode; // P05.
+        $data['MAV_OCCUR'] = $attributes->occurrence; // P07.
+        // If for some reason we cant connect to the client ,report error.
         try {
-            $xml_response = $this->http_wsclient->call_samis($function, $data);
-            $data = simplexml_load_string($xml_response);
+            $xmlresponse = $this->httpwsclient->call_samis($function, $data);
+            $data = simplexml_load_string($xmlresponse);
             if ($data->status < 0) {
-                //We have an error
+                // We have an error.
                 $this->handle_error($data);
             }
             if (isset($data->outdata)) {
-                $xml_assessment_data = simplexml_load_string($data->outdata);
+                $xmlassessmentdata = simplexml_load_string($data->outdata);
 
-                foreach ($xml_assessment_data->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'mab'}->{'mab.cams'} as $objAssessment) {
-                    $map_code = (string)$xml_assessment_data->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'map_code'};
-                    if (!empty($objAssessment)) {
-                        $assessments[$map_code][] = $objAssessment;
+                foreach ($xmlassessmentdata->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'mab'}->{'mab.cams'} as $objassessment) {
+                    $mapcode = (string)$xmlassessmentdata->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'map_code'};
+                    if (!empty($objassessment)) {
+                        $assessments[$mapcode][] = $objassessment;
                     }
                 }
             }
@@ -139,39 +138,45 @@ class local_bath_grades_transfer_external_data
         $data = array();
         $assessments = array();
         //TODO Overwrite this with only a working value as SAMIS team is still setting this up
-        $data['MOD_CODE'] = $attributes->samis_unit_code; //P06
-        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academic_year);
-        $data['PSL_CODE'] = $attributes->periodslotcode; //P05
-        $data['MAV_OCCUR'] = $attributes->occurrence; //P07
-        //If for some reason we cant connect to the client ,report error
+        $data['MOD_CODE'] = $attributes->samisunitcode; // P06.
+        $data['AYR_CODE'] = str_replace('/', '-', $attributes->academicyear);
+        $data['PSL_CODE'] = $attributes->periodslotcode; // P05.
+        $data['MAV_OCCUR'] = $attributes->occurrence; // P07.
+        // If for some reason we cant connect to the client ,report error.
         try {
-            $this->rest_wsclient->call_samis($function, $data);
-            if ($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']) {
-                $retdata = json_decode($this->rest_wsclient->response['contents'], true);
+            $this->restwsclient->call_samis($function, $data);
+            if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
+                $retdata = json_decode($this->restwsclient->response['contents'], true);
             }
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
-                    //We have an error
+                    // We have an error.
                     $this->handle_error($data);
                 }
-                foreach ($retdata['exchange']['mav']['mav.cams'] as $arrayCam) {
-                    foreach ($arrayCam['map']['map.cams'] as $arrayMab) {
-                        foreach ($arrayMab['mab']['mab.cams'] as $objAssessment) {
-                            $map_code = $objAssessment['map_code'];
-                            if (!empty($objAssessment)) {
-                                $assessments[$map_code][] = $objAssessment;
+                foreach ($retdata['exchange']['mav']['mav.cams'] as $arraycam) {
+                    foreach ($arraycam['map']['map.cams'] as $arraymab) {
+                        foreach ($arraymab['mab']['mab.cams'] as $objassessment) {
+                            $mapcode = $objassessment['map_code'];
+                            if (!empty($objassessment)) {
+                                $assessments[$mapcode][]  = self::convert_underscores_clean($objassessment);
                             }
                         }
                     }
                 }
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            //var_dump($e);
             throw new Exception($e->getMessage());
         }
         return $assessments;
     }
-
+    private static function convert_underscores_clean ($array){
+        $newarray = array();
+        foreach($array as $k => $v){
+            $k = str_replace('_','',$k);
+            $newarray[$k] = $v;
+        }
+        return $newarray;
+    }
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucs_username
@@ -181,55 +186,54 @@ class local_bath_grades_transfer_external_data
     public function get_spr_from_bucs_id_rest($bucs_username) {
         $method = 'USERS';
         $data['STU_UDF1'] = $bucs_username.'-xx-xx';
-        $spr_code = null;
+        $sprcode = null;
         try {
-            $this->rest_wsclient->call_samis($method, $data);
-            if ($this->rest_wsclient->response['status'] == 200 && $this->rest_wsclient->response['contents']) {
-                $retdata = simplexml_load_string($this->rest_wsclient->response['contents']);
+            $this->restwsclient->call_samis($method, $data);
+            if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
+                $retdata = simplexml_load_string($this->restwsclient->response['contents']);
             }
 
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
-                    //We have an error
+                    // We have an error.
                     $this->handle_error($data);
                 }
 
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'} as $objSPR) {
-                    //var_dump($objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'});
-                    $spr_code = (string)$objSPR->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'} as $objspr) {
+                    $sprcode = (string)$objspr->{'SCJ.SRS'}->{'SCJ_SPRC'};
                 }
             }
         } catch
         (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
-        return $spr_code;
+        return $sprcode;
     }
 
 
     /**
      * Collate and set the grades that next to be export grades to SAMIS
-     * @param $objGrade
+     * @param $objgrade
      * @return boolean true or false
      */
-    public function set_export_grade($objGrade) {
+    public function set_export_grade($objgrade) {
         $method = 'ASSESSMENTS';
         //echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
-        $recordsSimpleXMLObject = new SimpleXMLElement("<records></records>");
-        $assessments = $recordsSimpleXMLObject->addChild('assessments');
+        $recordssimplexmlobject = new SimpleXMLElement("<records></records>");
+        $assessments = $recordssimplexmlobject->addChild('assessments');
         $assessment = $assessments->addChild('assessment');
-        $this->array_to_xml($objGrade, $assessment);
-        $data['body'] = $recordsSimpleXMLObject->asXML();
-        $data['P04'] = str_replace('/', '-', $objGrade->year);
-        $data['P05'] = $objGrade->period;
-        $data['P06'] = $objGrade->module;
-        $data['P07'] = $objGrade->occurrence;
-        $data['P08'] = $objGrade->assess_pattern;
-        $data['P09'] = $objGrade->assess_item;
+        $this->array_to_xml($objgrade, $assessment);
+        $data['body'] = $recordssimplexmlobject->asXML();
+        $data['P04'] = str_replace('/', '-', $objgrade->year);
+        $data['P05'] = $objgrade->period;
+        $data['P06'] = $objgrade->module;
+        $data['P07'] = $objgrade->occurrence;
+        $data['P08'] = $objgrade->assess_pattern;
+        $data['P09'] = $objgrade->assess_item;
         try {
-            $this->rest_wsclient->call_samis($method, $data, 'POST');
-            if ($this->rest_wsclient->response['status'] == 201) {
-                //echo "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objGrade->name +++++";
+            $this->restwsclient->call_samis($method, $data, 'POST');
+            if ($this->restwsclient->response['status'] == 201) {
+                //  "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objgrade->name +++++";
                 return true;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
