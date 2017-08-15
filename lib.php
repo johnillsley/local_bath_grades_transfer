@@ -242,7 +242,7 @@ $lrecord->mab_name exists but the lookup has now expired !!! </p>");
                     $this->display_option($lrecord, $assessmentmapping, $dropdownattributes, $select, $cmid);
                 }
                 /******** DATE CONTROL ******/
-                $this->transfer_date_control($mform, $assessmentmapping->samis_assessment_end_date, $datetimeselectoroptions);
+                $this->transfer_date_control($mform, $assessmentmapping->samisassessmentenddate, $datetimeselectoroptions);
             }
         } else {
             if (!empty($lookuprecords)) {
@@ -607,7 +607,7 @@ $lrecord->mab_name exists but the lookup has now expired !!! </p>");
                         $moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule);
                         echo "\n\n +++++++++++++++++DEALING WITH Mapping ID : $assessmentmapping->id +++++++++++++++++ \n\n";
                         // If the end date is null, we leave it to the users to transfer it from the interface.
-                        if (is_null($assessmentmapping->samis_assessment_end_date)) {
+                        if (is_null($assessmentmapping->samisassessmentenddate)) {
                             debugging("Manual grade transfer enabled. Skipping : " . $assessmentmapping->id);
                             continue;
                         }
@@ -1040,7 +1040,7 @@ $lrecord->mab_name exists but the lookup has now expired !!! </p>");
         //Get previous mapping
         if ($current_assessment_mapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($data->coursemodule)) {
             $current_assessmentlookupid = $current_assessment_mapping->assessmentlookupid;
-            $current_assessment_end_date = $current_assessment_mapping->samis_assessment_end_date;
+            $current_assessment_end_date = $current_assessment_mapping->samisassessmentenddate;
             if ($formsamisassessmentlookupid != $current_assessmentlookupid || $current_assessment_end_date != $data->bath_grade_transfer_time_start) {
                 $mapping_changed = true;
             }
@@ -1052,7 +1052,7 @@ $lrecord->mab_name exists but the lookup has now expired !!! </p>");
                 $newassessmentmappingdata->modifierid = $USER->id;
                 $newassessmentmappingdata->coursemodule = $data->coursemodule;
                 $newassessmentmappingdata->activitytype = $data->modulename;
-                $newassessmentmappingdata->samis_assessment_end_date = $data->bath_grade_transfer_time_start;
+                $newassessmentmappingdata->samisassessmentenddate = $data->bath_grade_transfer_time_start;
                 $newassessmentmappingdata->assessmentlookupid = $formsamisassessmentlookupid;
                 //SET
                 $this->assessmentmapping = new local_bath_grades_transfer_assessment_mapping();
