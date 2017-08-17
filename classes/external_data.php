@@ -179,13 +179,13 @@ class local_bath_grades_transfer_external_data
     }
     /**
      * Given a bucs username, return the SPR code from SAMIS
-     * @param $bucs_username
+     * @param $bucsusername
      * @return SimpleXMLElement
      * @throws Exception
      */
-    public function get_spr_from_bucs_id_rest($bucs_username) {
+    public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucs_username.'-xx-xx';
+        $data['STU_UDF1'] = $bucsusername;
         $sprcode = null;
         try {
             $this->restwsclient->call_samis($method, $data);
