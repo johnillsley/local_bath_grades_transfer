@@ -62,7 +62,7 @@
                 <FIELD NAME="gradetransfermappingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="assessmentlookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"
                        COMMENT="moodle.user.id"/>
-                <FIELD NAME="timetransferred" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timetransferred" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="outcomeid" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false"
                        COMMENT="1 => Success 2 => No grade to transfer 3 => Transfer error 4 => Grade already exists in SAMIS"/>
                 <FIELD NAME="gradetransferred" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
