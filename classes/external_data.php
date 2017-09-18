@@ -55,15 +55,22 @@ class local_bath_grades_transfer_external_data
     public function get_remote_grade_structure(\local_bath_grades_transfer_assessment_lookup $lookup) {
         $function = 'ASSESSMENTS';
         $data = array();
-        $lookup_attributes = $lookup->attributes;
+        $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        $data['P04'] = '2016-7';
+        /*$data['P04'] = '2016-7';
         $data['P05'] = 'S1';
         $data['P06'] = 'ME10003';
         $data['P07'] = 'A';
         $data['P08'] = 'ME10003A';
-        $data['P09'] = '01';
+        $data['P09'] = '01';*/
+        $data['P04'] = '2016-7';// TODO Change this when going to LIVE.
+        $data['P05'] = $lookupattributes->periodslotcode;
+        $data['P06'] = $lookupattributes->samisunitcode;
+        $data['P07'] = $lookupattributes->occurrence;
+        $data['P08'] = $lookup->mapcode;
+        $data['P09'] = $lookup->mabseq;
+
         try {
             $this->restwsclient->call_samis($function, $data);
             if ($this->restwsclient->response['status'] = 200 && $this->restwsclient->response['contents']) {
@@ -158,7 +165,7 @@ class local_bath_grades_transfer_external_data
                         foreach ($arraymab['mab']['mab.cams'] as $objassessment) {
                             $mapcode = $objassessment['map_code'];
                             if (!empty($objassessment)) {
-                                $assessments[$mapcode][]  = self::convert_underscores_clean($objassessment);
+                                $assessments[$mapcode][] = self::convert_underscores_clean($objassessment);
                             }
                         }
                     }
@@ -169,14 +176,16 @@ class local_bath_grades_transfer_external_data
         }
         return $assessments;
     }
-    private static function convert_underscores_clean ($array){
+
+    private static function convert_underscores_clean($array) {
         $newarray = array();
-        foreach($array as $k => $v){
-            $k = str_replace('_','',$k);
+        foreach ($array as $k => $v) {
+            $k = str_replace('_', '', $k);
             $newarray[$k] = $v;
         }
         return $newarray;
     }
+
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucsusername
@@ -192,19 +201,16 @@ class local_bath_grades_transfer_external_data
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
                 $retdata = simplexml_load_string($this->restwsclient->response['contents']);
             }
-
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
                     // We have an error.
                     $this->handle_error($data);
                 }
-
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'} as $objspr) {
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objspr) {
                     $sprcode = (string)$objspr->{'SCJ.SRS'}->{'SCJ_SPRC'};
                 }
             }
-        } catch
-        (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
         return $sprcode;
