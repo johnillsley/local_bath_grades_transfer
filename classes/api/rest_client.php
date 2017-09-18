@@ -20,6 +20,7 @@ use GuzzleHttp\Promise;
 use \GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use \GuzzleHttp\Exception\RequestException;
+
 class local_bath_grades_transfer_rest_client
 {
     /**
@@ -106,6 +107,7 @@ class local_bath_grades_transfer_rest_client
     public function call_samis($method, $data, $verb = 'GET') {
         try {
             $dataraw = $this->construct_body($data);
+            $this->dataraw = (string)$dataraw;
             if ($verb == 'POST') {
                 //post changes
 
@@ -141,7 +143,7 @@ class local_bath_grades_transfer_rest_client
                 function (RequestException $e) {
                     if ($e->getCode() == 400) {
                         // Bad Request.
-                        throw  new \Exception($e->getMessage("Bad Request"));
+                        throw  new \Exception("Could not find remote assessments for " . $e->getMessage());
                     } else if ($e->getCode() == 404) {
                         throw  new \Exception("Cant connect to SAMIS");
                     } else {
