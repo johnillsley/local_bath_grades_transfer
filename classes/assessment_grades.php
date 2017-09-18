@@ -172,12 +172,17 @@ class local_bath_grades_transfer_assessment_grades
         $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
         if (!empty($remotegradestructure)) {
             foreach ($remotegradestructure->assessments as $assessment) {
-                foreach ($assessment as $objassessmentdata) {
-                    $structure[(string)$objassessmentdata->student] = array('assessment' => self::instantiate($objassessmentdata));
+
+                //var_dump($assessment);
+                if (!empty($assessment)) {
+                    foreach ($assessment as $objassessmentdata) {
+                        $structure[(string)$objassessmentdata->student] =
+                            array('assessment' => self::instantiate($objassessmentdata));
+                    }
                 }
+
             }
         }
-
         return $structure;
     }
 
