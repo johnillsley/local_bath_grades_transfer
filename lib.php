@@ -17,8 +17,8 @@
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
 //TODO -- Show unlock button to teacher once the mappings are locked
 //TODO - check for assessment title changes in housekeep()
-//TODO - MAB is now obsolete ( how do we know ?) - Ask Martin
-//TODO - check for unenrolled students in SAMIS ( Ask Martin )
+//TODO -- MAB is now obsolete ( how do we know ?) - Ask Martin
+// TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 
 /**
  * Class local_bath_grades_transfer
@@ -101,12 +101,7 @@ class local_bath_grades_transfer
     public function get_form_elements_module($mform, $context, $modulename = "") {
         global $COURSE, $CFG, $PAGE;
         $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
-        //require($CFG->dirroot . '/enrol/samisv2/lib.php');
         require($CFG->dirroot . '/enrol/sits/lib.php');
-        //$this->enrolsitsplugin = new \enrol_samisv2_plugin();
-        //$this->enrolsitsplugin = new \enrolsitsplugin();
-
-        $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         //Optional cmid param.
         $cmid = optional_param('update', 0, PARAM_INT);
 
