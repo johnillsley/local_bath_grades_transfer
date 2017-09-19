@@ -267,7 +267,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 if ($cmid != $mappingbylookup->coursemodule) {
                     $select->addOption($lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )
                     is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' .
-                        $mappingbylookup->coursemodule . ' AND TYPE : ' . $mappingbylookup->coursemodule], $select);
+                        $mappingbylookup->coursemodule . ' AND TYPE : ' . $mappingbylookup->activitytype], $select);
                 }
             } else {
                 $select->addOption($lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )", $lrecord->id, $attributes, $select);
