@@ -21,7 +21,8 @@
 // TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 //TODO -- No grade to transfer - does that go in the adhoc queue ?
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
-//TODO -- What happens when the data changes but the mapping doesnt ?
+//TODO -- What happens when the data changes but the mapping doesn't ?
+//TODO -- Add Outcome table data automatically.
 
 /**
  * Class local_bath_grades_transfer
@@ -478,7 +479,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     if ($key == 'assessment') {
                         $objgrade = $obj;
                         try {
-                            echo "++++++Passing Grade....++++++";
+                            echo "++++++Passing Grade for $objgrade->userid ....++++++";
                             if ($this->samis_data->set_export_grade($objgrade)) {
 
                                 // Log it.
@@ -719,6 +720,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                             // Check that the user is part of the SAMIS users group.
                             if (in_array($userid, $samusers)) {
                                 $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
+                                $bucsusername = $bucsusername.'x'; //TODO -- DEV TESTING
                                 $usergrades[$userid] = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
                                 if (!empty($usergrades[$userid]->finalgrade)) {
                                     try {
