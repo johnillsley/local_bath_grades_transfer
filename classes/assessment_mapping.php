@@ -142,7 +142,8 @@ class local_bath_grades_transfer_assessment_mapping
         $record = null;
         if ($DB->record_exists(self::$table, ['assessmentlookupid' => $lookupid, 'expired' => 0])) {
             if (!is_null($cmid)) {
-                $record = $DB->get_record(self::$table, ['assessmentlookupid' => $lookupid, 'coursemodule' => $cmid, 'expired' => 0]);
+                $record = $DB->get_record(self::$table,
+                    ['assessmentlookupid' => $lookupid, 'coursemodule' => $cmid, 'expired' => 0]);
             } else {
                 $record = $DB->get_record(self::$table, ['assessmentlookupid' => $lookupid, 'expired' => 0]);
             }
@@ -162,17 +163,9 @@ class local_bath_grades_transfer_assessment_mapping
         }
         return false;
     }
-
-    /**
-     *
-     */
-    public function delete_record() {
-        global $DB;
-        if ($DB->record_exists(self::$table)) {
-            $DB->delete_records(self::$table);
-        }
-    }
-
+public function expire_lookup($expireflag){
+        $this->expired = true;
+}
     /**
      * Sets the data
      * @param $data
@@ -187,7 +180,7 @@ class local_bath_grades_transfer_assessment_mapping
             if (isset($data->samisassessmentenddate)) {
                 $this->samisassessmentenddate = $data->samisassessmentenddate;
             }
-            // Set coursemodule.
+            // Set course module.
             $this->coursemodule = $data->coursemodule; // Settings.php
             // Set lookup id.
             $this->assessmentlookupid = $data->assessmentlookupid;
@@ -280,6 +273,7 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
         $objassessment->assessmentlookupid = $this->assessmentlookupid;
         $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
         $objassessment->expired = $this->expired;
+        $objassessment->locked = $this->locked;
         return $DB->update_record(self::$table, $objassessment);
     }
 
@@ -328,6 +322,9 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
         $objassessment->assessmentlookupid = $this->assessmentlookupid;
         $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
         $objassessment->locked = 0;
+        if(isset($this->locked)){
+            $objassessment->locked = $this->locked;
+        }
         $DB->insert_record(self::$table, $objassessment);
     }
 
