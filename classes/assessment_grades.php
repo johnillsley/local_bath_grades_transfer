@@ -52,6 +52,7 @@ class local_bath_grades_transfer_assessment_grades
      * @var
      */
     public $module;
+    public $mappingid;
 
     /**
      * @return mixed
