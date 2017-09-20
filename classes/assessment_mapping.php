@@ -163,7 +163,7 @@ class local_bath_grades_transfer_assessment_mapping
         }
         return false;
     }
-public function expire_lookup($expireflag){
+public function expire_mapping($expireflag){
         $this->expired = true;
 }
     /**
