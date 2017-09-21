@@ -11,7 +11,8 @@ defined('MOODLE_INTERNAL') || die();
          4=>'Grade already exists in SAMIS',
          5=>'Grade not found in Moodle course',
          6=>'Grade is not out of 100',
-         7=>'Grade Structure is empty');
+         7=>'Grade Structure is empty',
+         8 => 'Added to Queue');
      if($dbman->table_exists($table)){
          // Add Data.
          foreach($outcomes as $outcome){
