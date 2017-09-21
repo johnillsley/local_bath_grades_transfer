@@ -15,14 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
-//TODO -- Show unlock button to teacher once the mappings are locked
-//TODO - check for assessment title changes in housekeep()
 //TODO -- MAB is now obsolete ( how do we know ?) - Ask Martin
 // TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
-//TODO -- No grade to transfer - does that go in the adhoc queue ?
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
 //TODO -- What happens when the data changes but the mapping doesn't ?
-//TODO -- Add Outcome table data automatically.
 
 /**
  * Class local_bath_grades_transfer
@@ -681,7 +677,25 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
         die("Never leave me !!!!");
     }
+    private function get_grade_structure_from_samis(\local_bath_grades_transfer_assessment_lookup $lookup,$moodlecourseid){
+        $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($lookup);
+        if (empty($gradestructure)) {
+            // Log it to Report > Logs.
+            $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
+                array(
+                    'context' => \context_course::instance($moodlecourseid),
+                    'courseid' => $moodlecourseid
+                )
+            );
+            $event->trigger();
+            //Return false as we are not continuing.
+            return false;
 
+        }
+        else{
+            return $gradestructure;
+        }
+    }
     public function transfer_mapping($mappingid, $userids = array()) {
         // Get the mapping object for the ID.
         global $DB;
@@ -695,7 +709,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             // Check that the lookup exists in SAMIS.
 
             $lookup = \local_bath_grades_transfer_assessment_lookup::get($objlookup->id);
-            $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($lookup);
+            if($gradestructure = $this->get_grade_structure_from_samis($objlookup)){
+
+            }
+
             $this->local_grades_transfer_log->assessmentlookupid = $lookup->id;
             if (isset($moodlecourseid)) {
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $objlookup->attributes);
@@ -707,7 +724,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     }
                     if (!empty($userids)) {
                         foreach ($userids as $userid) {
-
                             if (empty($gradestructure)) {
                                 mtrace("NO GRADE STRUCTURE BBYYYEEEEE!!!!");
                                 // There is no point going forward.
@@ -844,7 +860,9 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             $oktotransfer = true;
             $this->local_grades_transfer_log->userid = $moodleuserid;
             //echo "CHECKING CONDITIONS FOR $moodleuserid \n\n";
-            // ##################  CONDITION 1 : EMPTY MOODLE GRADE// ##################  CONDITION 2 : MAX GRADE NOT OUT OF 100
+            // ##################  CONDITION 1 : EMPTY MOODLE GRADE//
+
+            // ##################  CONDITION 2 : MAX GRADE NOT OUT OF 100
             if ($objmoodlegrade->rawgrademax != MAX_GRADE) {
                 // Max grade not satisfied.
                 echo "Setting OUTCOME to 1";
@@ -902,6 +920,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 }
             } else {
                 // The user is probably a manual user in MOODLE ?
+                //The grade str bit for that user doesnt exist in SAMIS
                 // ##################  CONDITION 3 : STUDENT NOT IN GRADE STRUCTURE.
                 echo "Something else $objmoodlegrade->spr_code . skipping\n\n";
                 continue;
