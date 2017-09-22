@@ -216,7 +216,8 @@ class local_bath_grades_transfer_assessment_lookup
      */
     public static function get_assessment_name_by_id($lookupid) {
         global $DB;
-        $assessmentname = $DB->get_field(self::$table, 'mab_name', ['id' => $lookupid]);
+        $assessmentname = $DB->get_field(self::$table, 'mabname', ['id' => $lookupid]);
+        return $assessmentname;
     }
 
     /**
