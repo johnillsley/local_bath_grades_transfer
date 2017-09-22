@@ -18,15 +18,14 @@ defined('MOODLE_INTERNAL') || die;
 class local_bath_grades_transfer_observer
 {
     public static function course_module_deleted(\core\event\course_module_deleted $event) {
-        global $CFG,$DB;
+        global $CFG, $DB;
         $eventdata = $event->get_data();
         $coursemoduleid = $eventdata['contextinstanceid'];
-        //require_once($CFG->dirroot . '/grade/report/transfer/lib.php');
         // Expire the relevant assessment mapping too.
         $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($coursemoduleid);
-        if($assessmentmapping){
+        if ($assessmentmapping) {
             $assessmentmapping->expire_mapping(true);
-            $DB->update_record('local_bath_grades_mapping',$assessmentmapping);
+            $DB->update_record('local_bath_grades_mapping', $assessmentmapping);
         }
     }
 }
