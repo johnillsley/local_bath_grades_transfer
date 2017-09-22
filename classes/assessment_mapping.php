@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die();
+
 class local_bath_grades_transfer_assessment_mapping
 {
     /**
@@ -163,9 +164,11 @@ class local_bath_grades_transfer_assessment_mapping
         }
         return false;
     }
-public function expire_mapping($expireflag){
+
+    public function expire_mapping($expireflag) {
         $this->expired = true;
-}
+    }
+
     /**
      * Sets the data
      * @param $data
@@ -188,9 +191,11 @@ public function expire_mapping($expireflag){
             if (isset($data->locked)) {
                 $this->locked = $data->locked;
             }
+            // Set activity type.
             if (isset($data->activitytype)) {
                 $this->activitytype = $data->activitytype;
             }
+            // Set expired status.
             if (isset($data->expired)) {
                 $this->expired = $data->expired;
             }
@@ -322,7 +327,7 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
         $objassessment->assessmentlookupid = $this->assessmentlookupid;
         $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
         $objassessment->locked = 0;
-        if(isset($this->locked)){
+        if (isset($this->locked)) {
             $objassessment->locked = $this->locked;
         }
         $DB->insert_record(self::$table, $objassessment);
@@ -363,7 +368,7 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
     /**
      *  See if transfer has been locked. Usually happens after the first grade has been transferred
      */
-    public function is_locked() {
+    public function get_locked() {
         return $this->locked;
     }
 
