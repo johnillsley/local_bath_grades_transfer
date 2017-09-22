@@ -34,8 +34,6 @@ class assessment_mapping_saved extends \core\event\base
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['action'] = 'assessment_mapping_updated';
-        $this->data['target'] = 'local_bath_grades_transfer_assessment';
     }
 
     /**
@@ -53,8 +51,7 @@ class assessment_mapping_saved extends \core\event\base
      * @return string
      */
     public function get_description() {
-        return "blah!";
-        return "The user with id" . $this->userid . " has set SAMIS Assessment to " . $this->other['assessment_name'];
+        return "SAMIS Assessment Mapping has been changed to " . $this->other['lookup_name'];
     }
 
 }
