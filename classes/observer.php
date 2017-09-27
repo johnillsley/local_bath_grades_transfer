@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+/*// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,8 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Class local_bath_grades_transfer_observer
+ */
+defined('MOODLE_INTERNAL') || die();
+
 class local_bath_grades_transfer_observer
 {
+    /**
+     * Action to take when a course module is deleted
+     * Idea here is to "expire" the mapping as soon as the assign or quiz is deleted so it
+     * can be re-used again
+     * @param \core\event\course_module_deleted $event
+     */
     public static function course_module_deleted(\core\event\course_module_deleted $event) {
         global $CFG, $DB;
         $eventdata = $event->get_data();
