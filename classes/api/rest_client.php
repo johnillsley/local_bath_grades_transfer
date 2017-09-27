@@ -43,9 +43,7 @@ class local_bath_grades_transfer_rest_client
      * @var
      */
     private $isconnected;
-    /**
-     *
-     */
+    public $dataraw;
 
     /**
      * local_bath_grades_transfer_rest_client constructor.
@@ -98,6 +96,7 @@ class local_bath_grades_transfer_rest_client
     }
 
     /**
+     * Main function that is used to make a WEB SERVICE call to the SAMIS system
      * @param $method
      * @param $data
      * @param string $verb
@@ -109,7 +108,7 @@ class local_bath_grades_transfer_rest_client
             $dataraw = $this->construct_body($data);
             $this->dataraw = (string)$dataraw;
             if ($verb == 'POST') {
-                //post changes
+                // Post changes.
 
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
                     'debug' => false,
