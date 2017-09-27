@@ -20,13 +20,16 @@ function xmldb_local_bath_grades_transfer_install() {
     $table = new xmldb_table('local_bath_grades_outcome');
     $outcomes = array(
         1 => 'Grade was transferred successfully',
-        2 => 'Grade is missing',
-        3 => 'There was an error transferring grade',
+        2 => 'No Moodle Grade',
+        3 => 'There was an error transferring the grade',
         4 => 'Grade already exists in SAMIS',
-        5 => 'Grade not found in Moodle course',
+        5 => 'Student assessment not found in Moodle',
         6 => 'Grade is not out of 100',
-        7 => 'Grade Structure is empty',
-        8 => 'Added to Queue');
+        7 => 'Missing from SAMIS grade structure',
+        8 => 'Added to transfer queue',
+        9 => 'Grade not a whole number',
+        10 => 'SPR code not found'
+    );
     if ($dbman->table_exists($table)) {
         // Add Data.
         foreach ($outcomes as $outcome) {
