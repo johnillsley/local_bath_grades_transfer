@@ -54,22 +54,21 @@ class local_bath_grades_transfer_external_data
      */
     public function get_remote_grade_structure(\local_bath_grades_transfer_assessment_lookup $lookup) {
         $function = 'ASSESSMENTS';
-        $data = array();
+        $assessmentgradestructure = $data = array();
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        /*$data['P04'] = '2016-7';
+        $data['P04'] = '2017-8';// TODO Change this when going to LIVE.
+        //$data['P05'] = $lookupattributes->periodslotcode;
         $data['P05'] = 'S1';
-        $data['P06'] = 'ME10003';
+        //$data['P06'] = $lookupattributes->samisunitcode;
+        $data['P06'] = 'BB10012';
+        //$data['P07'] = $lookupattributes->occurrence;
         $data['P07'] = 'A';
-        $data['P08'] = 'ME10003A';
-        $data['P09'] = '01';*/
-        $data['P04'] = '2016-7';// TODO Change this when going to LIVE.
-        $data['P05'] = $lookupattributes->periodslotcode;
-        $data['P06'] = $lookupattributes->samisunitcode;
-        $data['P07'] = $lookupattributes->occurrence;
-        $data['P08'] = $lookup->mapcode;
-        $data['P09'] = $lookup->mabseq;
+        //$data['P08'] = $lookup->mapcode;
+        $data['P08'] = 'BB10012B';
+        //$data['P09'] = $lookup->mabseq;
+        $data['P09'] = '01';
 
         try {
             $this->restwsclient->call_samis($function, $data);
@@ -154,6 +153,10 @@ class local_bath_grades_transfer_external_data
             $this->restwsclient->call_samis($function, $data);
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
                 $retdata = json_decode($this->restwsclient->response['contents'], true);
+                if (is_null($retdata)) {
+                    // Something else is wrong. Maybe SAMIS is un-reachable.
+                    throw new Exception("Unexpected error occurred.Please contact SAMIS administrator");
+                }
             }
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
