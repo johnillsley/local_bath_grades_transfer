@@ -23,11 +23,11 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @var
      */
-    public $assess_pattern;
+    public $assesspattern;
     /**
      * @var
      */
-    public $assess_item;
+    public $assessitem;
     /**
      * @var
      */
@@ -126,7 +126,7 @@ class local_bath_grades_transfer_assessment_grades
      * @return mixed
      */
     public function getassessmentitem() {
-        return $this->assess_item;
+        return $this->assessitem;
     }
 
     /**
@@ -134,15 +134,7 @@ class local_bath_grades_transfer_assessment_grades
      * @return mixed
      */
     public function getassesspattern() {
-        return $this->assess_pattern;
-    }
-
-    /**
-     * Get assess item
-     * @return mixed
-     */
-    public function getAssessItem() {
-        return $this->assess_item;
+        return $this->assesspattern;
     }
 
     /**
@@ -160,12 +152,12 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     * Fetches the ASSESSMENT DATA from SAMIS Web Service
      * @param $lookup
      * @return array
      */
     public static function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
-        //Check that it is a valid lookup
-        //echo "\n\n+++++++++GETTING GRADE STRUCUTURE FROM SAMIS +++++++++  \n\n";
+        // Check that it is a valid lookup.
         $structure = array();
 
         self::$samisdata = new \local_bath_grades_transfer_external_data();
@@ -173,8 +165,6 @@ class local_bath_grades_transfer_assessment_grades
         $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
         if (!empty($remotegradestructure)) {
             foreach ($remotegradestructure->assessments as $assessment) {
-
-                //var_dump($assessment);
                 if (!empty($assessment)) {
                     foreach ($assessment as $objassessmentdata) {
                         $structure[(string)$objassessmentdata->student] =
