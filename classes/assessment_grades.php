@@ -13,6 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Deals with setting and getting grades from SAMIS
+ */
+defined('MOODLE_INTERNAL') || die();
+
 class local_bath_grades_transfer_assessment_grades
 {
     /**
@@ -76,6 +82,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     * Get Occurrence
      * @return mixed
      */
     public function getoccurrence() {
@@ -122,7 +129,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
-     *
+     * Get Assessment Item
      * @return mixed
      */
     public function getassessmentitem() {
@@ -138,6 +145,7 @@ class local_bath_grades_transfer_assessment_grades
     }
 
     /**
+     * Get Attempt
      * @return mixed
      */
     public function getattempt() {
@@ -199,6 +207,4 @@ class local_bath_grades_transfer_assessment_grades
         $object_vars = get_object_vars($this);
         return array_key_exists($attribute, $object_vars);
     }
-
-
 }
