@@ -58,17 +58,17 @@ class local_bath_grades_transfer_external_data
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        $data['P04'] = '2017-8';// TODO Change this when going to LIVE.
+        //$data['P04'] = '2017-8';// TODO Change this when going to LIVE.
         //$data['P05'] = $lookupattributes->periodslotcode;
-        $data['P05'] = 'S1';
+        //$data['P05'] = 'S1';
         //$data['P06'] = $lookupattributes->samisunitcode;
-        $data['P06'] = 'BB10012';
+        //$data['P06'] = 'BB10012';
         //$data['P07'] = $lookupattributes->occurrence;
-        $data['P07'] = 'A';
+        //$data['P07'] = 'A';
         //$data['P08'] = $lookup->mapcode;
-        $data['P08'] = 'BB10012B';
+        //$data['P08'] = 'BB10012B';
         //$data['P09'] = $lookup->mabseq;
-        $data['P09'] = '01';
+        //$data['P09'] = '01';
 
         try {
             $this->restwsclient->call_samis($function, $data);
