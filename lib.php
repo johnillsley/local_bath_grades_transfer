@@ -31,6 +31,9 @@ const GRADE_ALREADY_EXISTS = 4;
 const GRADE_NOT_IN_MOODLE_COURSE = 5;
 const GRADE_NOT_OUT_OF_100 = 6;
 const GRADE_STRUCTURE_EMPTY = 7;
+const GRADE_QUEUED = 8;
+const GRADE_NOT_WHOLE_NUMBER = 9;
+const COULD_NOT_GET_SPR_CODE = 10;
 /**
  * Class local_bath_grades_transfer
  */
@@ -68,7 +71,7 @@ class local_bath_grades_transfer
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
         $this->assessmentmapping = new \local_bath_grades_transfer_assessment_mapping();
-        //SET DUMMY TESTING ACADEMIC YEAR
+        // SET DUMMY TESTING ACADEMIC YEAR.
         $this->currentacademicyear = '2016/7';
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
@@ -112,7 +115,7 @@ class local_bath_grades_transfer
         // Render the header.
         $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
 
-        /////////////////// FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ///////////////////
+        /****** FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ******/
 
         try {
             // TODO Do we need to query the samis API on every refresh ?
@@ -170,7 +173,8 @@ class local_bath_grades_transfer
 
             if ($locked) {
                 // TODO only admins can unlock mappings for now.
-                $mform->addElement('checkbox', 'bath_grade_transfer_samis_unlock_assessment', '', get_string('unlock', 'local_bath_grades_transfer'));
+                $mform->addElement('checkbox', 'bath_grade_transfer_samis_unlock_assessment', '',
+                    get_string('unlock', 'local_bath_grades_transfer'));
                 $mform->addElement('html',
                     "<div id = 'unlock-msg' style='display: none;'><p class=\"alert-warning alert\">" .
                     get_string('unlock_warning', 'local_bath_grades_transfer') . "</p></div>");
@@ -376,9 +380,15 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
     }
     */
+    /**
+     * All-in-one method that deals with fetching new and expiring old lookups
+     * @param null $moodlecourseid
+     * @return bool
+     * @throws Exception
+     * @author John Illsley
+     */
     public function sync_remote_assessments($moodlecourseid = null) {
         global $DB;
-
         if (is_null($moodlecourseid)) {
             $samisattributeslist = local_bath_grades_transfer_samis_attributes::attributes_list($this->currentacademicyear);
         } else {
@@ -412,6 +422,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         $lookup = array_merge($remotedata[$k], (array)$samisattributes);
                         $lookup["samisassessmentid"] = $lookup["mapcode"] . '_' . $lookup["mabseq"];
                         $lookup["timecreated"] = time();
+                        $lookup["occurrenceid"] = 0;
                         $DB->insert_record('local_bath_grades_lookup', $lookup);
                     }
 
@@ -436,6 +447,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
     }
 
+    /** To be used by the PHP array comparison methods
+     * @param $mapping
+     * @return string
+     */
     private static function lookup_transform($mapping) {
         $mapping = (array)$mapping;
         $a = array();
@@ -463,8 +478,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     }
 
     /** This is the main function that handles transferring of data via web or cron
-     * @param $gradetransferid
-     * @param $users
+     * @param $grades
+     * @return \gradereport_transfer\output\transfer_status $status
      */
     public function do_transfer($grades, $web = false) {
         global $DB;
@@ -525,6 +540,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
     }
 
+    /**
+     * Lock a given mapping
+     * @param $mappingid
+     */
     public static function lock_mapping($mappingid) {
         $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true);
         if ($assessmentmapping) {
@@ -651,7 +670,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                                         }
                                         // Now that we have go the grade structures,
                                         // send this to a function to do all the prechecks.
-                                        $gradestopass = $this->precheck_conditions($usergrades, $gradestructure, $assessmentmapping);
+                                        $gradestopass = $this->precheck_conditions(
+                                            $usergrades, $gradestructure, $assessmentmapping);
                                         echo("FINAL GRADES TO PASS:");
                                         // DO TRANSFER.
                                         if (!empty($gradestopass)) {
@@ -805,6 +825,11 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
     }
 
+    /** Return the SAMIS users in moodle for a given samis mapping id
+     * @param $samismappingid
+     * @return array|null
+     * @throws Exception
+     */
     protected function get_samis_users($samismappingid) {
         global $DB;
         $users = null;
@@ -1063,17 +1088,20 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     (
                         $formsamisassessmentlookupid
                     );
-                $event = \local_bath_grades_transfer\event\assessment_mapping_saved::create(
-                    array(
-                        'context' => \context_module::instance($data->coursemodule),
-                        'courseid' => $data->course,
-                        'relateduserid' => null,
-                        'other' => array(
-                            'lookup_name' => '\'' . $lookup_name . '\''
+                if ($formsamisassessmentlookupid != $currentassessmentlookupid) {
+                    $event = \local_bath_grades_transfer\event\assessment_mapping_saved::create(
+                        array(
+                            'context' => \context_module::instance($data->coursemodule),
+                            'courseid' => $data->course,
+                            'relateduserid' => null,
+                            'other' => array(
+                                'lookup_name' => '\'' . $lookup_name . '\''
+                            )
                         )
-                    )
-                );
-                $event->trigger();
+                    );
+                    $event->trigger();
+                }
+
             } else {
                 // Mapping has not been changed.
                 // Check that if the unlock button is checked.
