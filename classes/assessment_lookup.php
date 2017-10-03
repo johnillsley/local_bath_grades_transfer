@@ -15,15 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 14/03/2017
- * Time: 14:04
+ * Deals with fetching and setting up lookup entities to be used by the mapping class
  */
+defined('MOODLE_INTERNAL') || die();
+
 class local_bath_grades_transfer_assessment_lookup
 {
     /**
-     * @var string
+     * @var $table
      */
     private static $table = 'local_bath_grades_lookup';
     /**
@@ -62,8 +61,14 @@ class local_bath_grades_transfer_assessment_lookup
      * @var
      */
     public $samisassessmentid;
+    /**
+     * @var local_bath_grades_transfer_external_data
+     */
     private $samisdata;
 
+    /**
+     * local_bath_grades_transfer_assessment_lookup constructor.
+     */
     public function __construct() {
         $this->samisdata = new \local_bath_grades_transfer_external_data();
 
@@ -126,6 +131,10 @@ class local_bath_grades_transfer_assessment_lookup
         return array_key_exists($attribute, $objectvars);
     }
 
+    /**
+     * @param $academicyear
+     * @return array|null
+     */
     public static function get_lookup_by_academicyear($academicyear) {
         global $DB;
         $objects = null;
@@ -443,17 +452,17 @@ class local_bath_grades_transfer_assessment_lookup
     /**
      * Get Assessment Lookup locally by SAMIS details
      * @param \local_bath_grades_transfer_samis_attributes $samisattributes
-     * @return array
+     * @return array $objects
      */
 
     public static function get_by_samis_details(\local_bath_grades_transfer_samis_attributes $samisattributes) {
         global $DB;
         $objects = null;
         $records = $DB->get_records(self::$table, [
-            'samisunitcode'   => $samisattributes->samisunitcode,
-            'academicyear'     => $samisattributes->academicyear,
-            'periodslotcode'    => $samisattributes->periodslotcode,
-            'occurrence'        => $samisattributes->occurrence
+            'samisunitcode' => $samisattributes->samisunitcode,
+            'academicyear' => $samisattributes->academicyear,
+            'periodslotcode' => $samisattributes->periodslotcode,
+            'occurrence' => $samisattributes->occurrence
         ]);
         if (!empty($records)) {
             foreach ($records as $record) {
