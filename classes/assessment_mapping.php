@@ -69,7 +69,7 @@ class local_bath_grades_transfer_assessment_mapping
      * @var $lookup
      */
     public $lookup;
-    public $expired;
+    private $expired;
 
     /**
      * @var string
@@ -169,6 +169,10 @@ class local_bath_grades_transfer_assessment_mapping
         $this->expired = $expireflag;
     }
 
+    public function get_expired() {
+        return $this->expired;
+    }
+
     /**
      * Sets the data
      * @param $data
@@ -239,7 +243,7 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
      */
     private static function exists_by_cm_id($cmid) {
         global $DB;
-        return $DB->record_exists(self::$table, ['coursemodule' => $cmid]);
+        return $DB->record_exists(self::$table, ['coursemodule' => $cmid, 'expired' => 0]);
     }
 
     /**
