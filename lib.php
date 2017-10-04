@@ -115,43 +115,32 @@ class local_bath_grades_transfer
         // Render the header.
         $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
 
-        /****** FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ******/
-
-        try {
-            // TODO Do we need to query the samis API on every refresh ?
-            // TODO Think about when a lookup comes back ( un-expires?)
-
-            $this->sync_remote_assessments($COURSE->id);
-            $mform->addElement('html', "<p class=\"alert-info alert alert-dismissable \">
-<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
- Fetched any new assessments from SAMIS</p>");
-        } catch (Exception $e) {
-            $mform->addElement('html', "<p class=\"alert-danger alert\">" . $e->getMessage() . "</p>");
-            // Show error to the user but continue with the rest of the page.
-        }
 
         ////// BUILD CONTROLS /////////////
         // Only get settings if the course is mapped to a SAMIS code.
         if ($this->samis_mapping_exists($COURSE->id)) {
+            /****** FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ******/
 
+            try {
+                // TODO Do we need to query the samis API on every refresh ?
+                // TODO Think about when a lookup comes back ( un-expires?)
+
+                $this->sync_remote_assessments($COURSE->id);
+                $mform->addElement('html', "<span id=\"fetched_new_assessments_notif\" class=\"alert-info alert alert-dismissable \">
+<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
+ Fetched any new assessments from SAMIS</span>");
+            } catch (Exception $e) {
+                $mform->addElement('html', "<p class=\"alert-danger alert\">" . $e->getMessage() . "</p>");
+                // Show error to the user but continue with the rest of the page.
+            }
             // GET SAMIS MAPPING ATTRIBUTES.
             $samisattributes = $this->get_samis_mapping_attributes($COURSE->id);
             // Get all the records associated with the samis mapping attributes fom Moodle table.
             $lookuprecords = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samisattributes);
-            // First housekeep them.
-            //TODO Think if you need to this later ??
-            /*if (!empty($lookuprecords)) {
-                foreach ($lookuprecords as $lookup_record) {
-                    //housekeep
-                    $this->housekeep_lookup($lookup_record);
-                }
-            }*/
-
-            ///////////////// GET MAPPINGS ( LOCALLY ) //////
             $this->show_transfer_controls($lookuprecords, $cmid, $mform);
         } else {
             // No samis mapping defined for this course..
-            $mform->addElement('html', "<span class=\"alert alert-warning\">" . get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</span>");
+            $mform->addElement('html', "<p class=\"alert alert-warning\"><i class=\"fa fa-ban\" aria-hidden=\"true\"></i> " . get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</p>");
         }
     }
 
@@ -174,11 +163,13 @@ class local_bath_grades_transfer
             if ($locked) {
                 // TODO only admins can unlock mappings for now.
                 $mform->addElement('checkbox', 'bath_grade_transfer_samis_unlock_assessment', '',
-                    get_string('unlock', 'local_bath_grades_transfer'));
+                    get_string('bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer'));
                 $mform->addElement('html',
                     "<div id = 'unlock-msg' style='display: none;'><p class=\"alert-warning alert\">" .
                     get_string('unlock_warning', 'local_bath_grades_transfer') . "</p></div>");
-                $mform->addElement('html', "<p class=\"alert-warning alert\">" .
+                $mform->addHelpButton('bath_grade_transfer_samis_unlock_assessment', 'bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer');
+
+                $mform->addElement('html', "<p class=\"alert-warning alert\"><i class=\"fa fa-lock\" aria-hidden=\"true\"></i> " .
                     get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
                 $dropdownattributes['disabled'] = 'disabled';
                 $select = $mform->addElement('select',
@@ -202,8 +193,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                             $lrecord->id, $dropdownattributes, $select);
                     }
                 }
+                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id', 'local_bath_grades_transfer');
                 $mform->addElement('static', 'bath_grade_transfer_time_start_locked', 'Transfer grades from',
                     $samisassessmentenddate);
+                $mform->addHelpButton('bath_grade_transfer_time_start_locked', 'bath_grade_transfer_time_start', 'local_bath_grades_transfer');
                 $mform->addElement('hidden', 'bath_grade_transfer_time_start', $assessmentmapping->samisassessmentenddate);
                 $mform->setType('bath_grade_transfer_time_start', PARAM_INT);
             } else {
@@ -211,13 +204,14 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 $select = $mform->addElement('select',
                     'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
+                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id', 'local_bath_grades_transfer');
+
 
                 // ADD BLANK OPTION.
                 $select->addOption("None", 0, $dropdownattributes);
 
                 foreach ($lookuprecords as $lrecord) {
                     if ($lrecord->is_expired()) {
-                        echo "  AND ITS EXPIRED !!";
                         $mform->addElement('html', "<p class=\"alert-danger alert\">" .
                             get_string('bath_grade_transfer_samis_assessment_expired', 'local_bath_grades_transfer', $lrecord) .
                             "</p>");
@@ -482,58 +476,56 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $grades
      * @return \gradereport_transfer\output\transfer_status $status
      */
-    public function do_transfer($grades, $web = false) {
+    public function do_transfer($mappingid, $grades, $web = false) {
         global $DB;
         $status = null;
         if (!empty($grades)) {
-            var_dump($grades);
-            foreach ($grades as $sprcode => $arrayassessmentgrades) {
-                foreach ($arrayassessmentgrades as $key => $obj) {
-                    if ($key == 'assessment') {
-                        $objgrade = $obj;
-                        $this->local_grades_transfer_log->timetransferred = time();
-                        try {
-                            echo "++++++Passing Grade for $objgrade->userid ....++++++";
-                            if ($this->samis_data->set_export_grade($objgrade)) {
-                                // Log it.
-                                $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
-                                $this->local_grades_transfer_log->gradetransferred = $objgrade->mark;
-                                $this->local_grades_transfer_log->save();
+            foreach ($grades as $key => $gradeArray) {
+                $userid = $key;
+                $objgrade = $gradeArray['assessment'];
+                var_dump($objgrade);
+                $this->local_grades_transfer_log->timetransferred = time();
+                $this->local_grades_transfer_log->userid = $userid;
+                try {
+                    echo "++++++Passing Grade for $userid ....++++++";
+                    if ($this->samis_data->set_export_grade($objgrade)) {
+                        // Log it.
+                        $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
+                        $this->local_grades_transfer_log->gradetransferred = $objgrade->mark;
+                        $this->local_grades_transfer_log->save();
 
-                                // Lock the mapping.
-                                echo "++++Lock mapping++++";
-                                self::lock_mapping($objgrade->mappingid);
-
-
-                                if ($web) {
-                                    // Display result to the user.
-                                    $status = new \gradereport_transfer\output\transfer_status(
-                                        $objgrade->userid,
-                                        'success',
-                                        $objgrade->mark);
-                                }
-                            }
-
-                        } catch (\Exception $e) {
-                            // Log failure.
-                            echo "logging failure";
-                            $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
-                            // Get error id.
-                            $this->local_grades_transfer_log->errormessage = $e->getMessage();
-                            $this->local_grades_transfer_log->save();
-
-                            if ($web) {
-                                // Display result to the user.
-                                $status = new \gradereport_transfer\output\transfer_status(
-                                    $objgrade->userid,
-                                    'failure', $objgrade->mark,
-                                    'SYSTEM FAILURE');
-                            }
+                        // Lock the mapping.
+                        echo "++++Lock mapping++++";
+                        self::lock_mapping($mappingid);
+                        if ($web) {
+                            // Display result to the user.
+                            $status = new \gradereport_transfer\output\transfer_status(
+                                $userid,
+                                'success',
+                                $objgrade->mark);
                         }
                     }
 
+                } catch (\Exception $e) {
+                    // Log failure.
+                    echo "logging failure";
+                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                    // Get error id.
+                    $this->local_grades_transfer_log->errormessage = $e->getMessage();
+                    $this->local_grades_transfer_log->save();
+
+                    if ($web) {
+                        // Display result to the user.
+                        $status = new \gradereport_transfer\output\transfer_status(
+                            $userid,
+                            'failure', $objgrade->mark,
+                            'SYSTEM FAILURE');
+                    }
                 }
+
+
             }
+
             return $status;
         }
 
@@ -705,51 +697,67 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
     public function transfer_mapping2($mappingid, $userids = array(), $source = 'web') {
         global $DB;
+        $singleusertransfer = array();
 // CAN THESE ALL BE PUT INTO ONE TRY?????
-        // Get all mapping and course data and check all ok
-        if(!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
-            throw new \Exception("Assessment mapping could not be found with id=".$mappingid);
+        // Get all mapping and course data and check all ok.
+        if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
+            throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
         }
-        if($assessmentmapping->expired!=0) {
-            throw new \Exception( "Assessment mapping has expired, id=".$mappingid);
+        if ($assessmentmapping->expired != 0) {
+            throw new \Exception("Assessment mapping has expired, id=" . $mappingid);
         }
-        if($assessmentmapping->lookup->expired!=0) {
-            throw new \Exception( "Assessment lookup has expired, lookup id=".$assessmentmapping->lookup->id);
+        if ($assessmentmapping->lookup->expired != 0) {
+            throw new \Exception("Assessment lookup has expired, lookup id=" . $assessmentmapping->lookup->id);
         }
-        if(!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
-            throw new \Exception("Moodle course module no longer exists for id=".$assessmentmapping->coursemodule);
+        if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
+            throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
         }
         try {
-            var_dump($assessmentmapping->lookup);
-            $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis($assessmentmapping->lookup->id);
-        } catch(\Exception $e) {
+            $context = \context_module::instance($assessmentmapping->coursemodule);
+            $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis(
+                $assessmentmapping->lookup);
+            if (empty($gradestructure)) {
+                // Trigger an event.
+                $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
+                    array(
+                        'context' => $context,
+                        'courseid' => $moodlecourseid,
+                    )
+                );
+                $event->trigger();
+            }
+        } catch (\Exception $e) {
             throw $e;
         }
-        if(count($gradestructure)==0) {
-            throw new \Exception("SAMIS SAS export has no records, nothing to transfer, lookup id=".$assessmentmapping->lookup->id);
-        }
+        /*if (count($gradestructure) == 0) {
+            throw new \Exception("SAMIS SAS export has no records, nothing to transfer, lookup id=" .
+                $assessmentmapping->lookup->id);
+        }*/
 
-        // All OK, ready to go
-        // set up static log parameters - common to all transfers for the mapping
+        // All OK, ready to go.
+        // Set up static log parameters - common to all transfers for the mapping.
         $this->local_grades_transfer_log->coursemoduleid = $assessmentmapping->coursemodule;
         $this->local_grades_transfer_log->gradetransfermappingid = $assessmentmapping->id;
         $this->local_grades_transfer_log->assessmentlookupid = $assessmentmapping->assessmentlookupid;
         $spr_list = array();
 
-        foreach($userids as $userid) {
+        foreach ($userids as $userid) {
 
             $this->local_grades_transfer_log->errormessage = "";
 
-            // Get grade
+            // Get grade.
             $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
+            var_dump($grade);
 
-            // pre transfer check (local)
+            // Pre transfer check (local).
             if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
+                echo "LOCAL PRECHECK PASSED";
 
-                // get SPR code
+                // Get SPR code.
                 $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
                 try {
                     $spr_code = $this->samis_data->get_spr_from_bucs_id_rest($bucsusername);
+                    var_dump($spr_code);
                     $spr_list[$spr_code] = 1; // for checking if any are missing at the end
                 } catch (\Exception $e) {
                     $this->local_grades_transfer_log->outcomeid = COULD_NOT_GET_SPR_CODE;
@@ -760,18 +768,24 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     throw $e;
                 }
 
-                // pre transfer check (remote)
+                // Pre transfer check (remote).
                 if ($this->remote_precheck_conditions($userid, $spr_code, $gradestructure)) {
-                    $gradestructure[$spr_code]->mark = $grade->finalgrade;
-                    $this->do_transfer($gradestructure[$spr_code]);
+                    echo "IVE PASSED REMOTE PRECHEC";
+                    $gradestructure[$spr_code]['assessment']->mark = $grade->finalgrade;
+                    echo "NEW GR STR";
+                    $singleusertransfer[$userid] = $gradestructure[$spr_code];
+                    if (!empty($singleusertransfer)) {
+                        $this->do_transfer($mappingid, $singleusertransfer);
+                    }
                 }
             }
         }
 
-        foreach($gradestructure as $k=>$v) {
+        foreach ($gradestructure as $k => $v) {
             // Check if student exists in course???
         }
     }
+
     public function transfer_mapping($mappingid, $userids = array(), $source = 'web') {
         // Get the mapping object for the ID.
         global $DB;
@@ -944,29 +958,31 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 LIMIT 1";
         $current = $DB->get_record_sql($sql, $params);
 
-        // Check if already queued or already transfered
-        if ($current->oucomeid==GRADE_QUEUED || $current->oucomeid==TRANSFER_SUCCESS) {
+        // Check if already queued or already transfered.
+        /*if ($current->outcomeid == GRADE_QUEUED || $current->outcomeid == TRANSFER_SUCCESS) {
             // Do nothing!
+            echo "DO NOTHING";
+            die;
             return false;
-        }
+        }*/
 
-        // No grade recorded in Moodle
+        // No grade recorded in Moodle.
         if (empty($grade->finalgrade)) {
             $outcomeid = GRADE_MISSING;
         }
 
-        // Grade not out of 100
-        if ($grade->rawgrademax!=MAX_GRADE) {
+        // Grade not out of 100.
+        if ($grade->rawgrademax != MAX_GRADE) {
             $outcomeid = GRADE_NOT_OUT_OF_100;
         }
 
-        // Grade not a whole number is_int
-        if ((float)$grade->finalgrade!=round((float)$grade->finalgrade)) {
+        // Grade not a whole number is_int.
+        if ((float)$grade->finalgrade != round((float)$grade->finalgrade)) {
             $outcomeid = GRADE_NOT_WHOLE_NUMBER;
         }
 
         if (isset ($outcomeid)) {
-            // Create the grade transfer log entry
+            // Create the grade transfer log entry.
             $this->local_grades_transfer_log->outcomeid = $outcomeid;
             $this->local_grades_transfer_log->userid = $userid;
             $this->local_grades_transfer_log->timetransferred = time();
@@ -985,23 +1001,23 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
         $outcomeid = null;
 
-        // SPR code missing
+        // SPR code missing.
         if (empty($spr_code)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         }
 
-        // Student not in SAMIS grade structure
+        // Student not in SAMIS grade structure.
         if (!array_key_exists($spr_code, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
         }
 
         // Grade already in SAMIS grade structure
-        if (!empty($gradestructure[$spr_code]->mark)) {
+        if (!empty($gradestructure[$spr_code]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
 
         if (isset ($outcomeid)) {
-            // Create the grade transfer log entry
+            // Create the grade transfer log entry.
             $this->local_grades_transfer_log->outcomeid = $outcomeid;
             $this->local_grades_transfer_log->userid = $userid;
             $this->local_grades_transfer_log->timetransferred = time();
@@ -1016,7 +1032,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $remotegradestructure
      * @return mixed
      */
-    public function precheck_conditions($moodleusergrades, $remotegradestructure,$assessmentmapping, $web = false) {
+    public function precheck_conditions($moodleusergrades, $remotegradestructure, $assessmentmapping, $web = false) {
         $oktotransfer = false;
         $status = null;
         $finalgradestruct = array();
@@ -1250,7 +1266,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     if ($currentassessmentmapping->get_locked() == 1 &&
                         $data->bath_grade_transfer_samis_unlock_assessment == 1
                     ) {
-                        $this->assessmentmapping->set_locked(0);
+                        // Expire the old one .
+                        $currentassessmentmapping->expire_mapping(1);
                         // Save mapping settings.
                         $this->update_assessment_mapping($data, $currentassessmentmapping);
                         // Trigger an event for assessment mapping unlocked.
@@ -1269,18 +1286,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             //No previous mapping.
             if ($formsamisassessmentlookupid != 0 || $data->bath_grade_transfer_time_start !== 0) {
                 // Mapping has never been defined, create it.
-                // CONSTRUCT NEW DATA.
-                $newassessmentmappingdata = new stdClass();
-                $newassessmentmappingdata->modifierid = $USER->id;
-                $newassessmentmappingdata->coursemodule = $data->coursemodule;
-                $newassessmentmappingdata->activitytype = $data->modulename;
-                $newassessmentmappingdata->samisassessmentenddate = $data->bath_grade_transfer_time_start;
-                $newassessmentmappingdata->assessmentlookupid = $formsamisassessmentlookupid;
-                // SET.
-                $this->assessmentmapping->set_data($newassessmentmappingdata);
-
-                // SAVE.
-                $this->assessmentmapping->save();
+                $this->create_new_mapping($data);
                 $lookup_name = $formsamisassessmentlookupid == 0 ? ' Not Set' :
                     \local_bath_grades_transfer_assessment_lookup::get_assessment_name_by_id
                     (
@@ -1304,6 +1310,26 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
     }
 
+    private function create_new_mapping($data) {
+        global $USER;
+        $newassessmentmappingdata = new stdClass();
+        $newassessmentmappingdata->modifierid = $USER->id;
+        $newassessmentmappingdata->coursemodule = $data->coursemodule;
+        $newassessmentmappingdata->activitytype = $data->modulename;
+        $newassessmentmappingdata->samisassessmentenddate = $data->bath_grade_transfer_time_start;
+        $newassessmentmappingdata->assessmentlookupid = $data->bath_grade_transfer_samis_lookup_id;
+        // SET.
+        $this->assessmentmapping->set_data($newassessmentmappingdata);
+        // SAVE.
+        try {
+            $this->assessmentmapping->save();
+        } catch (\Exception $e) {
+
+        }
+
+
+    }
+
     private function update_assessment_mapping($formdata, $currentmapping) {
         global $USER;
         // UPDATE.
@@ -1312,7 +1338,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         $newassessmentmappingdata->modifierid = $USER->id;
         $newassessmentmappingdata->coursemodule = $formdata->coursemodule;
         $newassessmentmappingdata->activitytype = $formdata->modulename;
-        $newassessmentmappingdata->expired = 0;
+        $newassessmentmappingdata->expired = $currentmapping->get_expired();
         if (isset($formdata->bath_grade_transfer_time_start)) {
             $newassessmentmappingdata->samisassessmentenddate = $formdata->bath_grade_transfer_time_start;
         }
