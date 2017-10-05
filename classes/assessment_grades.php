@@ -29,11 +29,11 @@ class local_bath_grades_transfer_assessment_grades
     /**
      * @var
      */
-    public $assesspattern;
+    public $assess_pattern;
     /**
      * @var
      */
-    public $assessitem;
+    public $assess_item;
     /**
      * @var
      */
@@ -170,18 +170,23 @@ class local_bath_grades_transfer_assessment_grades
 
         self::$samisdata = new \local_bath_grades_transfer_external_data();
         //From the attributes and map_code, get the grade structure.
-        $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
-        if (!empty($remotegradestructure)) {
-            foreach ($remotegradestructure->assessments as $assessment) {
-                if (!empty($assessment)) {
-                    foreach ($assessment as $objassessmentdata) {
-                        $structure[(string)$objassessmentdata->student] =
-                            array('assessment' => self::instantiate($objassessmentdata));
+        try {
+            $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
+            if (!empty($remotegradestructure)) {
+                foreach ($remotegradestructure->assessments as $assessment) {
+                    if (!empty($assessment)) {
+                        foreach ($assessment as $objassessmentdata) {
+                            $structure[(string)$objassessmentdata->student] =
+                                array('assessment' => self::instantiate($objassessmentdata));
+                        }
                     }
-                }
 
+                }
             }
+        } catch (\Exception $e) {
+            throw $e;
         }
+
         return $structure;
     }
 
