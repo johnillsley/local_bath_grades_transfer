@@ -161,14 +161,16 @@ class local_bath_grades_transfer
             $locked = $assessmentmapping->get_locked();
 
             if ($locked) {
-                // TODO only admins can unlock mappings for now.
-                $mform->addElement('checkbox', 'bath_grade_transfer_samis_unlock_assessment', '',
-                    get_string('bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer'));
-                $mform->addElement('html',
-                    "<div id = 'unlock-msg' style='display: none;'><p class=\"alert-warning alert\">" .
-                    get_string('unlock_warning', 'local_bath_grades_transfer') . "</p></div>");
-                $mform->addHelpButton('bath_grade_transfer_samis_unlock_assessment', 'bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer');
-
+                $context = context_module::instance($cmid);
+                if (has_capability('local/bath_grades_transfer:unlock_assessment_mapping', $context)) {
+                    $mform->addElement('checkbox', 'bath_grade_transfer_samis_unlock_assessment', '',
+                        get_string('bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer'));
+                    $mform->addElement('html',
+                        "<div id = 'unlock-msg' style='display: none;'><p class=\"alert-warning alert\">" .
+                        get_string('unlock_warning', 'local_bath_grades_transfer') . "</p></div>");
+                    $mform->addHelpButton('bath_grade_transfer_samis_unlock_assessment',
+                        'bath_grade_transfer_samis_unlock_assessment', 'local_bath_grades_transfer');
+                }
                 $mform->addElement('html', "<p class=\"alert-warning alert\"><i class=\"fa fa-lock\" aria-hidden=\"true\"></i> " .
                     get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
                 $dropdownattributes['disabled'] = 'disabled';
@@ -193,10 +195,12 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                             $lrecord->id, $dropdownattributes, $select);
                     }
                 }
-                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id', 'local_bath_grades_transfer');
+                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id',
+                    'local_bath_grades_transfer');
                 $mform->addElement('static', 'bath_grade_transfer_time_start_locked', 'Transfer grades from',
                     $samisassessmentenddate);
-                $mform->addHelpButton('bath_grade_transfer_time_start_locked', 'bath_grade_transfer_time_start', 'local_bath_grades_transfer');
+                $mform->addHelpButton('bath_grade_transfer_time_start_locked', 'bath_grade_transfer_time_start',
+                    'local_bath_grades_transfer');
                 $mform->addElement('hidden', 'bath_grade_transfer_time_start', $assessmentmapping->samisassessmentenddate);
                 $mform->setType('bath_grade_transfer_time_start', PARAM_INT);
             } else {
@@ -204,7 +208,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 $select = $mform->addElement('select',
                     'bath_grade_transfer_samis_lookup_id', 'Select Assessment to Link to', [], []);
                 $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
-                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id', 'local_bath_grades_transfer');
+                $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id',
+                    'local_bath_grades_transfer');
 
 
                 // ADD BLANK OPTION.
@@ -703,7 +708,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
             throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
         }
-        if ($assessmentmapping->expired != 0) {
+        if ($assessmentmapping->get_expired() != 0) {
             throw new \Exception("Assessment mapping has expired, id=" . $mappingid);
         }
         if ($assessmentmapping->lookup->expired != 0) {
