@@ -14,7 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Capability to access additional settings to configure grade transfer
+ *
+ * @package   local_bath_grades_transfer
+ * @category  access
+ * @copyright 2017 Hittesh Ahuja <h.ahuja@bath.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
+
 $capabilities = array(
     'local/bath_grades_transfer:unlock_assessment_mapping' => array(
         'captype' => 'write',
@@ -23,6 +33,18 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
+        ),
+    )
+);
+
+$capabilities = array(
+    'local/bath_grades_transfer:create_assessment_mapping' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_PREVENT,
+            'editingteacher' => CAP_PREVENT,
+            'manager' => CAP_PREVENT,
         ),
     )
 );
