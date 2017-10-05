@@ -15,8 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_bath_grades_transfer\event;
 defined('MOODLE_INTERNAL') || die();
+
 /**
- * Class for event to be triggered when SAMIS assessment mapping attributes have been changed.
+ * Class for event to be triggered when there is no Grade Structure found in SAMIS
  *
  *
  * @package    core
@@ -36,8 +37,6 @@ class missing_samis_grade_structure extends \core\event\base
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['action'] = 'missing_samis_grade_strucure';
-        //$this->data['target'] = 'local_bath_grades_transfer_assessment';
     }
 
     /**
