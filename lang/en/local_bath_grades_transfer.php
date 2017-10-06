@@ -1,5 +1,6 @@
 <?php
 $string['pluginname'] = 'Bath Grades Transfer';
+$string['transfergrades'] = 'Transfer Grades to SAMIS';
 $string['samis_api_heading'] = 'SAMIS API Settings';
 $string['samis_api_key'] = 'SAMIS API Hash';
 $string['samis_api_user'] = 'SAMIS API User';

@@ -25,7 +25,7 @@ class transfer_grades extends \core\task\scheduled_task
      * @return string
      */
     public function get_name() {
-        return get_string('pluginname', 'local_bath_grades_transfer');
+        return get_string('transfergrades', 'local_bath_grades_transfer');
     }
 
     /**
