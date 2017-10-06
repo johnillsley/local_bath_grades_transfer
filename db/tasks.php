@@ -34,5 +34,14 @@ $tasks = array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
+    ),
+    array(
+        'classname' => 'local_bath_grades_transfer\task\transfer_grades',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '2',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
     )
 );
