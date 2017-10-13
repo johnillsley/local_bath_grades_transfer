@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_bath_grades_transfer\task;
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class transfer_grades
  * @package local_bath_grades_transfer\task
@@ -35,6 +36,7 @@ class transfer_grades extends \core\task\scheduled_task
         global $CFG;
         require_once($CFG->dirroot . '/local/bath_grades_transfer/lib.php');
         $lib = new \local_bath_grades_transfer();
-        $lib->cron();
+        $lasttaskruntime = $this->get_last_run_time();
+        $lib->cron_transfer($lasttaskruntime);
     }
 }
