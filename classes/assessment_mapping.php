@@ -70,6 +70,7 @@ class local_bath_grades_transfer_assessment_mapping
      */
     public $lookup;
     private $expired;
+    public $lasttransfertime;
 
     /**
      * @var string
@@ -88,9 +89,11 @@ class local_bath_grades_transfer_assessment_mapping
      * @param bool $onlyids
      * @return array|null
      */
-    public static function getAll($lasttransfertime = null, $onlyids = true) {
+    public static function getAll($tasktime, $onlyids = true) {
         global $DB;
-        $conditions = null;
+        $return = array();
+        $DB->set_debug(true);
+        $conditions = "lasttransfertime IS NULL AND samisassessmentenddate <= $tasktime";
         $rs = $DB->get_recordset_select(self::$table, $conditions, null, '', 'id');
         if ($rs->valid()) {
             foreach ($rs as $record) {
@@ -278,7 +281,14 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
         $objassessment->coursemodule = $this->coursemodule;
         $objassessment->activitytype = $this->activitytype;
         $objassessment->modifierid = $this->modifierid;
-        $objassessment->timemodified = time();
+        if (isset($this->lasttransfertime)) {
+            $objassessment->lasttransfertime = $this->lasttransfertime;
+
+        }
+        // No need to change time modified if locked by cron process.
+        if ($this->get_locked() == false) {
+            $objassessment->timemodified = time();
+        }
         $objassessment->assessmentlookupid = $this->assessmentlookupid;
         $objassessment->samisassessmentenddate = $this->samisassessmentenddate;
         $objassessment->expired = $this->expired;
