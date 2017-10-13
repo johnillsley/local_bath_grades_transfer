@@ -73,6 +73,7 @@ class local_bath_grades_transfer_log
 
     }
 
+
     /**
      *
      */
