@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
-//TODO -- MAB is now obsolete ( how do we know ?) - Ask Martin
 // TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
 //TODO -- What happens when the data changes but the mapping doesn't ?
@@ -331,52 +330,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             $select->setSelected($lrecord->id);
         }
     }
-
-    /** Fetches remote assessments from SAMIS
-     * @param $moodlecourseid
-     * @return array
-     */
-    /*
-    protected function fetch_remote_assessments($moodlecourseid) {
-        $remoteassessments_ids = array();
-        $samisattributes = $this->get_samis_mapping_attributes($moodlecourseid);
-        //$samisattributes = new \local_bath_grades_transfer_samis_attributes();
-        //$samisattributes = \local_bath_grades_transfer_samis_attributes::set($moodlecourseid);
-        if (!empty($samisattributes)) {
-            try {
-                $remote_assessment_data = $this->samis_data->get_remote_assessment_details_rest($samisattributes);
-                //With the data,create a new lookup object
-                //var_dump($remote_assessment_data);
-                foreach ($remote_assessment_data as $mapcode => $arrayassessmentgradess) {
-                    foreach ($arrayassessmentgradess as $key => $arrayassessmentgrades) {
-                        $assessment_lookup = new local_bath_grades_transfer_assessment_lookup();
-                        $assessment_lookup->set_attributes($samisattributes);
-                        //if lookup exists, housekeep
-                        // var_dump($assessment_lookup);
-                        if ($assessment_lookup->lookup_exists($arrayassessmentgrades['mapcode'], $arrayassessmentgrades['mabseq']) == false) {
-                            echo "adding new lookup as it doesnt exist in MOODLE ";
-                            //die();
-                            $assessment_lookup->mapcode = $arrayassessmentgrades['mapcode']; //also known as assess_pattern
-                            $assessment_lookup->mabseq = $arrayassessmentgrades['mabseq']; //also known as assess_item
-                            $assessment_lookup->ast_code = $arrayassessmentgrades['ast_code'];
-                            $assessment_lookup->mabperc = $arrayassessmentgrades['mabperc'];
-                            $assessment_lookup->mab_name = $arrayassessmentgrades['mab_name'];
-                            $assessment_lookup->set_attributes($samisattributes);
-                            //var_dump($assessment_lookup);
-                            //die();
-                            $assessment_lookup->add();
-                        }
-                    }
-                }
-                return $remoteassessments_ids;
-            } catch (Exception $e) {
-                echo "Throwing Exception #4";
-                //var_dump($e->getMessage());
-                throw new Exception($e->getMessage());
-            }
-        }
-    }
-    */
+    
     /**
      * All-in-one method that deals with fetching new and expiring old lookups
      * @param null $moodlecourseid
