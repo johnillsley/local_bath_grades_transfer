@@ -31,4 +31,6 @@ $string['bath_grade_transfer_samis_lookup_id_help'] = 'Lookup help text';
 /////EVENTS ////////
 $string['grade_transferred'] = 'Grade Transferred';
 $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
+// Capabilities .
+$string['bath_grades_transfer:create_assessment_mapping'] = 'Create new Grades Transfer Assessment Mapping';
 
