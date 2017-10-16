@@ -34,17 +34,16 @@ $capabilities = array(
             'editingteacher' => CAP_PREVENT,
             'manager' => CAP_PREVENT,
         ),
-    )
-);
-
-$capabilities = array(
-    'local/bath_grades_transfer:create_assessment_mapping' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_PREVENT,
-            'editingteacher' => CAP_PREVENT,
-            'manager' => CAP_PREVENT,
-        ),
+    ),
+    array(
+        'local/bath_grades_transfer:create_assessment_mapping' => array(
+            'captype' => 'write',
+            'contextlevel' => CONTEXT_MODULE,
+            'archetypes' => array(
+                'teacher' => CAP_PREVENT,
+                'editingteacher' => CAP_PREVENT,
+                'manager' => CAP_PREVENT,
+            ),
+        )
     )
 );
