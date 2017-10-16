@@ -35,7 +35,6 @@ $capabilities = array(
             'manager' => CAP_PREVENT,
         ),
     ),
-    array(
         'local/bath_grades_transfer:create_assessment_mapping' => array(
             'captype' => 'write',
             'contextlevel' => CONTEXT_MODULE,
@@ -45,5 +44,5 @@ $capabilities = array(
                 'manager' => CAP_PREVENT,
             ),
         )
-    )
+
 );
