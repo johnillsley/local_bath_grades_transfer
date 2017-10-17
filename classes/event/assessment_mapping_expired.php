@@ -16,6 +16,7 @@
 
 namespace local_bath_grades_transfer\event;
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class for event to be triggered when a Moodle Module has been deleted.
  *
@@ -38,6 +39,7 @@ class assessment_mapping_expired extends \core\event\base
         $this->data['action'] = 'assessment_mapping_expired';
         $this->data['target'] = 'local_bath_grades_transfer_assessment';
     }
+
     /**
      * Return localised event name.
      *
@@ -47,13 +49,13 @@ class assessment_mapping_expired extends \core\event\base
         return 'SAMIS Assessment Mapping Expired';
 
     }
+
     /**
      * Returns description of what happened.
      *
      * @return string
      */
     public function get_description() {
-        return "blah!";
-        //return "The user with id" . $this->userid . " has set SAMIS Assessment to " . $this->other['assessment_name'];
+        return "SAMIS Assessment Mapping " . $this->other['mapping_title'] . " is now expired";
     }
 }
