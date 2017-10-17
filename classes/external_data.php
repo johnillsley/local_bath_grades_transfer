@@ -58,7 +58,8 @@ class local_bath_grades_transfer_external_data
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        $data['P04'] = '2016-7';// TODO Change this when going to LIVE.
+        //$data['P04'] = '2016-7';// TODO Change this when going to LIVE.
+        $data['P04'] = $lookupattributes->academicyear;
         $data['P05'] = $lookupattributes->periodslotcode;
         //$data['P05'] = 'S1';
         $data['P06'] = $lookupattributes->samisunitcode;
@@ -198,7 +199,7 @@ class local_bath_grades_transfer_external_data
      */
     public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucsusername . 'x'; // TODO DEV TESTING
+        $data['STU_UDF1'] = $bucsusername;
         $sprcode = null;
         try {
             $this->restwsclient->call_samis($method, $data);
