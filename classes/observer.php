@@ -31,12 +31,21 @@ class local_bath_grades_transfer_observer
     public static function course_module_deleted(\core\event\course_module_deleted $event) {
         global $CFG, $DB;
         $eventdata = $event->get_data();
-        $coursemoduleid = $eventdata['contextinstanceid'];
         // Expire the relevant assessment mapping too.
-        $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($coursemoduleid);
+        $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($eventdata['contextinstanceid']);
         if ($assessmentmapping) {
-            $assessmentmapping->expire_mapping(true);
-            $DB->update_record('local_bath_grades_mapping', $assessmentmapping);
+            $assessmentmapping->expire_mapping(1);
+            $assessmentmapping->update();
+            $event = \local_bath_grades_transfer\event\assessment_mapping_expired::create(
+                array(
+                    'contextid' => $eventdata['contextid'],
+                    'courseid' => $eventdata['courseid'],
+                    'other' => array(
+                        'mapping_title' => '\'' . $assessmentmapping->id . '\''
+                    )
+                )
+            );
+            $event->trigger();
         }
     }
 }
