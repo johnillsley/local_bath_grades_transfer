@@ -199,7 +199,7 @@ class local_bath_grades_transfer_external_data
      */
     public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucsusername;
+        $data['STU_UDF1'] = $bucsusername.'x'; // DEV TESTING
         $sprcode = null;
         try {
             $this->restwsclient->call_samis($method, $data);
