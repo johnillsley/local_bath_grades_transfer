@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "guzzlehttp/guzzle": "6.2.3",
-    "phpdocumentor/phpdocumentor": "v2.9.0"
+    "guzzlehttp/guzzle": "6.2.3"
+
   }
 }
