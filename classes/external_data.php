@@ -58,8 +58,8 @@ class local_bath_grades_transfer_external_data
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        //$data['P04'] = '2016-7';// TODO Change this when going to LIVE.
-        $data['P04'] = $lookupattributes->academicyear;
+        $data['P04'] = '2016-7';// TODO Change this when going to LIVE.
+        //$data['P04'] = $lookupattributes->academicyear;
         $data['P05'] = $lookupattributes->periodslotcode;
         //$data['P05'] = 'S1';
         $data['P06'] = $lookupattributes->samisunitcode;
