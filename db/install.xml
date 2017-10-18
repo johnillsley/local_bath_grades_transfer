@@ -97,7 +97,7 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="local_bath_grades_lookup_occurrence" COMMENT="Deal with different occurrences for a unit code">
+        <TABLE NAME="local_bath_grades_lookup_occ" COMMENT="Deal with different occurrences for a unit code">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="lookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
