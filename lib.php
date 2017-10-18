@@ -133,9 +133,13 @@ class=\"alert-info alert \">
                 // Show error to the user but continue with the rest of the page.
             }
             // GET SAMIS MAPPING ATTRIBUTES.
-            $samisattributes = $this->get_samis_mapping_attributes($COURSE->id);
+            $samisattributelist = $this->get_samis_mapping_attributes($COURSE->id);
             // Get all the records associated with the samis mapping attributes fom Moodle table.
-            $lookuprecords = \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samisattributes);
+            $lookuprecords = array();
+            foreach ($samisattributelist as $samisattributes) {
+                $lookuprecords = array_merge($lookuprecords,
+                    \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samisattributes));
+            }
             $this->show_transfer_controls($lookuprecords, $cmid, $mform);
         } else {
             // No samis mapping defined for this course..
