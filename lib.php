@@ -1368,14 +1368,17 @@ WHERE userid = ? AND gradetransfermappingid =
                 // Check if mapping exists ( should be default only).
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     // Fetch the mapping for current year.
-                    $record = $DB->get_record('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->currentacademicyear]);
-                    if ($record) {
-                        // Return Samis attributes object.
-                        $samisattributes = new local_bath_grades_transfer_samis_attributes(
-                            $record->sits_code,
-                            $record->acyear,
-                            $record->period_code,
-                            'A');
+                    $records = $DB->get_records('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->currentacademicyear]);
+                    if ($records) {
+                        foreach ($records as $record) {
+                            // Return Samis attributes object.
+                            $samisattributes[] = new local_bath_grades_transfer_samis_attributes(
+                                $record->sits_code,
+                                $record->acyear,
+                                $record->period_code,
+                                'A');
+                        }
+
                     }
                 }
             }
