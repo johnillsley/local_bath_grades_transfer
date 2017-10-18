@@ -457,7 +457,7 @@ class local_bath_grades_transfer_assessment_lookup
 
     public static function get_by_samis_details(\local_bath_grades_transfer_samis_attributes $samisattributes) {
         global $DB;
-        $objects = null;
+        $objects = array();
         $records = $DB->get_records(self::$table, [
             'samisunitcode' => $samisattributes->samisunitcode,
             'academicyear' => $samisattributes->academicyear,
