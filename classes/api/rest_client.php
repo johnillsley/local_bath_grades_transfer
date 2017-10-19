@@ -104,6 +104,7 @@ class local_bath_grades_transfer_rest_client
      * @throws Exception
      */
     public function call_samis($method, $data, $verb = 'GET') {
+        global $CFG;
         try {
             $dataraw = $this->construct_body($data);
             $this->dataraw = (string)$dataraw;
@@ -119,6 +120,10 @@ class local_bath_grades_transfer_rest_client
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
                     ],
+                    'proxy' => [
+                        'http'  => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "http"
+                        'https' => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "https",
+                    ],
                     'body' => $data['body']
                 ]);
             } else {
@@ -130,6 +135,10 @@ class local_bath_grades_transfer_rest_client
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
+                    ],
+                    'proxy' => [
+                        'http'  => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "http"
+                        'https' => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "https",
                     ]
                 ]);
             }
