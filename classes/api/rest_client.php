@@ -164,13 +164,9 @@ class local_bath_grades_transfer_rest_client
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             echo "Throwing Client Exception Exception #1";
-            if ($e->getCode() == 400) {
+            if ($e->getCode() >= 400) {
                 // Bad Request.
                 throw  new \Exception($e->getMessage());
-            }
-
-            if ($e->getCode() == 404) {
-                throw  new \Exception("Cant connect to SAMIS");
             }
 
         } catch (\GuzzleHttp\Exception\ServerException $e) {
