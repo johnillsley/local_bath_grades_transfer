@@ -105,12 +105,18 @@ class local_bath_grades_transfer_rest_client
      */
     public function call_samis($method, $data, $verb = 'GET') {
         global $CFG;
+        $options = array();
         try {
             $dataraw = $this->construct_body($data);
             $this->dataraw = (string)$dataraw;
+            if(!empty($CFG->proxyhost) || !empty($CFG->proxyport)){
+                $options['proxy'] = array(
+                    'http'  => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "http"
+                    'https' => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "https",
+                );
+            }
             if ($verb == 'POST') {
                 // Post changes.
-
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
@@ -120,10 +126,7 @@ class local_bath_grades_transfer_rest_client
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
                     ],
-                    'proxy' => [
-                        'http'  => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "http"
-                        'https' => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "https",
-                    ],
+                    $options,
                     'body' => $data['body']
                 ]);
             } else {
@@ -136,10 +139,7 @@ class local_bath_grades_transfer_rest_client
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
                     ],
-                    'proxy' => [
-                        'http'  => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "http"
-                        'https' => $CFG->proxyhost.':'.$CFG->proxyport, // Use this proxy with "https",
-                    ]
+                    $options,
                 ]);
             }
             return $this->promise->then(
