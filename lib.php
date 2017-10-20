@@ -154,9 +154,6 @@ class local_bath_grades_transfer
             /****** FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ******/
 
             try {
-                // TODO Do we need to query the samis API on every refresh ?
-                // TODO Think about when a lookup comes back ( un-expires?)
-
                 $this->sync_remote_assessments($COURSE->id);
                 $mform->addElement('html', "<div style =\"position:absolute;top:40px;width: 500px\" id=\"fetched_new_assessments_notif\"
 class=\"alert-info alert \">
