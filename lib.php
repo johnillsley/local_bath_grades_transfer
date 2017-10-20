@@ -596,17 +596,20 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         // CAN THESE ALL BE PUT INTO ONE TRY?????
         // Get all mapping and course data and check all ok.
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
-            throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
+            return false;
         }
+        $modulecontext = \context_module::instance($assessmentmapping->coursemodule);
+
         if ($assessmentmapping->get_expired() != 0) {
-            throw new \Exception("Assessment mapping has expired, id=" . $mappingid);
-        }
+            $this->raise_custom_error_event($modulecontext,
+                "Assessment mapping has expired, id=" . $mappingid);        }
         if ($assessmentmapping->lookup->expired != 0) {
-            throw new \Exception("Assessment lookup has expired, lookup id=" . $assessmentmapping->lookup->id);
+            $this->raise_custom_error_event($modulecontext,
+                "Assessment lookup has expired, lookup id=" . $assessmentmapping->lookup->id);
         }
-        if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
+        /*if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
             throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
-        }
+        }*/
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
             $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis(
