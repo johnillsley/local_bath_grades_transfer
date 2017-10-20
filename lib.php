@@ -23,15 +23,45 @@
  * Class local_bath_grades_transfer
  */
 const MAX_GRADE = 100;
+/**
+ *
+ */
 const TRANSFER_SUCCESS = 1;
+/**
+ *
+ */
 const GRADE_MISSING = 2;
+/**
+ *
+ */
 const TRANSFER_FAILURE = 3;
+/**
+ *
+ */
 const GRADE_ALREADY_EXISTS = 4;
+/**
+ *
+ */
 const GRADE_NOT_IN_MOODLE_COURSE = 5;
+/**
+ *
+ */
 const GRADE_NOT_OUT_OF_100 = 6;
+/**
+ *
+ */
 const GRADE_NOT_IN_STRUCTURE = 7;
+/**
+ *
+ */
 const GRADE_QUEUED = 8;
+/**
+ *
+ */
 const GRADE_NOT_WHOLE_NUMBER = 9;
+/**
+ *
+ */
 const COULD_NOT_GET_SPR_CODE = 10;
 /**
  * Class local_bath_grades_transfer
@@ -43,6 +73,9 @@ class local_bath_grades_transfer
      * @var local_bath_grades_transfer_assessment_mapping
      */
     public $assessmentmapping;
+    /**
+     * @var string
+     */
     public $currentacademicyear;
     /**
      * Moodle Course ID
@@ -423,6 +456,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         return serialize($a);
     }
 
+    /**
+     * @param $samisattributes
+     * @return mixed
+     */
     public function get_local_assessment_details($samisattributes) {
         global $DB;
         $conditions = array();
@@ -532,6 +569,11 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
         return $defaultmapping;
     }
+
+    /**
+     * @param $context
+     * @param $event_message
+     */
     protected function raise_custom_error_event($context, $event_message) {
         // Origin is always CLI.
 
@@ -590,6 +632,13 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     }
 
 
+    /**
+     * @param $mappingid
+     * @param array $userids
+     * @param string $source
+     * @return bool
+     * @throws Exception
+     */
     public function transfer_mapping2($mappingid, $userids = array(), $source = 'web') {
         global $DB;
         $singleusertransfer = array();
@@ -687,6 +736,12 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
     }
 
+    /**
+     * @param $mappingid
+     * @param array $userids
+     * @param string $source
+     * @return \gradereport_transfer\output\transfer_status|null
+     */
     public function transfer_mapping($mappingid, $userids = array(), $source = 'web') {
         // Get the mapping object for the ID.
         global $DB;
@@ -792,6 +847,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
     }
 
+    /**
+     * @param $samismappingid
+     * @param $assessmentmapping
+     */
     protected function get_users_readyto_transfer_2($samismappingid, $assessmentmapping) {
         // Get the samis students.
         $samisusers = $this->get_samis_users($samismappingid);
@@ -809,6 +868,10 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
     }
 
+    /**
+     * @param $userid
+     * @param $mappingid
+     */
     protected function get_transfer_log($userid, $mappingid) {
         global $DB;
         //$DB->set_debug(true);
@@ -831,6 +894,10 @@ WHERE userid = ? AND gradetransfermappingid =
 
     }
 
+    /**
+     * @param $samismappingid
+     * @return array|bool
+     */
     protected function get_users_readyto_transfer($samismappingid) {
         global $DB;
         $users = array();
@@ -1332,6 +1399,9 @@ WHERE userid = ? AND gradetransfermappingid =
 
     }
 
+    /**
+     * @param $data
+     */
     private function create_new_mapping($data) {
         global $USER;
         $newassessmentmappingdata = new stdClass();
@@ -1352,6 +1422,10 @@ WHERE userid = ? AND gradetransfermappingid =
 
     }
 
+    /**
+     * @param $formdata
+     * @param $currentmapping
+     */
     private function update_assessment_mapping($formdata, $currentmapping) {
         global $USER;
         // UPDATE.
