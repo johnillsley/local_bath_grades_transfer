@@ -267,6 +267,13 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         $mform->disabledIf('bath_grade_transfer_time_start', 'bath_grade_transfer_samisassessmentid', 'eq', 0);
     }
 
+    /**
+     * @param $lrecord
+     * @param $assessmentmapping
+     * @param $attributes
+     * @param $select
+     * @param $cmid
+     */
     private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid) {
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
             $select->setSelected($lrecord->id);
@@ -525,7 +532,17 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         }
         return $defaultmapping;
     }
+    protected function raise_custom_error_event($context, $event_message) {
+        // Origin is always CLI.
 
+        $event = \local_bath_grades_transfer\event\grades_transfer_custom_error::create(
+            array(
+                'context' => $context,
+                'other' => array('message' => $event_message)
+            )
+        );
+        $event->trigger();
+    }
     /**
      * Cron that processes any automated transfers
      */
