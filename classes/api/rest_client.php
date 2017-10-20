@@ -163,7 +163,6 @@ class local_bath_grades_transfer_rest_client
             )->wait();
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            echo "Throwing Client Exception Exception #1";
             if ($e->getCode() >= 400) {
                 // Bad Request.
                 throw  new \Exception($e->getMessage());
