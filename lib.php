@@ -348,7 +348,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         if (is_null($moodlecourseid)) {
             $samisattributeslist = local_bath_grades_transfer_samis_attributes::attributes_list($this->currentacademicyear);
         } else {
-            $samisattributeslist = array($this->get_samis_mapping_attributes($moodlecourseid));
+            $samisattributeslist = $this->get_samis_mapping_attributes($moodlecourseid);
         }
 
         if (!empty($samisattributeslist)) {
