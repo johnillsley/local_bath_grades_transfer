@@ -443,8 +443,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 }
                 return true;
             } catch (Exception $e) {
-                echo "Throwing Exception #4";
-                var_dump($e->getMessage());
                 throw new Exception($e->getMessage());
             }
         }
