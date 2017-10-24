@@ -120,8 +120,8 @@ class local_bath_grades_transfer_rest_client
             $this->dataraw = (string)$dataraw;
             if (!empty($CFG->proxyhost) && !empty($CFG->proxyport)) {
                 $options['proxy'] = array(
-                    'http' => $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http"
-                    'https' => $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https",
+                    'http' => 'tcp://'.$CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http"
+                    'https' =>'tcp://'. $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https",
                 );
             }
             if ($verb == 'POST') {
