@@ -51,11 +51,20 @@ class local_bath_grades_transfer_rest_client
      */
     public function __construct()
     {
+        global $CFG;
         $apiurl = get_config('local_bath_grades_transfer', 'samis_api_url');
         $this->username = get_config('local_bath_grades_transfer', 'samis_api_user');
         $this->password = get_config('local_bath_grades_transfer', 'samis_api_password');
+        $proxy = array();
+        if (!empty($CFG->proxyhost) && !empty($CFG->proxyport)) {
+            $proxy = array(
+                'http' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http"
+                'https' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https",
+            );
+        }
         $this->client = new Client([
-                'base_uri' => $apiurl
+                'base_uri' => $apiurl,
+                'proxy' => $proxy
             ]
         );
     }
@@ -114,16 +123,9 @@ class local_bath_grades_transfer_rest_client
     public function call_samis($method, $data, $verb = 'GET')
     {
         global $CFG;
-        $options = array();
         try {
             $dataraw = $this->construct_body($data);
             $this->dataraw = (string)$dataraw;
-            if (!empty($CFG->proxyhost) && !empty($CFG->proxyport)) {
-                $options['proxy'] = array(
-                    'http' => 'tcp://'.$CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http"
-                    'https' =>'tcp://'. $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https",
-                );
-            }
             if ($verb == 'POST') {
                 // Post changes.
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
@@ -135,7 +137,6 @@ class local_bath_grades_transfer_rest_client
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
                     ],
-                    $options,
                     'body' => $data['body']
                 ]);
             } else {
@@ -148,7 +149,6 @@ class local_bath_grades_transfer_rest_client
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
                     ],
-                    $options,
                 ]);
             }
             return $this->promise->then(
