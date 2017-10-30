@@ -171,16 +171,18 @@ class local_bath_grades_transfer_assessment_grades
         self::$samisdata = new \local_bath_grades_transfer_external_data();
         //From the attributes and map_code, get the grade structure.
         try {
-            $remotegradestructure = self::$samisdata->get_remote_grade_structure($lookup);
-            if (!empty($remotegradestructure)) {
-                foreach ($remotegradestructure->assessments as $assessment) {
-                    if (!empty($assessment)) {
-                        foreach ($assessment as $objassessmentdata) {
-                            $structure[(string)$objassessmentdata->student] =
-                                array('assessment' => self::instantiate($objassessmentdata));
+            $remotegradestructures = self::$samisdata->get_remote_grade_structure($lookup);
+            // Note: there is a speartate grade structure for each MAV occurrence.
+            foreach ( $remotegradestructures as $remotegradestructure ) {
+                if (!empty($remotegradestructure)) {
+                    foreach ($remotegradestructure->assessments as $assessment) {
+                        if (!empty($assessment)) {
+                            foreach ($assessment as $objassessmentdata) {
+                                $structure[(string)$objassessmentdata->student] =
+                                    array('assessment' => self::instantiate($objassessmentdata));
+                            }
                         }
                     }
-
                 }
             }
         } catch (\Exception $e) {

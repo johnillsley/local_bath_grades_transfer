@@ -415,28 +415,68 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     $update['expired'] = time();
                     $expirelookups = array_diff($localassessments, $remoteassessments); // Assessments in local but not in remote.
                     foreach ($expirelookups as $k => $v) {
-                        $update['id'] = $k;
-                        $DB->update_record('local_bath_grades_lookup', $update);
+                        $lookup_count = $DB->get_record_sql( "
+                        SELECT COUNT(*) AS total, lookupid FROM {local_bath_grades_lookup_occ}
+                        WHERE lookupid = ( 
+                          SELECT lookupid 
+                          FROM {local_bath_grades_lookup_occ}
+                          WHERE id = ".$k."
+                          )
+                        ");
+
+                        // Remove the occurrence.
+                        $conditions = array();
+                        $conditions["id"] = $k;
+                        $DB->delete_records("local_bath_grades_lookup_occ", $conditions);
+
+                        if ($lookup_count->total==1) {
+                            // Only expire the lookup if it only has one occurrence.
+                            $update['id'] = $lookup_count->lookupid;
+                            $DB->update_record('local_bath_grades_lookup', $update);
+                        }
                     }
 
                     // Add new lookups.
                     $addlookups = array_diff($remoteassessments, $localassessments); // Assessments in remote but not in local.
                     foreach ($addlookups as $k => $addlookup) {
                         $lookup = array_merge($remotedata[$k], (array)$samisattributes);
+                        // prepare lookup data - occurrence is added to different table so handled separately
+                        $occurrence = $lookup["mavoccur"];
+                        unset ($lookup["mavoccur"]);
                         $lookup["samisassessmentid"] = $lookup["mapcode"] . '_' . $lookup["mabseq"];
                         $lookup["timecreated"] = time();
-                        $lookup["occurrenceid"] = 0;
-                        $DB->insert_record('local_bath_grades_lookup', $lookup);
+
+                        // Check if lookup record already exists (ignoring occurrence)
+                        if (!$id = $DB->get_field( "local_bath_grades_lookup", "id", array (
+                            "mapcode"=>$lookup["mapcode"],
+                            "periodslotcode"=>$lookup["periodslotcode"],
+                            "mabseq"=>$lookup["mabseq"],
+                            "academicyear"=>$lookup["academicyear"] ))) {
+                            // can't find lookup record - needs adding.
+                            $id = $DB->insert_record('local_bath_grades_lookup', $lookup);
+                        }
+
+                        $lookup_occurrence = array (
+                            "lookupid"=>$id,
+                            "mavoccur"=>$occurrence);
+
+                        // Check if occurrence doesn't already exists
+                        if (!$DB->get_field( "local_bath_grades_lookup_occ", "id", $lookup_occurrence)) {
+                            // can't find lookup occurence record - needs adding.
+                            $DB->insert_record('local_bath_grades_lookup_occ', $lookup_occurrence);
+                        }
                     }
 
                     // Check for updates in lookups.
                     $checkupdates = array_intersect($localassessments, $remoteassessments);
                     foreach ($checkupdates as $localkey => $checkupdate) {
                         $remotekey = array_search($checkupdate, $remoteassessments);
-                        if ($localdata[$localkey] != $remotedata[$remotekey]) {
+                        if ((array)$localdata[$localkey] != $remotedata[$remotekey]) {
+
                             // At least one field has changed so update.
                             $localdata[$localkey] = $remotedata[$remotekey];
-                            $localdata[$localkey]["id"] = $localkey;
+                            $localdata[$localkey]["id"] = $DB->get_field( "local_bath_grades_lookup_occ", "lookupid", array ("id"=>$localkey));
+                            unset($localdata[$localkey]["mavoccur"]);
                             $DB->update_record('local_bath_grades_lookup', $localdata[$localkey]);
                         }
                     }
@@ -458,6 +498,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         $a = array();
         $a["mapcode"] = $mapping["mapcode"];
         $a["mabseq"] = $mapping["mabseq"];
+        $a["mavoccur"] = $mapping["mavoccur"];
         return serialize($a);
     }
 
@@ -468,15 +509,15 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     public function get_local_assessment_details($samisattributes)
     {
         global $DB;
-        $conditions = array();
-        $conditions['expired'] = 0;
-        $conditions['samisunitcode'] = $samisattributes->samisunitcode;
-        $conditions['occurrence'] = $samisattributes->occurrence;
-        $conditions['academicyear'] = $samisattributes->academicyear;
-        $conditions['periodslotcode'] = $samisattributes->periodslotcode;
-
-        $localassessments = $DB->get_records('local_bath_grades_lookup',
-            $conditions, '', 'id, mapcode, mabseq, astcode, mabperc, mabname');
+        $localassessments = $DB->get_records_sql("
+            SELECT o.id, l.mapcode, l.mabseq, l.astcode, l.mabperc, l.mabname, o.mavoccur
+            FROM {local_bath_grades_lookup} AS l, {local_bath_grades_lookup_occ} AS o
+            WHERE o.lookupid = l.id
+            AND l.expired = 0
+            AND l.samisunitcode = '". $samisattributes->samisunitcode ."'
+            AND l.academicyear = '". $samisattributes->academicyear ."'
+            AND l.periodslotcode = '" . $samisattributes->periodslotcode . "'
+        ");
 
         foreach ($localassessments as $k => $v) {
             unset($localassessments[$k]->id);
@@ -670,9 +711,9 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             $this->raise_custom_error_event($modulecontext,
                 "Assessment lookup has expired, lookup id=" . $assessmentmapping->lookup->id);
         }
-        /*if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
+        if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
             throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
-        }*/
+        }
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
             $gradestructure = \local_bath_grades_transfer_assessment_grades::get_grade_strucuture_samis(
