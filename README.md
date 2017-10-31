@@ -33,4 +33,4 @@ University of Bath
 License
 -------
 
-The project is licensed under the BSD license.
+All copyright owned by University of Bath
