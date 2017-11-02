@@ -448,11 +448,11 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
                         // Check if lookup record already exists (ignoring occurrence)
                         if (!$id = $DB->get_field( "local_bath_grades_lookup", "id", array (
+                            // can't find lookup record - needs adding.
                             "mapcode"=>$lookup["mapcode"],
                             "periodslotcode"=>$lookup["periodslotcode"],
                             "mabseq"=>$lookup["mabseq"],
                             "academicyear"=>$lookup["academicyear"] ))) {
-                            // can't find lookup record - needs adding.
                             $id = $DB->insert_record('local_bath_grades_lookup', $lookup);
                         }
 
@@ -1525,7 +1525,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $moodlecourseid
      * @return local_bath_grades_transfer_samis_attributes
      */
-    private function get_samis_mapping_attributes($moodlecourseid)
+    public function get_samis_mapping_attributes($moodlecourseid)
     {
         $samisattributes = array();
         global $DB;
@@ -1542,8 +1542,8 @@ WHERE userid = ? AND gradetransfermappingid =
                             $samisattributes[] = new local_bath_grades_transfer_samis_attributes(
                                 $record->sits_code,
                                 $record->acyear,
-                                $record->period_code,
-                                'A');
+                                $record->period_code
+                                );
                         }
 
                     }
