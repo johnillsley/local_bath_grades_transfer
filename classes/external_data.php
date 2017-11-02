@@ -53,6 +53,8 @@ class local_bath_grades_transfer_external_data
      * @throws Exception
      */
     public function get_remote_grade_structure(\local_bath_grades_transfer_assessment_lookup $lookup) {
+        global $DB;
+
         $function = 'ASSESSMENTS';
         $assessmentgradestructure = $data = array();
         $lookupattributes = $lookup->attributes;
@@ -64,7 +66,7 @@ class local_bath_grades_transfer_external_data
         //$data['P05'] = 'S1';
         $data['P06'] = $lookupattributes->samisunitcode;
         //$data['P06'] = 'BB10012';
-        $data['P07'] = $lookupattributes->occurrence;
+        //$data['P07'] = $lookupattributes->occurrence;
         //$data['P07'] = 'A';
         $data['P08'] = $lookup->mapcode;
         //$data['P08'] = 'BB10012B';
@@ -72,22 +74,31 @@ class local_bath_grades_transfer_external_data
         //$data['P09'] = '01';
 
         try {
-            $this->restwsclient->call_samis($function, $data);
-            if ($this->restwsclient->response['status'] = 200 && $this->restwsclient->response['contents']) {
-                $data = simplexml_load_string($this->restwsclient->response['contents']);
-                return $data;
-            }
+            // Get all occurrences for the lookup
+            $conditions = array();
+            $conditions["lookupid"] = $lookup->id;
+            $occurrences = $DB->get_records( 'local_bath_grades_lookup_occ', $conditions, '', 'mavoccur' );
+            foreach( $occurrences as $occurrence ) {
+                $data['P07'] = $occurrence->mavoccur;
 
-            if ($data->status < 0) {
-                $this->handle_error($data);
+                $this->restwsclient->call_samis($function, $data);
+                if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
+                    $response = simplexml_load_string($this->restwsclient->response['contents']);
+                    if ($response->status < 0) {
+                        $this->handle_error($response);
+                    }
+                }
+                $responses[] = $response;
             }
-            if (isset($data->records)) {
-                $assessments = $data->records->assessments;
+            return $responses;
+
+            /*if (isset($response->records)) {
+                $assessments = $response->records->assessments;
                 if (!empty($assessments)) {
                     $assessmentgradestructure = simplexml_load_string($assessments);
                 }
                 return $assessmentgradestructure;
-            }
+            }*/
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
@@ -149,7 +160,7 @@ class local_bath_grades_transfer_external_data
         $data['MOD_CODE'] = $attributes->samisunitcode; // P06.
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academicyear);
         $data['PSL_CODE'] = $attributes->periodslotcode; // P05.
-        $data['MAV_OCCUR'] = $attributes->occurrence; // P07.
+        $data['MAV_OCCUR'] = "<GOLD>*"; // P07. - GET ALL OCCURRENCES
         // If for some reason we cant connect to the client ,report error.
         try {
             $this->restwsclient->call_samis($function, $data);
@@ -166,11 +177,18 @@ class local_bath_grades_transfer_external_data
                     $this->handle_error($data);
                 }
                 foreach ($retdata['exchange']['mav']['mav.cams'] as $arraycam) {
+                    $mav_occur = $arraycam['mav_occur'];
                     foreach ($arraycam['map']['map.cams'] as $arraymab) {
                         foreach ($arraymab['mab']['mab.cams'] as $objassessment) {
                             $mapcode = $objassessment['map_code'];
                             if (!empty($objassessment)) {
-                                $assessments[$mapcode][] = self::convert_underscores_clean($objassessment);
+                                $assess['mavoccur'] = $mav_occur;
+                                $assess['mapcode'] = $objassessment['map_code'];
+                                $assess['mabseq'] = $objassessment['mab_seq'];
+                                $assess['astcode'] = $objassessment['ast_code'];
+                                $assess['mabperc'] = $objassessment['mab_perc'];
+                                $assess['mabname'] = $objassessment['mab_name'];
+                                $assessments[$mapcode][] = self::convert_underscores_clean($assess);
                             }
                         }
                     }

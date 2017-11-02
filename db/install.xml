@@ -32,7 +32,7 @@
                 <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="academicyear" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mapcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="mabseq" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="astcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mabperc" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -49,7 +49,6 @@
                 <INDEX NAME="index_samisunitcode" UNIQUE="false" FIELDS="samisunitcode"/>
                 <INDEX NAME="index_periodslotcode" UNIQUE="false" FIELDS="periodslotcode"/>
                 <INDEX NAME="index_academicyear" UNIQUE="false" FIELDS="academicyear"/>
-                <INDEX NAME="index_occurrence" UNIQUE="false" FIELDS="occurrence"/>
                 <INDEX NAME="index_expired" UNIQUE="false" FIELDS="expired"/>
             </INDEXES>
         </TABLE>
@@ -106,6 +105,9 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="index_lookupid" UNIQUE="false" FIELDS="lookupid"/>
+            </INDEXES>
         </TABLE>
 
     </TABLES>
