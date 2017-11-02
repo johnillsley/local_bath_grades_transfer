@@ -248,7 +248,7 @@ class local_bath_grades_transfer_assessment_lookup
             'samisunitcode' => $this->attributes->samisunitcode,
             'periodslotcode' => $this->attributes->periodslotcode,
             'academicyear' => $this->attributes->academicyear,
-            'occurrence' => $this->attributes->occurrence))
+            'expired' => 0))
         ) {
             return $id;
         } else {
@@ -462,7 +462,7 @@ class local_bath_grades_transfer_assessment_lookup
             'samisunitcode' => $samisattributes->samisunitcode,
             'academicyear' => $samisattributes->academicyear,
             'periodslotcode' => $samisattributes->periodslotcode,
-            'occurrence' => $samisattributes->occurrence
+            'expired' => 0,
         ]);
         if (!empty($records)) {
             foreach ($records as $record) {

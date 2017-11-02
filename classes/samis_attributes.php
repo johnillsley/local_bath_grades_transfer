@@ -30,11 +30,6 @@ class local_bath_grades_transfer_samis_attributes
      * @var
      */
     public $periodslotcode;
-    /**
-     * @var
-     */
-    public $occurrence;
-
 
     /**
      * local_bath_grades_transfer_samis_attributes constructor.
@@ -44,16 +39,11 @@ class local_bath_grades_transfer_samis_attributes
      * @param $occurrence
      * @param null $mab_sequence
      */
-    public function __construct($samisunitcode, $academicyear, $periodslotcode, $occurrence) {
+    public function __construct($samisunitcode, $academicyear, $periodslotcode) {
 
         $this->samisunitcode = $samisunitcode;
         $this->academicyear = $academicyear;
         $this->periodslotcode = $periodslotcode;
-        if ($occurrence = 'All') {
-            $this->occurrence = 'A';
-        } else {
-            $this->occurrence = $occurrence;
-        }
     }
 
     public static function attributes_list($currentyear) {
@@ -64,15 +54,14 @@ class local_bath_grades_transfer_samis_attributes
               samisunitcode
             , periodslotcode
             , academicyear
-            , occurrence
             FROM {local_bath_grades_lookup}
             WHERE academicyear = '" . $currentyear . "'
-            AND expired IS NULL
+            AND expired = 0
             ");
 
         $samisattributeslist = array();
         foreach ($allunits as $unit) {
-            $samisattributeslist[] = new self($unit->samisunitcode, $unit->academicyear, $unit->periodslotcode, $unit->occurrence);
+            $samisattributeslist[] = new self($unit->samisunitcode, $unit->academicyear, $unit->periodslotcode);
         }
         return $samisattributeslist;
     }
