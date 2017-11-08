@@ -961,6 +961,8 @@ WHERE userid = ? AND gradetransfermappingid =
         global $DB;
         $users = array();
         $DB->set_debug(true);
+        $context = context_course::instance($this->moodlecourseid);
+
         $sqlfrom = "
         /***** get the grade transfer mapping *****/
         FROM {local_bath_grades_mapping} gm
@@ -978,7 +980,11 @@ WHERE userid = ? AND gradetransfermappingid =
         JOIN {sits_mappings_enrols} me ON me.map_id = sm.id
         JOIN {user_enrolments} ue ON ue.id = me.u_enrol_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
         JOIN {user} u ON u.id = ue.userid
-
+        JOIN {role_assignments} ra 
+            ON ra.userid = u.id
+            AND contextid = ".$context->id."
+            AND roleid = 5 /* student role */
+            
         /***** join moodle activity information relating to mapping including current grade *****/
         JOIN {course_modules} cm ON cm.id = gm.coursemodule
         JOIN {modules} mo ON mo.id = cm.module
@@ -1159,12 +1165,12 @@ WHERE userid = ? AND gradetransfermappingid =
         }
 
         // Student not in SAMIS grade structure.
-        if (!array_key_exists($spr_code, $gradestructure)) {
+        elseif (!array_key_exists($spr_code, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
         }
 
         // Grade already in SAMIS grade structure.
-        if (!empty($gradestructure[$spr_code]['assessment']->mark)) {
+        elseif (!empty($gradestructure[$spr_code]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
 
