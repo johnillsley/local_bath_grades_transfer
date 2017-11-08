@@ -105,7 +105,7 @@ class local_bath_grades_transfer
         $this->date = new DateTime();
         $this->assessmentmapping = new \local_bath_grades_transfer_assessment_mapping();
         //SET DUMMY TESTING ACADEMIC YEAR
-        $this->currentacademicyear = '2016/7';  //TODO - COMMENT THIS OUT - IT'S FOR TESTING.
+        //$this->currentacademicyear = '2016/7';  //TODO - COMMENT THIS OUT - IT'S FOR TESTING.
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
         }
