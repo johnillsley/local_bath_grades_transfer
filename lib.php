@@ -537,7 +537,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
             foreach ($grades as $key => $gradeArray) {
                 $userid = $key;
                 $objgrade = $gradeArray['assessment'];
-                var_dump($objgrade);
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
@@ -547,9 +546,9 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
                         $this->local_grades_transfer_log->gradetransferred = $objgrade->mark;
                         $this->local_grades_transfer_log->save();
-
+                        echo "++++ GRADE PASSED SUCCESSFULLY FOR $userid+++++++ \n\n";
                         // Lock the mapping.
-                        echo "++++Lock mapping++++";
+                        echo "\n\n ++++Lock mapping++++";
                         self::lock_mapping($mappingid);
                         if ($web) {
                             // Display result to the user.
@@ -576,8 +575,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                             'SYSTEM FAILURE');
                     }
                 }
-
-
             }
 
             return $status;
@@ -644,34 +641,29 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     {
         global $CFG;
         $userstotransfer = null;
+        $userids = array();
         // CRON RUN.
         // Get all mappings .
         // See the ones that are set to auto transfer - done
         // Get me all mapping whose transfer time is null ( they've never been transferred ).
-        //$lasttaskruntime = 1507298798;// TODO - DEV TESTING.
         $assessmentmappingids = \local_bath_grades_transfer_assessment_mapping::getAll($lasttaskruntime, true);
         if (!empty($assessmentmappingids)) {
             foreach ($assessmentmappingids as $mappingid) {
                 if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
-                    //throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
                     return false;
                 }
                 if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
-                    //throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
-                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid)) {
-                        foreach ($userstotransfer as $user) {
-                            $userids[] = $user->userid;
-                            $this->transfer_mapping2($mappingid, $userids);
-                        }
+                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid,$moodlecourseid)) {
+                        $userids = array_keys ($userstotransfer);
+                        $this->transfer_mapping2($mappingid, $userids);
                     } else {
                         echo "++++NO USERS TO TRANSFER++++";
                     }
                 }
                 // Transfer mapping.
-
                 // You've done this once, set a lasttrransfertime so it is not picked up again.
                 $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, false);
                 if (!isset($assessmentmapping->lasttransfertime)) {
@@ -694,6 +686,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      */
     public function transfer_mapping2($mappingid, $userids = array(), $source = 'web')
     {
+        echo "+++++++++++INSIDE TRANSFER MAPPNG 2+++++++++++";
         global $DB;
         $singleusertransfer = array();
         // CAN THESE ALL BE PUT INTO ONE TRY?????
@@ -741,7 +734,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         $this->local_grades_transfer_log->gradetransfermappingid = $assessmentmapping->id;
         $this->local_grades_transfer_log->assessmentlookupid = $assessmentmapping->assessmentlookupid;
         $spr_list = array();
-        var_dump($userids);
         if (!empty($userids)) {
             foreach ($userids as $userid) {
 
@@ -750,10 +742,9 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 // Get grade.
                 $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
                 var_dump($grade);
-
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
-                    echo "LOCAL PRECHECK PASSED";
+                    echo "\n +++++LOCAL PRECHECK PASSED for $userid ++++ \n";
 
                     // Get SPR code.
                     $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
@@ -771,23 +762,21 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     }
 
                     // Pre transfer check (remote).
-                    echo "+++ NOW DOING REMOTE PRECHECKS";
                     if ($this->remote_precheck_conditions($userid, $spr_code, $gradestructure)) {
-                        echo "IVE PASSED REMOTE PRECHECK";
+                        echo "\n\n +++++IVE PASSED REMOTE PRECHECK for $userid ++++++ \n\n";
                         $gradestructure[$spr_code]['assessment']->mark = $grade->finalgrade;
-                        echo "NEW GR STR";
                         $singleusertransfer[$userid] = $gradestructure[$spr_code];
+                        var_dump($singleusertransfer);
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
                         }
+                        // Reset user .
+                        unset($singleusertransfer[$userid]);
                     }
                 }
             }
-        }
 
 
-        foreach ($gradestructure as $k => $v) {
-            // Check if student exists in course???
         }
     }
 
@@ -954,15 +943,14 @@ WHERE userid = ? AND gradetransfermappingid =
 
     /**
      * @param $samismappingid
+     * @param $moodlecourseid
      * @return array|bool
      */
-    protected function get_users_readyto_transfer($samismappingid)
+    protected function get_users_readyto_transfer($samismappingid,$moodlecourseid)
     {
         global $DB;
         $users = array();
-        $DB->set_debug(true);
-        $context = context_course::instance($this->moodlecourseid);
-
+        $context = context_course::instance($moodlecourseid);
         $sqlfrom = "
         /***** get the grade transfer mapping *****/
         FROM {local_bath_grades_mapping} gm
@@ -1017,7 +1005,7 @@ WHERE userid = ? AND gradetransfermappingid =
         LEFT JOIN {local_bath_grades_outcome} oc ON log.outcomeid = oc.id
 
         WHERE gm.id = $samismappingid
-               AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . ") 
+        AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . "," .GRADE_ALREADY_EXISTS. ")
                OR log.outcomeid IS NULL) -- already transferred or queued
         AND gg.finalgrade IS NOT NULL
         AND CEIL(gg.finalgrade) = gg.finalgrade
@@ -1040,7 +1028,6 @@ WHERE userid = ? AND gradetransfermappingid =
             echo $e->getMessage();
             return false;
         }
-        $DB->set_debug(false);
         return $users;
 
     }
@@ -1549,7 +1536,7 @@ WHERE userid = ? AND gradetransfermappingid =
                                 $record->sits_code,
                                 $record->acyear,
                                 $record->period_code
-                                );
+                            );
                         }
 
                     }
