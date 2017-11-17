@@ -75,11 +75,13 @@ class local_bath_grades_transfer_rest_client
     public function test_connection()
     {
         try {
-            $response = $this->client->request('GET', '/', ['verify' => false]);
+            $uri = explode('/',get_config('local_bath_grades_transfer', 'samis_api_url'));
+            $response = $this->client->request('GET','/'.$uri[3], ['verify' => false,'debug' => true]);
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $this->isconnected = false;
             echo $e->getMessage();
             echo $e->getCode();
         }
@@ -132,7 +134,7 @@ class local_bath_grades_transfer_rest_client
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
                     'timeout' => 40,
-                    'verify' => false, // for dev
+                    'verify' => false, // For dev.
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
@@ -143,7 +145,7 @@ class local_bath_grades_transfer_rest_client
                 $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'timeout' => 6,
-                    'verify' => false, // for dev
+                    'verify' => false, // For dev.
                     'auth' => [$this->username, $this->password],
                     'headers' => [
                         'Content-Type' => 'text/xml',
