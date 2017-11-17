@@ -58,8 +58,8 @@ class local_bath_grades_transfer_rest_client
         $proxy = array();
         if (!empty($CFG->proxyhost) && !empty($CFG->proxyport)) {
             $proxy = array(
-                'http' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http"
-                'https' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https",
+                'http' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http".
+                'https' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https".
             );
         }
         $this->client = new Client([
