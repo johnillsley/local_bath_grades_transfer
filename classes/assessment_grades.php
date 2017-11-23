@@ -168,7 +168,7 @@ class local_bath_grades_transfer_assessment_grades
         // Check that it is a valid lookup.
         $structure = array();
 
-        self::$samisdata = new \local_bath_grades_transfer_external_data();
+        self::$samisdata = new \local_bath_grades_transfer_external_data(); // TODO ********** SHOULD THIS BE IN THE CONSTRUCTOR - TESTING OVERRIDE - STATIC FUNCTION IS A PROBLEM
         //From the attributes and map_code, get the grade structure.
         try {
             $remotegradestructures = self::$samisdata->get_remote_grade_structure($lookup);

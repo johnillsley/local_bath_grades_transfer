@@ -449,6 +449,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         // Check if lookup record already exists (ignoring occurrence)
                         if (!$id = $DB->get_field( "local_bath_grades_lookup", "id", array (
                             // can't find lookup record - needs adding.
+                            "expired"=>0, // Fix for when lookup is deleted and then re-instated
                             "mapcode"=>$lookup["mapcode"],
                             "periodslotcode"=>$lookup["periodslotcode"],
                             "mabseq"=>$lookup["mabseq"],
@@ -522,7 +523,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         foreach ($localassessments as $k => $v) {
             unset($localassessments[$k]->id);
         }
-        return $localassessments;
+        return (array)$localassessments;
     }
 
     /** This is the main function that handles transferring of data via web or cron
@@ -700,6 +701,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
         // Get all mapping and course data and check all ok.
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
             return false;
+            // TODO - should this do more than just return false
         }
         $modulecontext = \context_module::instance($assessmentmapping->coursemodule);
 

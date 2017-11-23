@@ -1,0 +1,74 @@
+{
+  "exchange": {
+    "mav": {
+      "mav.cams": [
+        {
+          "mod_code": "CM30082",
+          "mav_occur": "A",
+          "ayr_code": "2016/7",
+          "psl_code": "AY",
+          "map": {
+            "map.cams": [
+              {
+                "map_code": "CM30082C",
+                "mab": {
+                  "mab.cams": [
+                    {
+                      "map_code": "CM30082C",
+                      "mab_seq": "01",
+                      "ast_code": "DS",
+                      "mab_perc": "90",
+                      "mab_name": "CM30082 Dissertation title change",
+                      "mab_rasi": ""
+                    },
+                    {
+                      "map_code": "CM30082C",
+                      "mab_seq": "02",
+                      "ast_code": "OR",
+                      "mab_perc": "10",
+                      "mab_name": "CM30082 Oral",
+                      "mab_rasi": ""
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "mod_code": "CM30082",
+          "mav_occur": "AFR",
+          "ayr_code": "2016/7",
+          "psl_code": "AY",
+          "map": {
+            "map.cams": [
+              {
+                "map_code": "CM30082C",
+                "mab": {
+                  "mab.cams": [
+                    {
+                      "map_code": "CM30082C",
+                      "mab_seq": "01",
+                      "ast_code": "DS",
+                      "mab_perc": "90",
+                      "mab_name": "CM30082 Dissertation title change",
+                      "mab_rasi": ""
+                    },
+                    {
+                      "map_code": "CM30082C",
+                      "mab_seq": "02",
+                      "ast_code": "OR",
+                      "mab_perc": "10",
+                      "mab_name": "CM30082 Oral",
+                      "mab_rasi": ""
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
