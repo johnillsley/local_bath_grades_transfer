@@ -33,6 +33,38 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configmulticheckbox('local_bath_grades_transfer/bath_grades_transfer_use', get_string('mod_choices', 'local_bath_grades_transfer'),
         get_string('mod_choices_desc', 'local_bath_grades_transfer'), array($options['mod_assign']), $options));
     $settings->add(new admin_setting_configcheckbox('local_bath_grades_transfer/default_mapping_only', get_string('default_mapping_only', 'local_bath_grades_transfer'),
-        get_string('default_mapping_only_desc', 'local_bath_grades_transfer'),'1' , 1,0));
+        get_string('default_mapping_only_desc', 'local_bath_grades_transfer'), '1', 1, 0));
 
 }
+$PAGE->requires->js_amd_inline("
+    require(['jquery','core/config'], function($,config) {
+    //Create new button
+    var button = \"<button id='test-samis-connection' class='btn'>Test SAMIS Connection</button>\";
+    var URL = config.wwwroot + '/local/bath_grades_transfer/test_connection.php';
+    $('#admin-samis_api_key').append(button);
+    //Test Connection to SAMIS Web Service
+    $('#test-samis-connection').click(function(e){
+        e.preventDefault();
+       test_connection();
+    });
+    var test_connection = function () {
+        $.ajax({url: URL,
+            timeout:1000,
+            type: 'GET',
+            data: {}
+        }).done(function(status){
+        //Show status in html
+        if(status.connected){
+        var status_html = '<div class=\'alert alert-success\'><i class=\"fa fa-check-circle\" aria-hidden=\"true\"></i>  Connected OK </div>';
+            $('#test-samis-connection').after(status_html);
+        }
+        else{
+        var status_html = '<div class=\'alert alert-danger\'><i class=\"fa fa-times\" aria-hidden=\"true\"></i>  Error Connecting</div>';
+            $('#test-samis-connection').after(status_html);
+        }
+            
+        });
+    }
+});
+");
+?>

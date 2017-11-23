@@ -54,12 +54,30 @@ class local_bath_grades_transfer_log
      */
     private static $table = 'local_bath_grades_log';
 
+    public function __construct() {
+
+    }
+
     /**
      *
      */
-    public static function get_logs() {
+    public static function get_logs($userid,$mappingid,$limit = null,$literal_outcomes = false) {
         global $DB;
+        $logs = array();
+        $sql = "SELECT FROM_UNIXTIME(l.timetransferred) as 'timetransferred',o.outcome,o.id,l.gradetransferred FROM {local_bath_grades_log} l";
+        $join = " JOIN {local_bath_grades_outcome} o ON o.id = l.outcomeid";
 
+        if($literal_outcomes){
+            $sql .= $join;
+        }
+        $sql .= " WHERE l.userid = :userid AND l.gradetransfermappingid = :mappingid ORDER BY l.timetransferred DESC";
+        $rs = $DB->get_recordset_sql($sql,array('userid'=>$userid,'mappingid'=>$mappingid),0,$limit);
+        if($rs->valid()){
+            foreach($rs as $record){
+                $logs[] = $record;
+            }
+        }
+        return $logs;
     }
 
     /**
@@ -68,12 +86,6 @@ class local_bath_grades_transfer_log
     public static function get_log_by_id($id) {
 
     }
-
-    public function __construct() {
-
-    }
-
-
     /**
      *
      */

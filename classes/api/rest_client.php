@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 global $CFG;
 require_once($CFG->dirroot . '/local/bath_grades_transfer/vendor/autoload.php');
+
 use \GuzzleHttp\Client;
 use GuzzleHttp\Promise;
 use \GuzzleHttp\Psr7\Response;
@@ -42,29 +43,45 @@ class local_bath_grades_transfer_rest_client
     /**
      * @var
      */
-    private $isconnected;
+    public $isconnected;
     public $dataraw;
 
     /**
      * local_bath_grades_transfer_rest_client constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
+        global $CFG;
         $apiurl = get_config('local_bath_grades_transfer', 'samis_api_url');
         $this->username = get_config('local_bath_grades_transfer', 'samis_api_user');
         $this->password = get_config('local_bath_grades_transfer', 'samis_api_password');
+        $proxy = array();
+        if (!empty($CFG->proxyhost) && !empty($CFG->proxyport)) {
+            $proxy = array(
+                'http' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "http".
+                'https' => 'tcp://' . $CFG->proxyhost . ':' . $CFG->proxyport, // Use this proxy with "https".
+            );
+        }
         $this->client = new Client([
-                'base_uri' => $apiurl
+                'base_uri' => $apiurl,
+                'proxy' => $proxy
             ]
         );
     }
 
     /**
-     *
+     * Function to test connection to SAMIS
      */
-    private function test_connection() {
+    public function test_connection()
+    {
         try {
-            $this->client->request('GET', '/');
+            $uri = explode('/',get_config('local_bath_grades_transfer', 'samis_api_url'));
+            $response = $this->client->request('GET','/'.$uri[3], ['verify' => false,'debug' => false]);
+            if ($response->getStatusCode() == 200) {
+                $this->isconnected = true;
+            }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $this->isconnected = false;
             echo $e->getMessage();
             echo $e->getCode();
         }
@@ -73,7 +90,8 @@ class local_bath_grades_transfer_rest_client
     /**
      * @return mixed
      */
-    public function is_connected() {
+    public function is_connected()
+    {
         return $this->isconnected;
     }
 
@@ -81,7 +99,8 @@ class local_bath_grades_transfer_rest_client
      * @param array $pieces
      * @return string
      */
-    private function construct_body(array $pieces) {
+    private function construct_body(array $pieces)
+    {
         $glue = '/';
         $bodyraw = '';
         $lastElement = end($pieces);
@@ -103,17 +122,19 @@ class local_bath_grades_transfer_rest_client
      * @return mixed
      * @throws Exception
      */
-    public function call_samis($method, $data, $verb = 'GET') {
+    public function call_samis($method, $data, $verb = 'GET')
+    {
+        global $CFG;
         try {
             $dataraw = $this->construct_body($data);
             $this->dataraw = (string)$dataraw;
             if ($verb == 'POST') {
                 // Post changes.
-
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
                     'timeout' => 40,
+                    'verify' => false, // For dev.
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
@@ -124,11 +145,12 @@ class local_bath_grades_transfer_rest_client
                 $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'timeout' => 6,
+                    'verify' => false, // For dev.
                     'auth' => [$this->username, $this->password],
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
-                    ]
+                    ],
                 ]);
             }
             return $this->promise->then(
@@ -152,14 +174,9 @@ class local_bath_grades_transfer_rest_client
             )->wait();
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            echo "Throwing Client Exception Exception #1";
-            if ($e->getCode() == 400) {
+            if ($e->getCode() >= 400) {
                 // Bad Request.
                 throw  new \Exception($e->getMessage());
-            }
-
-            if ($e->getCode() == 404) {
-                throw  new \Exception("Cant connect to SAMIS");
             }
 
         } catch (\GuzzleHttp\Exception\ServerException $e) {

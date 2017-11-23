@@ -32,7 +32,7 @@
                 <FIELD NAME="periodslotcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="academicyear" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mapcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="occurrence" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="mabseq" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="astcode" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="mabperc" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -49,7 +49,6 @@
                 <INDEX NAME="index_samisunitcode" UNIQUE="false" FIELDS="samisunitcode"/>
                 <INDEX NAME="index_periodslotcode" UNIQUE="false" FIELDS="periodslotcode"/>
                 <INDEX NAME="index_academicyear" UNIQUE="false" FIELDS="academicyear"/>
-                <INDEX NAME="index_occurrence" UNIQUE="false" FIELDS="occurrence"/>
                 <INDEX NAME="index_expired" UNIQUE="false" FIELDS="expired"/>
             </INDEXES>
         </TABLE>
@@ -100,13 +99,17 @@
         <TABLE NAME="local_bath_grades_lookup_occ" COMMENT="Deal with different occurrences for a unit code">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="lookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="occurrence" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="lookupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mavoccur" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
+            <INDEXES>
+                <INDEX NAME="index_lookupid" UNIQUE="false" FIELDS="lookupid"/>
+            </INDEXES>
         </TABLE>
 
     </TABLES>
 </XMLDB>
+
