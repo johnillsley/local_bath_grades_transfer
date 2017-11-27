@@ -317,13 +317,10 @@ JOIN {local_bath_grades_lookup} l ON m.assessmentlookupid = l.id WHERE m.id = ? 
                 $samisattributes->periodslotcode,
                 $samisattributes->occurrence);
         }
-        var_dump($remoteassessment);
         //Compare this to the remote assessment to see if anything has gone missing.
         foreach ($localassessments as $assessment) {
 
         }
-        var_dump($localassessments);
-        die();
 
     }
 

@@ -742,7 +742,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
                 // Get grade.
                 $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
-                var_dump($grade);
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
                     echo "\n +++++LOCAL PRECHECK PASSED for $userid ++++ \n";
@@ -751,7 +750,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
                     try {
                         $spr_code = $this->samis_data->get_spr_from_bucs_id_rest($bucsusername);
-                        var_dump($spr_code);
                         $spr_list[$spr_code] = 1; // For checking if any are missing at the end.
                     } catch (\Exception $e) {
                         $this->local_grades_transfer_log->outcomeid = COULD_NOT_GET_SPR_CODE;
@@ -767,7 +765,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         echo "\n\n +++++IVE PASSED REMOTE PRECHECK for $userid ++++++ \n\n";
                         $gradestructure[$spr_code]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$spr_code];
-                        var_dump($singleusertransfer);
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
                         }
@@ -867,7 +864,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                             }
                             if (!empty($usergrades)) {
                                 $gradestopass = $this->precheck_conditions($usergrades, $gradestructure, $assessmentmapping, false);
-                                var_dump($gradestopass);
                                 if (!empty($gradestopass)) {
                                     $transferstatuses = $this->do_transfer($gradestopass);
                                     /*if (array_key_exists('statuses', $gradestopass)) {
@@ -937,7 +933,6 @@ WHERE userid = ? AND gradetransfermappingid =
         //'gradetransfermappingid'=>$mappingid));
         $transferstatus = $DB->get_record_sql($sql, array('userid' => $userid,
             'gradetransfermappingid' => $mappingid));
-        var_dump($transferstatus);
         //$DB->set_debug(false);
 
     }
@@ -1190,7 +1185,6 @@ WHERE userid = ? AND gradetransfermappingid =
             echo "EMPTY MOODLE GRADES OR EMPTY STRUCTURE";
             return true;
         }
-        var_dump($moodleusergrades);
         // 1. Check against Moodle grades.
         foreach ($moodleusergrades as $moodleuserid => $objmoodlegrade) {
             $oktotransfer = true;
