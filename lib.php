@@ -963,7 +963,7 @@ WHERE userid = ? AND gradetransfermappingid =
             AND sm.default_map = 1
         JOIN {sits_mappings_enrols} me ON me.map_id = sm.id
         JOIN {user_enrolments} ue ON ue.id = me.u_enrol_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
-        JOIN {user} u ON u.id = ue.userid
+        JOIN {user} u ON u.id = ue.userid AND ra.id = me.ra_id
         JOIN {role_assignments} ra 
             ON ra.userid = u.id
             AND contextid = ".$context->id."
