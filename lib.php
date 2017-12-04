@@ -190,7 +190,7 @@ class=\"alert-info alert \">
             if ($assessmentmapping->samisassessmentenddate != '0') {
                 $samisassessmentenddate = userdate($assessmentmapping->samisassessmentenddate);
             } else {
-                $samisassessmentenddate = 'Not Set';
+                $samisassessmentenddate = get_string('samis_assessment_end_date_not_set','local_bath_grades_transfer');
             }
             $locked = $assessmentmapping->get_locked();
 
