@@ -61,7 +61,7 @@ class local_bath_grades_transfer_log
     /**
      *
      */
-    public static function get_logs($userid,$mappingid,$limit = null,$literal_outcomes = false) {
+    public static function get_logs($userid,$mappingid,$limit = null,$literaloutcomes = false) {
         global $DB;
         $logs = array();
         $fields = array();
@@ -71,7 +71,7 @@ class local_bath_grades_transfer_log
         $sql .= implode(',',$fields);
         $table = '{local_bath_grades_log} l ';
 
-        if($literal_outcomes){
+        if($literaloutcomes){
             $otherfields[] = ',o.outcome';
             $otherfields[] = 'o.id';
             $sql .= implode(',',$otherfields);
