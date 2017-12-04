@@ -104,8 +104,6 @@ class local_bath_grades_transfer
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
         $this->assessmentmapping = new \local_bath_grades_transfer_assessment_mapping();
-        //SET DUMMY TESTING ACADEMIC YEAR
-        //$this->currentacademicyear = '2016/7';  //TODO - COMMENT THIS OUT - IT'S FOR TESTING.
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
         }
@@ -145,7 +143,8 @@ class local_bath_grades_transfer
             return true;
         }
         // Render the header.
-        $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
+        $mform->addElement('header', 'local_bath_grades_transfer_header',
+            get_string('grades_transfer_header', 'local_bath_grades_transfer'));
 
 
         ////// BUILD CONTROLS /////////////.
@@ -275,7 +274,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 /******** DATE CONTROL ******/
                 $this->transfer_date_control($mform, null, $datetimeselectoroptions);
             } else {
-                $mform->addElement('html', "<p class=\"alert-info alert\">No lookup records were found </p>");
+                $mform->addElement('html', "<p class=\"alert-info alert\">".
+                    get_string('no_lookup_records_found','local_bath_grades_transfer')."</p>");
             }
         }
     }
@@ -310,19 +310,21 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     {
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
             $select->setSelected($lrecord->id);
-            $select->addOption($lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )", $lrecord->id, $attributes, $select);
+            $select->addOption(get_string('samis_assessment_mapping_option_label','local_bath_grades_transfer',$lrecord),
+                $lrecord->id, $attributes, $select);
         } else {
             // Other lookups.
             $mappingbylookup = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($lrecord->id);
             if (!empty($mappingbylookup)) {
                 if ($cmid != $mappingbylookup->coursemodule) {
-                    $select->addOption($lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )
-                    is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' .
+                    $select->addOption(get_string('samis_assessment_mapping_option_label', 'local_bath_grades_transfer', $lrecord).
+                        "is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' .
                         $mappingbylookup->coursemodule . ' AND TYPE : ' . $mappingbylookup->activitytype], $select);
                 }
             } else {
-                $select->addOption($lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )", $lrecord->id, $attributes, $select);
-
+                $select->addOption
+                (get_string('samis_assessment_mapping_option_label','local_bath_grades_transfer',$lrecord)
+                    ,$lrecord->id, $attributes, $select);
             }
 
         }
@@ -574,9 +576,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 }
             }
 
-            return $status;
         }
-
+        return $status;
     }
 
     /**
@@ -918,7 +919,6 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     protected function get_transfer_log($userid, $mappingid)
     {
         global $DB;
-        //$DB->set_debug(true);
         $where = " userid = ? AND gradetransfermappingid = 
         ?
          AND (outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . ") 
