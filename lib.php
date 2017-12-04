@@ -109,15 +109,13 @@ class local_bath_grades_transfer
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
         }
-
     }
 
     /**
      * Do not show users the Grades Transfer settings part if the plugin is not completely setup
      * @return bool true | false
      */
-    public function is_admin_config_present()
-    {
+    public function is_admin_config_present() {
         $config = get_config('local_bath_grades_transfer'); // Get config vars from mdl_config.
         if (!empty($config->samis_api_key) ||
             !empty($config->samis_api_url) || !empty($config->samis_api_user)
@@ -135,8 +133,7 @@ class local_bath_grades_transfer
      * @param string $modulename
      * @return true if no config set
      */
-    public function get_form_elements_module($mform, $context, $modulename = "")
-    {
+    public function get_form_elements_module($mform, $context, $modulename = "") {
         global $COURSE, $CFG, $PAGE;
         $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
         require($CFG->dirroot . '/enrol/sits/lib.php');
@@ -151,7 +148,7 @@ class local_bath_grades_transfer
         $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
 
 
-        ////// BUILD CONTROLS /////////////
+        ////// BUILD CONTROLS /////////////.
         // Only get settings if the course is mapped to a SAMIS code.
         if ($this->samis_mapping_exists($COURSE->id)) {
             /****** FETCH (ANY) NEW REMOTE ASSESSMENTS AND DO HOUSEKEEPING. ******/
