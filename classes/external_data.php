@@ -60,7 +60,6 @@ class local_bath_grades_transfer_external_data
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
-        //$data['P04'] = '2016-7';// TODO Change this when going to LIVE.
         $data['P04'] = str_replace('/', '-', $lookupattributes->academicyear);
         $data['P05'] = $lookupattributes->periodslotcode;
         //$data['P05'] = 'S1';
@@ -77,8 +76,8 @@ class local_bath_grades_transfer_external_data
             // Get all occurrences for the lookup
             $conditions = array();
             $conditions["lookupid"] = $lookup->id;
-            $occurrences = $DB->get_records( 'local_bath_grades_lookup_occ', $conditions, '', 'mavoccur' );
-            foreach( $occurrences as $occurrence ) {
+            $occurrences = $DB->get_records('local_bath_grades_lookup_occ', $conditions, '', 'mavoccur');
+            foreach ($occurrences as $occurrence) {
                 $data['P07'] = $occurrence->mavoccur;
 
                 $this->restwsclient->call_samis($function, $data);
@@ -217,7 +216,7 @@ class local_bath_grades_transfer_external_data
      */
     public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucsusername.'x'; // DEV TESTING
+        $data['STU_UDF1'] = $bucsusername.'x'; // DEV TESTING.
         $sprcode = null;
         try {
             $this->restwsclient->call_samis($method, $data);
