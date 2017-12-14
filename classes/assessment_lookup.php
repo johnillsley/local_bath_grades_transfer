@@ -349,23 +349,6 @@ class local_bath_grades_transfer_assessment_lookup
         return $record;
     }
     */
-
-    /**
-     * Get the current lookup and check it against remote to make sure it is still valid
-     */
-    /*
-    public function housekeep() {
-        if ($this->assessment_exists_in_samis() == false) {
-            //does not exist
-            if (!$this->is_expired()) {
-                //TODO log it
-                echo "Setting it to be expired";
-                $this->set_expired(time());
-            }
-            $this->update();
-        }
-    }
-    */
     /**
      * Create new assessment lookup
      */
@@ -439,7 +422,6 @@ class local_bath_grades_transfer_assessment_lookup
                 }
             } catch (\Exception $e) {
                 //Some error, show it on the screen and continue
-                //TODO log it
                 echo $e->getMessage();
                 echo "does not exist ! ";
                 $exists = false;
