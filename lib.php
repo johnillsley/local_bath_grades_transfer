@@ -96,8 +96,7 @@ class local_bath_grades_transfer
     /**
      * local_bath_grades_transfer constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->samis_data = new \local_bath_grades_transfer_external_data();
         $this->allowedmods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
         $this->local_grades_transfer_log = new \local_bath_grades_transfer_log();
@@ -137,7 +136,6 @@ class local_bath_grades_transfer
         require($CFG->dirroot . '/enrol/sits/lib.php');
         //Optional cmid param.
         $cmid = optional_param('update', 0, PARAM_INT);
-
         // Check that config is set.
         if (!in_array($modulename, $this->allowedmods) || !($this->is_admin_config_present())) {
             return true;
@@ -181,15 +179,14 @@ class=\"alert-info alert \">
      * @param $cmid
      * @param $mform
      */
-    public function show_transfer_controls($lookuprecords, $cmid, $mform)
-    {
+    public function show_transfer_controls($lookuprecords, $cmid, $mform) {
         $dropdownattributes = array();
         $datetimeselectoroptions = array('optional' => true);
         if ($assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
             if ($assessmentmapping->samisassessmentenddate != '0') {
                 $samisassessmentenddate = userdate($assessmentmapping->samisassessmentenddate);
             } else {
-                $samisassessmentenddate = get_string('samis_assessment_end_date_not_set','local_bath_grades_transfer');
+                $samisassessmentenddate = get_string('samis_assessment_end_date_not_set', 'local_bath_grades_transfer');
             }
             $locked = $assessmentmapping->get_locked();
 
@@ -274,8 +271,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 /******** DATE CONTROL ******/
                 $this->transfer_date_control($mform, null, $datetimeselectoroptions);
             } else {
-                $mform->addElement('html', "<p class=\"alert-info alert\">".
-                    get_string('no_lookup_records_found','local_bath_grades_transfer')."</p>");
+                $mform->addElement('html', "<p class=\"alert-info alert\">" .
+                    get_string('no_lookup_records_found', 'local_bath_grades_transfer') . "</p>");
             }
         }
     }
@@ -285,8 +282,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $date
      * @param $datetimeselectoroptions
      */
-    protected function transfer_date_control(&$mform, $date, $datetimeselectoroptions)
-    {
+    protected function transfer_date_control(&$mform, $date, $datetimeselectoroptions) {
         if (!is_null($date)) {
             $mform->addElement('date_time_selector', 'bath_grade_transfer_time_start', 'Transfer grades from',
                 $datetimeselectoroptions, []);
@@ -306,25 +302,24 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $select
      * @param $cmid
      */
-    private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid)
-    {
+    private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid) {
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
             $select->setSelected($lrecord->id);
-            $select->addOption(get_string('samis_assessment_mapping_option_label','local_bath_grades_transfer',$lrecord),
+            $select->addOption(get_string('samis_assessment_mapping_option_label', 'local_bath_grades_transfer', $lrecord),
                 $lrecord->id, $attributes, $select);
         } else {
             // Other lookups.
             $mappingbylookup = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($lrecord->id);
             if (!empty($mappingbylookup)) {
                 if ($cmid != $mappingbylookup->coursemodule) {
-                    $select->addOption(get_string('samis_assessment_mapping_option_label', 'local_bath_grades_transfer', $lrecord).
+                    $select->addOption(get_string('samis_assessment_mapping_option_label', 'local_bath_grades_transfer', $lrecord) .
                         "is in use", $lrecord->id, ['disabled' => 'disabled', 'title' => 'ACTIVITY ID :' .
                         $mappingbylookup->coursemodule . ' AND TYPE : ' . $mappingbylookup->activitytype], $select);
                 }
             } else {
                 $select->addOption
-                (get_string('samis_assessment_mapping_option_label','local_bath_grades_transfer',$lrecord)
-                    ,$lrecord->id, $attributes, $select);
+                (get_string('samis_assessment_mapping_option_label', 'local_bath_grades_transfer', $lrecord)
+                    , $lrecord->id, $attributes, $select);
             }
 
         }
@@ -336,8 +331,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $attributes
      * @param $select
      */
-    public function select_option_format($title, $value, $attributes, &$select, $cmid = null)
-    {
+    public function select_option_format($title, $value, $attributes, &$select, $cmid = null) {
         // Check that the record_id is mapped to an assessment mapping.
         if (\local_bath_grades_transfer_assessment_mapping::exists_by_lookup_id($value)) {
             // Fetch the mapping.
@@ -361,8 +355,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $lrecord
      * @param $select
      */
-    protected function display_select_options($lrecord, &$select)
-    {
+    protected function display_select_options($lrecord, &$select) {
 
         if ($this->assessmentmapping->exists_by_lookup_id($lrecord->id)) {
             // Get the mapping to get the course ID.
@@ -386,8 +379,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @throws Exception
      * @author John Illsley
      */
-    public function sync_remote_assessments($moodlecourseid = null)
-    {
+    public function sync_remote_assessments($moodlecourseid = null) {
         global $DB;
 
         if (is_null($moodlecourseid)) {
@@ -414,12 +406,12 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                     $update['expired'] = time();
                     $expirelookups = array_diff($localassessments, $remoteassessments); // Assessments in local but not in remote.
                     foreach ($expirelookups as $k => $v) {
-                        $lookup_count = $DB->get_record_sql( "
+                        $lookup_count = $DB->get_record_sql("
                         SELECT COUNT(*) AS total, lookupid FROM {local_bath_grades_lookup_occ}
                         WHERE lookupid = ( 
                           SELECT lookupid 
                           FROM {local_bath_grades_lookup_occ}
-                          WHERE id = ".$k."
+                          WHERE id = " . $k . "
                           )
                         ");
 
@@ -428,7 +420,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         $conditions["id"] = $k;
                         $DB->delete_records("local_bath_grades_lookup_occ", $conditions);
 
-                        if ($lookup_count->total==1) {
+                        if ($lookup_count->total == 1) {
                             // Only expire the lookup if it only has one occurrence.
                             $update['id'] = $lookup_count->lookupid;
                             $DB->update_record('local_bath_grades_lookup', $update);
@@ -446,21 +438,22 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                         $lookup["timecreated"] = time();
 
                         // Check if lookup record already exists (ignoring occurrence)
-                        if (!$id = $DB->get_field( "local_bath_grades_lookup", "id", array (
+                        if (!$id = $DB->get_field("local_bath_grades_lookup", "id", array(
                             // can't find lookup record - needs adding.
-                            "mapcode"=>$lookup["mapcode"],
-                            "periodslotcode"=>$lookup["periodslotcode"],
-                            "mabseq"=>$lookup["mabseq"],
-                            "academicyear"=>$lookup["academicyear"] ))) {
+                            "mapcode" => $lookup["mapcode"],
+                            "periodslotcode" => $lookup["periodslotcode"],
+                            "mabseq" => $lookup["mabseq"],
+                            "academicyear" => $lookup["academicyear"]))
+                        ) {
                             $id = $DB->insert_record('local_bath_grades_lookup', $lookup);
                         }
 
-                        $lookup_occurrence = array (
-                            "lookupid"=>$id,
-                            "mavoccur"=>$occurrence);
+                        $lookup_occurrence = array(
+                            "lookupid" => $id,
+                            "mavoccur" => $occurrence);
 
                         // Check if occurrence doesn't already exists
-                        if (!$DB->get_field( "local_bath_grades_lookup_occ", "id", $lookup_occurrence)) {
+                        if (!$DB->get_field("local_bath_grades_lookup_occ", "id", $lookup_occurrence)) {
                             // can't find lookup occurence record - needs adding.
                             $DB->insert_record('local_bath_grades_lookup_occ', $lookup_occurrence);
                         }
@@ -474,7 +467,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
 
                             // At least one field has changed so update.
                             $localdata[$localkey] = $remotedata[$remotekey];
-                            $localdata[$localkey]["id"] = $DB->get_field( "local_bath_grades_lookup_occ", "lookupid", array ("id"=>$localkey));
+                            $localdata[$localkey]["id"] = $DB->get_field("local_bath_grades_lookup_occ", "lookupid", array("id" => $localkey));
                             unset($localdata[$localkey]["mavoccur"]);
                             $DB->update_record('local_bath_grades_lookup', $localdata[$localkey]);
                         }
@@ -491,8 +484,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $mapping array
      * @return string
      */
-    private static function lookup_transform($mapping)
-    {
+    private static function lookup_transform($mapping) {
         $mapping = (array)$mapping;
         $a = array();
         $a["mapcode"] = $mapping["mapcode"];
@@ -505,16 +497,15 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $samisattributes
      * @return mixed
      */
-    public function get_local_assessment_details($samisattributes)
-    {
+    public function get_local_assessment_details($samisattributes) {
         global $DB;
         $localassessments = $DB->get_records_sql("
             SELECT o.id, l.mapcode, l.mabseq, l.astcode, l.mabperc, l.mabname, o.mavoccur
             FROM {local_bath_grades_lookup} AS l, {local_bath_grades_lookup_occ} AS o
             WHERE o.lookupid = l.id
             AND l.expired = 0
-            AND l.samisunitcode = '". $samisattributes->samisunitcode ."'
-            AND l.academicyear = '". $samisattributes->academicyear ."'
+            AND l.samisunitcode = '" . $samisattributes->samisunitcode . "'
+            AND l.academicyear = '" . $samisattributes->academicyear . "'
             AND l.periodslotcode = '" . $samisattributes->periodslotcode . "'
         ");
 
@@ -528,8 +519,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $grades
      * @return \gradereport_transfer\output\transfer_status $status
      */
-    public function do_transfer($mappingid, $grades, $web = false)
-    {
+    public function do_transfer($mappingid, $grades, $web = false) {
         global $DB;
         $status = null;
         if (!empty($grades)) {
@@ -584,8 +574,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * Lock a given mapping
      * @param $mappingid
      */
-    public static function lock_mapping($mappingid)
-    {
+    public static function lock_mapping($mappingid) {
         $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, false);
         if ($assessmentmapping) {
             $assessmentmapping->set_locked(true);
@@ -599,8 +588,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $moodlecourseid Moodle Course ID
      * @return $defaultmapping
      */
-    private function default_samis_mapping($moodlecourseid, \local_bath_grades_transfer_samis_attributes $attributes)
-    {
+    private function default_samis_mapping($moodlecourseid, \local_bath_grades_transfer_samis_attributes $attributes) {
         $defaultmapping = null;
         global $DB;
         $sql = "SELECT * FROM {sits_mappings} WHERE courseid = :courseid  AND active = 1 and default_map = 1
@@ -619,8 +607,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $context
      * @param $event_message
      */
-    protected function raise_custom_error_event($context, $event_message)
-    {
+    protected function raise_custom_error_event($context, $event_message) {
         // Origin is always CLI.
 
         $event = \local_bath_grades_transfer\event\grades_transfer_custom_error::create(
@@ -635,8 +622,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
     /**
      * Cron that processes any automated transfers
      */
-    public function cron_transfer($lasttaskruntime)
-    {
+    public function cron_transfer($lasttaskruntime) {
         global $CFG;
         $userstotransfer = null;
         $userids = array();
@@ -654,8 +640,8 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
-                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid,$moodlecourseid)) {
-                        $userids = array_keys ($userstotransfer);
+                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
+                        $userids = array_keys($userstotransfer);
                         $this->transfer_mapping2($mappingid, $userids);
                     } else {
                         echo "++++NO USERS TO TRANSFER++++";
@@ -682,8 +668,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @return bool
      * @throws Exception
      */
-    public function transfer_mapping2($mappingid, $userids = array(), $source = 'web')
-    {
+    public function transfer_mapping2($mappingid, $userids = array(), $source = 'web') {
         echo "+++++++++++INSIDE TRANSFER MAPPNG 2+++++++++++";
         global $DB;
         $singleusertransfer = array();
@@ -784,8 +769,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param string $source
      * @return \gradereport_transfer\output\transfer_status|null
      */
-    public function transfer_mapping($mappingid, $userids = array(), $source = 'web')
-    {
+    public function transfer_mapping($mappingid, $userids = array(), $source = 'web') {
         // Get the mapping object for the ID.
         global $DB;
         $transferstatuses = null;
@@ -894,8 +878,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $samismappingid
      * @param $assessmentmapping
      */
-    protected function get_users_readyto_transfer_2($samismappingid, $assessmentmapping)
-    {
+    protected function get_users_readyto_transfer_2($samismappingid, $assessmentmapping) {
         // Get the samis students.
         $samisusers = $this->get_samis_users($samismappingid);
         // For each user make sure get the grade transfer log and make sure log.outcomeid is NOT grade trans
@@ -916,8 +899,7 @@ $lrecord->mabname exists but the lookup has now expired !!! </p>");
      * @param $userid
      * @param $mappingid
      */
-    protected function get_transfer_log($userid, $mappingid)
-    {
+    protected function get_transfer_log($userid, $mappingid) {
         global $DB;
         $where = " userid = ? AND gradetransfermappingid = 
         ?
@@ -943,8 +925,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $moodlecourseid
      * @return array|bool
      */
-    protected function get_users_readyto_transfer($samismappingid,$moodlecourseid)
-    {
+    protected function get_users_readyto_transfer($samismappingid, $moodlecourseid) {
         global $DB;
         $users = array();
         $context = context_course::instance($moodlecourseid);
@@ -967,7 +948,7 @@ WHERE userid = ? AND gradetransfermappingid =
         JOIN {user} u ON u.id = ue.userid
         JOIN {role_assignments} ra 
             ON ra.userid = u.id
-            AND contextid = ".$context->id."
+            AND contextid = " . $context->id . "
             AND roleid = 5 /* student role */
             
         /***** join moodle activity information relating to mapping including current grade *****/
@@ -1002,7 +983,7 @@ WHERE userid = ? AND gradetransfermappingid =
         LEFT JOIN {local_bath_grades_outcome} oc ON log.outcomeid = oc.id
 
         WHERE gm.id = $samismappingid
-        AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . "," .GRADE_ALREADY_EXISTS. ")
+        AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . "," . GRADE_ALREADY_EXISTS . ")
                OR log.outcomeid IS NULL) -- already transferred or queued
         AND gg.finalgrade IS NOT NULL
         AND CEIL(gg.finalgrade) = gg.finalgrade
@@ -1034,8 +1015,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @return array|null
      * @throws Exception
      */
-    protected function get_samis_users($samismappingid)
-    {
+    protected function get_samis_users($samismappingid) {
         global $DB;
         $users = null;
         $sql = " SELECT ue.userid,u.username FROM {sits_mappings} sm
@@ -1058,8 +1038,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $moodleuserid
      * @return null|SimpleXMLElement
      */
-    public function get_spr_from_bucs_id($moodleuserid)
-    {
+    public function get_spr_from_bucs_id($moodleuserid) {
         global $DB;
         $sprcode = null;
         if (isset($moodleuserid)) {
@@ -1077,8 +1056,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $remotegradestructure
      * @return mixed
      */
-    public function local_precheck_conditions($userid, $grade, $assessmentmapping)
-    {
+    public function local_precheck_conditions($userid, $grade, $assessmentmapping) {
         global $DB;
         $outcomeid = null;
 
@@ -1138,22 +1116,17 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $remotegradestructure
      * @return mixed
      */
-    public function remote_precheck_conditions($userid, $spr_code, $gradestructure)
-    {
+    public function remote_precheck_conditions($userid, $spr_code, $gradestructure) {
 
         $outcomeid = null;
 
         // SPR code missing.
         if (empty($spr_code)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
-        }
-
-        // Student not in SAMIS grade structure.
+        } // Student not in SAMIS grade structure.
         elseif (!array_key_exists($spr_code, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
-        }
-
-        // Grade already in SAMIS grade structure.
+        } // Grade already in SAMIS grade structure.
         elseif (!empty($gradestructure[$spr_code]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
@@ -1174,8 +1147,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $remotegradestructure
      * @return mixed
      */
-    public function precheck_conditions($moodleusergrades, $remotegradestructure, $assessmentmapping, $web = false)
-    {
+    public function precheck_conditions($moodleusergrades, $remotegradestructure, $assessmentmapping, $web = false) {
         $oktotransfer = false;
         $status = null;
         $finalgradestruct = array();
@@ -1267,8 +1239,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $coursemodule
      * @return mixed|null
      */
-    private function get_moodle_grade($userid, $coursemodule)
-    {
+    private function get_moodle_grade($userid, $coursemodule) {
         global $DB;
         $grade = null;
         $params = array();
@@ -1296,8 +1267,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $samismappingid
      * @return array
      */
-    private function get_users_samis_mapping($samismappingid)
-    {
+    private function get_users_samis_mapping($samismappingid) {
         global $DB;
         $users = array();
         // TODO Change this to samisv1 when going live !!!!.
@@ -1319,8 +1289,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $coursemoduleid
      * @return mixed|null
      */
-    private function get_moodle_course_id_coursemodule($coursemoduleid)
-    {
+    private function get_moodle_course_id_coursemodule($coursemoduleid) {
         global $DB;
         $moodlecourseid = null;
         $moodlecourseid = $DB->get_field('course_modules', 'course', ['id' => $coursemoduleid]);
@@ -1332,8 +1301,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $modulename
      * @return mixed
      */
-    public static function get_config_settings($modulename)
-    {
+    public static function get_config_settings($modulename) {
         $pluginconfig = get_config('local_bath_grades_transfer', 'bath_grades_transfer_use_' . $modulename);
         return $pluginconfig;
     }
@@ -1344,8 +1312,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $remoteassessments
      * @return bool
      */
-    public function samisassessmentid_valid($samisassessmentid, $remoteassessments)
-    {
+    public function samisassessmentid_valid($samisassessmentid, $remoteassessments) {
 
         // Fetch samis attributes.
         $valid = false;
@@ -1366,12 +1333,11 @@ WHERE userid = ? AND gradetransfermappingid =
      * Action to perform when module settings a saved in modedit.php form page
      * @param $data
      */
-    public function save_form_elements($data)
-    {
+    public function save_form_elements($data) {
         // Get time start.
         global $USER;
         $mappingchanged = false;
-        if ($data->modulename !== 'assign') {
+        if ($data->modulename !== 'assign' || $data->modulename !== 'quiz') {
             return true;
         }
         // Get the assessment lookup id from the posted form data.
@@ -1462,8 +1428,7 @@ WHERE userid = ? AND gradetransfermappingid =
     /**
      * @param $data
      */
-    private function create_new_mapping($data)
-    {
+    private function create_new_mapping($data) {
         global $USER;
         $newassessmentmappingdata = new stdClass();
         $newassessmentmappingdata->modifierid = $USER->id;
@@ -1487,8 +1452,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $formdata
      * @param $currentmapping
      */
-    private function update_assessment_mapping($formdata, $currentmapping)
-    {
+    private function update_assessment_mapping($formdata, $currentmapping) {
         global $USER;
         // UPDATE.
         $newassessmentmappingdata = new stdClass();
@@ -1515,8 +1479,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $moodlecourseid
      * @return local_bath_grades_transfer_samis_attributes
      */
-    public function get_samis_mapping_attributes($moodlecourseid)
-    {
+    public function get_samis_mapping_attributes($moodlecourseid) {
         $samisattributes = array();
         global $DB;
         if (isset($moodlecourseid)) {
@@ -1546,8 +1509,7 @@ WHERE userid = ? AND gradetransfermappingid =
     /**
      * sets current academic year in the format 'yyyy/+1' style, such as 2010/1, 2011/2 and the lke
      */
-    protected function set_currentacademicyear()
-    {
+    protected function set_currentacademicyear() {
         $date_array = explode('-', $this->date->format('m-Y'));
         if (intval($date_array[0]) > 7) { //TODO change academic year end to 7 (end of July)
             $this->currentacademicyear = strval(intval($date_array[1])) . '/' . substr(strval(intval($date_array[1]) + 1), -1);
@@ -1564,8 +1526,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $moodlecourseid
      * @return bool
      */
-    public function samis_mapping_exists($moodlecourseid)
-    {
+    public function samis_mapping_exists($moodlecourseid) {
         global $DB;
         return $DB->record_exists('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->currentacademicyear]);
         //return $DB->record_exists('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
@@ -1575,8 +1536,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * @param $form
      * @param $repeated
      */
-    protected function add_more_mappings($form, $repeated)
-    {
+    protected function add_more_mappings($form, $repeated) {
 
         $form->repeat_elements($repeated, 0, [],
             'numhints', 'addhint', 1, 'Add another Mapping', true);
@@ -1585,8 +1545,7 @@ WHERE userid = ? AND gradetransfermappingid =
     /**
      * @return string
      */
-    protected function add_more_mappings_string()
-    {
+    protected function add_more_mappings_string() {
         return get_string('addmoreanswerblanks', 'qtype_shortanswer');
     }
 
@@ -1594,8 +1553,7 @@ WHERE userid = ? AND gradetransfermappingid =
      * Test Connection SAMIS API
      * @param bool $testing
      */
-    public function test_samis_connection($testing = false)
-    {
+    public function test_samis_connection($testing = false) {
         //Contact the API client
         $this->api_client->authenticate();
         return;
