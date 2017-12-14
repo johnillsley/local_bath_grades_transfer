@@ -41,6 +41,9 @@
                 <FIELD NAME="samisassessmentid" TYPE="char" LENGTH="21" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="mabname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"
                        COMMENT="SAMIS Assessment Name"/>
+                <!-- Anonymous Marking Field-->
+                <FIELD NAME="mabpnam" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"
+                       COMMENT="Anonymous Flag"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
