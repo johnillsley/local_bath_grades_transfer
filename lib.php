@@ -168,8 +168,9 @@ class=\"alert-info alert \">
         if ($assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
             $samisassessmentenddate = $assessmentmapping->samisassessmentenddate;
             $locked = $assessmentmapping->get_locked();
-
+            var_dump($locked);
             if ($locked) {
+                $dropdownattributes['disabled'] = 'disabled';
                 if ($assessmentmapping->samisassessmentenddate != '0') {
                     $samisassessmentenddate = userdate($assessmentmapping->samisassessmentenddate);
                 } else {
@@ -190,23 +191,33 @@ class=\"alert-info alert \">
                 }
 
                 // Warn user that mapping is locked and prevent any further changes.
-                $dropdownattributes['disabled'] = 'disabled';
+
                 $mform->addElement('html', "<p class=\"alert-warning alert\"><i class=\"fa fa-lock\" aria-hidden=\"true\"></i> " .
                     get_string('bath_grade_transfer_settings_locked', 'local_bath_grades_transfer') . "</p>");
+                $this->transfer_mapping_control($lookuprecords, $cmid, $mform, $assessmentmapping, $dropdownattributes);
                 $mform->addElement('static', 'bath_grade_transfer_time_start_locked', 'Transfer grades from',
                     $samisassessmentenddate);
                 $mform->addHelpButton('bath_grade_transfer_time_start_locked', 'bath_grade_transfer_time_start',
                     'local_bath_grades_transfer');
                 $mform->addElement('hidden', 'bath_grade_transfer_time_start', $assessmentmapping->samisassessmentenddate);
                 $mform->setType('bath_grade_transfer_time_start', PARAM_INT);
+
+            } else {
+                // Not locked.
+                /******** MAPPING CONTROL ******/
+                $this->transfer_mapping_control($lookuprecords, $cmid, $mform, $assessmentmapping, $dropdownattributes);
+                /******** DATE CONTROL ******/
+                $this->transfer_date_control($mform, $samisassessmentenddate, $datetimeselectoroptions);
             }
         } else {
+            // No Assessment mapping.
             $samisassessmentenddate = null;
+            /******** MAPPING CONTROL ******/
+            $this->transfer_mapping_control($lookuprecords, $cmid, $mform, $assessmentmapping, $dropdownattributes);
+            /******** DATE CONTROL ******/
+            $this->transfer_date_control($mform, $samisassessmentenddate, $datetimeselectoroptions);
         }
-        /******** MAPPING CONTROL ******/
-        $this->transfer_mapping_control($lookuprecords, $cmid, $mform, $assessmentmapping, $dropdownattributes);
-        /******** DATE CONTROL ******/
-        $this->transfer_date_control($mform, $samisassessmentenddate, $datetimeselectoroptions);
+
     }
 
     /** Get the transfer form mapping control
@@ -801,10 +812,10 @@ class=\"alert-info alert \">
 
     /**
      * Action to perform when module settings a saved in modedit.php form page
-     * @param $data
+     * @param $formdata
      */
     public function save_form_elements($formdata) {
-        // default actions - do nothing.
+        // Default actions - do nothing.
         $savemapping = false;
         $createevent = false;
 
@@ -827,15 +838,15 @@ class=\"alert-info alert \">
             $mapping->id = $currentassessmentmapping->id;
 
             if ($formsamisassessmentlookupid != $currentassessmentlookupid) {
-                // mapping has changed.
+                // Mapping has changed.
                 $savemapping = true;
                 $createevent = true;
-            } elseif ($currentassessmentenddate != $formdata->bath_grade_transfer_time_start) {
-                // transfer date has changed.
+            } else if ($currentassessmentenddate != $formdata->bath_grade_transfer_time_start) {
+                // Transfer date has changed.
                 $savemapping = true;
             }
         } elseif ($formsamisassessmentlookupid > 0) {
-            // new mapping.
+            // New mapping.
             $savemapping = true;
             $createevent = true;
         }
