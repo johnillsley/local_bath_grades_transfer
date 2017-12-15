@@ -33,18 +33,18 @@
 /**
  * Class local_bath_grades_transfer constants
  */
-const MAX_GRADE                     = 100;
-// transfer outcome codes
-const TRANSFER_SUCCESS              = 1;
-const GRADE_MISSING                 = 2;
-const TRANSFER_FAILURE              = 3;
-const GRADE_ALREADY_EXISTS          = 4;
-const GRADE_NOT_IN_MOODLE_COURSE    = 5;
-const GRADE_NOT_OUT_OF_100          = 6;
-const GRADE_NOT_IN_STRUCTURE        = 7;
-const GRADE_QUEUED                  = 8;
-const GRADE_NOT_WHOLE_NUMBER        = 9;
-const COULD_NOT_GET_SPR_CODE        = 10;
+const MAX_GRADE = 100;
+// Transfer outcome codes.
+const TRANSFER_SUCCESS = 1;
+const GRADE_MISSING = 2;
+const TRANSFER_FAILURE = 3;
+const GRADE_ALREADY_EXISTS = 4;
+const GRADE_NOT_IN_MOODLE_COURSE = 5;
+const GRADE_NOT_OUT_OF_100 = 6;
+const GRADE_NOT_IN_STRUCTURE = 7;
+const GRADE_QUEUED = 8;
+const GRADE_NOT_WHOLE_NUMBER = 9;
+const COULD_NOT_GET_SPR_CODE = 10;
 
 /**
  * Class local_bath_grades_transfer
@@ -73,18 +73,18 @@ class local_bath_grades_transfer
      * @var
      */
     public $enrolsitsplugin;
+
     /**
      * local_bath_grades_transfer constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->samisdata = new \local_bath_grades_transfer_external_data();
         $this->allowedmods = explode(',', get_config('local_bath_grades_transfer', 'bath_grades_transfer_use'));
         $this->local_grades_transfer_log = new \local_bath_grades_transfer_log();
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
         $this->assessmentmapping = new \local_bath_grades_transfer_assessment_mapping();
-        //SET DUMMY TESTING ACADEMIC YEAR
+        // SET DUMMY TESTING ACADEMIC YEAR.
         //$this->currentacademicyear = '2016/7';  // This is for testing only
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
@@ -95,8 +95,7 @@ class local_bath_grades_transfer
      * Do not show users the Grades Transfer settings part if the plugin is not completely setup
      * @return bool true | false
      */
-    public function is_admin_config_present()
-    {
+    public function is_admin_config_present() {
         $config = get_config('local_bath_grades_transfer'); // Get config vars from mdl_config.
         if (!empty($config->samis_api_key) ||
             !empty($config->samis_api_url) || !empty($config->samis_api_user)
@@ -118,7 +117,7 @@ class local_bath_grades_transfer
         global $COURSE, $CFG, $PAGE;
         $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
         require($CFG->dirroot . '/enrol/sits/lib.php');
-        //Optional cmid param.
+        // Optional cmid param.
         $cmid = optional_param('update', 0, PARAM_INT);
 
         // Check that config is set.
@@ -167,15 +166,15 @@ class=\"alert-info alert \">
         $dropdownattributes = array();
         $datetimeselectoroptions = array('optional' => true);
         if ($assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
-            if ($assessmentmapping->samisassessmentenddate != '0') {
-                $samisassessmentenddate = userdate($assessmentmapping->samisassessmentenddate);
-            } else {
-                $samisassessmentenddate = 'Not Set';
-            }
+            $samisassessmentenddate = $assessmentmapping->samisassessmentenddate;
             $locked = $assessmentmapping->get_locked();
 
             if ($locked) {
-
+                if ($assessmentmapping->samisassessmentenddate != '0') {
+                    $samisassessmentenddate = userdate($assessmentmapping->samisassessmentenddate);
+                } else {
+                    $samisassessmentenddate = 'Not Set';
+                }
                 // ASSESSMENT MAPPING IS LOCKED.
                 $context = context_module::instance($cmid);
 
@@ -200,14 +199,14 @@ class=\"alert-info alert \">
                     'local_bath_grades_transfer');
                 $mform->addElement('hidden', 'bath_grade_transfer_time_start', $assessmentmapping->samisassessmentenddate);
                 $mform->setType('bath_grade_transfer_time_start', PARAM_INT);
-
             }
+        } else {
+            $samisassessmentenddate = null;
         }
         /******** MAPPING CONTROL ******/
         $this->transfer_mapping_control($lookuprecords, $cmid, $mform, $assessmentmapping, $dropdownattributes);
-
         /******** DATE CONTROL ******/
-        $this->transfer_date_control($mform, $assessmentmapping->samisassessmentenddate, $datetimeselectoroptions);
+        $this->transfer_date_control($mform, $samisassessmentenddate, $datetimeselectoroptions);
     }
 
     /** Get the transfer form mapping control
@@ -230,10 +229,10 @@ class=\"alert-info alert \">
         } else {
             $mform->addElement('html', "<p class=\"alert-info alert\">No lookup records were found </p>");
         }
-        // Help button for transfer mapping select element
+        // Help button for transfer mapping select element.
         $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id',
             'local_bath_grades_transfer');
-        // Disable select element if grading is not out of 100
+        // Disable select element if grading is not out of 100.
         $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
     }
 
@@ -248,23 +247,23 @@ class=\"alert-info alert \">
     private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid) {
         $optiontext = $lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )";
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
-            // The lookup is mapped to this course module so set selected
+            // The lookup is mapped to this course module so set selected.
             $select->setSelected($lrecord->id);
         } else {
             $mappingbylookup = \local_bath_grades_transfer_assessment_mapping::get_by_lookup_id($lrecord->id);
             if (!empty($mappingbylookup)) {
                 if ($cmid != $mappingbylookup->coursemodule) {
-                    // The lookup is mapped to another course module so disable and set warning
+                    // The lookup is mapped to another course module so disable and set warning.
                     $attributes = array(
                         'disabled' => 'disabled',
                         'title' => 'ACTIVITY ID :' .
                             $mappingbylookup->coursemodule . ' AND TYPE : ' . $mappingbylookup->activitytype
                     );
-                    // Add extra option text
+                    // Add extra option text.
                     $optiontext .= ' is in use';
                 }
             } elseif ($lrecord->is_expired()) {
-                // The select option shouldn't be displayed
+                // The select option shouldn't be displayed.
                 return;
             }
         }
@@ -276,8 +275,7 @@ class=\"alert-info alert \">
      * @param $date
      * @param $datetimeselectoroptions
      */
-    protected function transfer_date_control(&$mform, $date, $datetimeselectoroptions)
-    {
+    protected function transfer_date_control(&$mform, $date, $datetimeselectoroptions) {
         $mform->addElement('date_time_selector', 'bath_grade_transfer_time_start', 'Transfer grades from',
             $datetimeselectoroptions, []);
         if (isset($date)) {
@@ -291,8 +289,7 @@ class=\"alert-info alert \">
      * @param $grades
      * @return \gradereport_transfer\output\transfer_status $status
      */
-    public function do_transfer($mappingid, $grades, $web = false)
-    {
+    public function do_transfer($mappingid, $grades, $web = false) {
         global $DB;
         $status = null;
         if (!empty($grades)) {
@@ -380,14 +377,13 @@ class=\"alert-info alert \">
      * @param $context
      * @param $event_message
      */
-    protected function raise_custom_error_event($context, $event_message)
-    {
+    protected function raise_custom_error_event($context, $eventmessage) {
         // Origin is always CLI.
 
         $event = \local_bath_grades_transfer\event\grades_transfer_custom_error::create(
             array(
                 'context' => $context,
-                'other' => array('message' => $event_message)
+                'other' => array('message' => $eventmessage)
             )
         );
         $event->trigger();
@@ -396,8 +392,7 @@ class=\"alert-info alert \">
     /**
      * Cron that processes any automated transfers
      */
-    public function cron_transfer($lasttaskruntime)
-    {
+    public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
         // CRON RUN.
         // Get all mappings .
@@ -568,7 +563,7 @@ class=\"alert-info alert \">
         JOIN {user} u ON u.id = ue.userid
         JOIN {role_assignments} ra 
             ON ra.userid = u.id
-            AND contextid = ".$context->id."
+            AND contextid = " . $context->id . "
             AND roleid = 5 /* student role */
             
         /***** join moodle activity information relating to mapping including current grade *****/
@@ -744,14 +739,10 @@ class=\"alert-info alert \">
         // SPR code missing.
         if (empty($spr_code)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
-        }
-
-        // Student not in SAMIS grade structure.
+        } // Student not in SAMIS grade structure.
         elseif (!array_key_exists($spr_code, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
-        }
-
-        // Grade already in SAMIS grade structure.
+        } // Grade already in SAMIS grade structure.
         elseif (!empty($gradestructure[$spr_code]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
@@ -817,7 +808,7 @@ class=\"alert-info alert \">
         $savemapping = false;
         $createevent = false;
 
-        if (!in_array( 'mod_' . $formdata->modulename, $this->allowedmods)) {
+        if (!in_array('mod_' . $formdata->modulename, $this->allowedmods)) {
             return false;
         }
         // Get the assessment lookup id from the posted form data.
@@ -835,7 +826,7 @@ class=\"alert-info alert \">
             $currentassessmentenddate = $currentassessmentmapping->samisassessmentenddate;
             $mapping->id = $currentassessmentmapping->id;
 
-            if ($formsamisassessmentlookupid != $currentassessmentlookupid ) {
+            if ($formsamisassessmentlookupid != $currentassessmentlookupid) {
                 // mapping has changed.
                 $savemapping = true;
                 $createevent = true;
@@ -914,7 +905,7 @@ class=\"alert-info alert \">
                                 $record->sits_code,
                                 $record->acyear,
                                 $record->period_code
-                                );
+                            );
                         }
                     }
                 }
