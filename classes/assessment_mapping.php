@@ -50,7 +50,7 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
     /**
      * @var boolean
      */
-    private $locked;
+    public $locked;
     /**
      * @var integer
      */
