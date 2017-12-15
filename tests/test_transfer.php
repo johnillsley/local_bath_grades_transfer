@@ -91,20 +91,20 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
         $course = $this->getDataGenerator()->create_course();
         require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
         $gradetransfer = new \local_bath_grades_transfer();
+
         $this->create_sits_mapping($insertmapping, $gradetransfer->currentacademicyear);
         $this->create_initial_lookups($insertlookups, $insertoccurrences, $gradetransfer->currentacademicyear);
 
-        // Use fake rest WS client.
-        $gradetransfer->samis_data->restwsclient = new \test_bath_grades_transfer_rest_client();
-
         // This is what's being tested.
-        $gradetransfer->sync_remote_assessments($course->id);
+        $assessmentlookup = new local_bath_grades_transfer_assessment_lookup();
+        $assessmentlookup->samisdata->restwsclient = new \test_bath_grades_transfer_rest_client();
+        $assessmentlookup->sync_remote_assessments($course->id);
 
         // Setup data to confirm if the test worked
         $samisattributeslist = $gradetransfer->get_samis_mapping_attributes($course->id);
         $samisattributes = array_pop($samisattributeslist); // only one record
-        $lookups = $gradetransfer->get_local_assessment_details($samisattributes);
-        $remotedata = $gradetransfer->samis_data->get_remote_assessment_details_rest($samisattributes);
+        $lookups = $assessmentlookup->get_local_assessment_details($samisattributes);
+        $remotedata = $assessmentlookup->samisdata->get_remote_assessment_details_rest($samisattributes);
         $remotedata = array_pop($remotedata);
 
         // Check that it has been successful.
@@ -116,13 +116,13 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
                 SELECT o.id
                 FROM {local_bath_grades_lookup} AS l, {local_bath_grades_lookup_occ} AS o
                 WHERE o.lookupid = l.id
-                AND l.expired = 0
-                AND l.mapcode = '" . $remoteitem["mapcode"] . "'
-                AND l.mabseq = '" . $remoteitem["mabseq"] . "'
-                AND l.astcode = '" . $remoteitem["astcode"] . "'
-                AND l.mabperc = '" . $remoteitem["mabperc"] . "'
-                AND l.mabname = '" . $remoteitem["mabname"] . "'
-                AND o.mavoccur = '" . $remoteitem["mavoccur"] . "'
+                AND l.expired   = 0
+                AND l.mapcode   = '" . $remoteitem["mapcode"] . "'
+                AND l.mabseq    = '" . $remoteitem["mabseq"] . "'
+                AND l.astcode   = '" . $remoteitem["astcode"] . "'
+                AND l.mabperc   = '" . $remoteitem["mabperc"] . "'
+                AND l.mabname   = '" . $remoteitem["mabname"] . "'
+                AND o.mavoccur  = '" . $remoteitem["mavoccur"] . "'
                 ");
                 if (count($localitems) != 1) {
                     // there should be a single local record matching each remote lookup item
@@ -136,27 +136,15 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
     /**
      * Test that an assessment mapping can be created
      */
+
     public function test_add_grade_transfer_mapping() {
         global $DB;
         $this->resetAfterTest();
 
-        // create all test data
         $course = $this->getDataGenerator()->create_course();
-        $assessmenttime = time();
 
-        // Create course module.
-        $formdata = new stdClass();
-        $formdata->course                               = $course->id;
-        $formdata->name                                 = 'Test 1';
-        $formdata->grade                                = 100;
-        $formdata->bath_grade_transfer_samis_lookup_id  = 1;
-        $formdata->bath_grade_transfer_time_start       = $assessmenttime;
-        $coursemodule = $this->getDataGenerator()->create_module('assign', $formdata);
-
-        // Get the grade transfer mappings
-        $conditions = array();
-        $conditions["coursemodule"] =  $coursemodule->cmid;
-        $mappings = $DB->get_records( 'local_bath_grades_mapping', $conditions );
+        // Create an assessment mapping for test course.
+        list($formdata, $mappings) = $this->create_assessment_mapping($course);
 
         $this->assertTrue(count($mappings) == 1);
         $mapping = array_pop($mappings);
@@ -166,48 +154,38 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
     }
 
     /**
-     * Check that a single grade can be transferred and also detects various problems with the transfer.
+     * Check that a grade structure can be retrieved
      */
-    public function test_transfer_grade() {
+    /*
+    public function test_get_grade_structure() {
         global $CFG, $DB;
         $this->resetAfterTest();
 
-        $course = $this->getDataGenerator()->create_course();
-        $coursecontext = context_course::instance($course->id);
-
         // create all test data
-        require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
-        $gradetransfer = new \local_bath_grades_transfer();
-        $this->create_sits_mapping($insertmapping, $gradetransfer->currentacademicyear);
-        $this->create_initial_lookups($insertlookups, $insertoccurrences, $gradetransfer->currentacademicyear);
+        $course = $this->getDataGenerator()->create_course();
+    }
+*/
+    /**
+     * Check that a single grade can be transferred and also detects various problems with the transfer.
+     */
 
-        // Use fake rest WS client.
-        $gradetransfer->samis_data->restwsclient = new \test_bath_grades_transfer_rest_client();
-        $gradetransfer->sync_remote_assessments($course->id);
-        // use first lookup in the list for mapping.
-        $uselookup = $DB->get_record_sql('SELECT * FROM {local_bath_grades_lookup} WHERE expired = 0 LIMIT 1');
-        $assessmenttime = time();
-        $modulename = 'assign';
+    public function test_transfer_grade() {
+        global $DB;
+        $this->resetAfterTest();
 
-        // Create course module.
-        $formdata = new stdClass();
-        $formdata->course                               = $course->id;
-        $formdata->name                                 = 'Test 1';
-        $formdata->grade                                = 100;
-        $formdata->bath_grade_transfer_samis_lookup_id  = $uselookup->id;
-        $formdata->bath_grade_transfer_time_start       = $assessmenttime;
-        $coursemodule = $this->getDataGenerator()->create_module($modulename, $formdata);
+        $course = $this->getDataGenerator()->create_course();
 
+        // Create an assessment mapping for test course.
+        list($formdata, $mappings) = $this->create_assessment_mapping($course);
+print_r($mappings);
         // Get the grade transfer mappings
-        $conditions = array();
-        $conditions["coursemodule"] =  $coursemodule->cmid;
-        $transfermapping = $DB->get_record('local_bath_grades_mapping', $conditions);
-
+        $transfermapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($coursemodule->cmid);
         // Create a user and enrol on the course
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
 
         // Create the sits mapping and sits enrolment - required to be included in grade transfer.
+        $coursecontext = context_course::instance($course->id);
         $sitsmapping = $DB->get_record('sits_mappings', array("courseid"=>$course->id));
         $enrol = $DB->get_record('enrol', array("courseid"=>$course->id, "enrol"=>"manual"));
         $u_enrol = $DB->get_record('user_enrolments', array("userid"=>$user->id, "enrolid"=>$enrol->id ));
@@ -226,14 +204,12 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
             array( $user->id => array( "userid"=>$user->id, "rawgrade"=>60))
         );
 
+        $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
+
         // THIS IS THE FUNCTION WE ARE TESTING...
-        $gradetransfer->transfer_mapping2($transfermapping->id, array($user->id));
+        $gradetransfer->transfer_mapping2($transfermapping->id, array($user->id), $assessmentgrades);
         print_r($DB->get_records('local_bath_grades_log'));
         print_r($DB->get_records('task_adhoc'));
-        // Grade student on course module
-
-        // Do transfer all
-
     }
 
     /**
@@ -242,7 +218,6 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
     public function test_lock_mapping() {
 
         $this->resetAfterTest();
-
 
     }
 
@@ -271,6 +246,9 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
 
     }
 
+    // END OF UNIT TESTS
+    // START OF PRIVATE FUNCTIONS
+
     private function create_sits_mapping($insertmapping, $currentacademicyear) {
         global $DB;
 
@@ -283,19 +261,62 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
     private function create_initial_lookups($insertlookups, $insertoccurrences, $currentacademicyear) {
         global $DB;
 
-        foreach ($insertlookups as $k=>$v) {
+        foreach ($insertlookups as $k => $v) {
             $insertlookups[$k]->academicyear = $currentacademicyear;
         }
-        foreach($insertlookups as $k=>$v) {
+        foreach ($insertlookups as $k => $v) {
             $id_temp = $v->id;
             $id = $DB->insert_record('local_bath_grades_lookup', $v);
-            foreach($insertoccurrences as $k=>$v) {
-                if($v->lookupid==$id_temp) {
+            foreach ($insertoccurrences as $k => $v) {
+                if ($v->lookupid == $id_temp) {
                     $insertoccurrences[$k]->lookupid = $id;
                 }
             }
         }
+    }
 
-        $DB->insert_records('local_bath_grades_lookup_occ', $insertoccurrences);
+    private function create_assessment_mapping($course) {
+        global $CFG, $DB;
+
+        // create all test data
+        $assessmenttime = time();
+        $modulename = 'assign';
+
+        // Set plugin config value to enable modules to do grade transfer
+        $id = $DB->get_field('config_plugins', 'id', array('plugin'=>'local_bath_grades_transfer', 'name'=>'bath_grades_transfer_use'));
+        $DB->update_record('config_plugins', array('value'=>'mod_assign', 'id'=>$id ));
+
+        // Set up initial lookup data.
+        require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
+        $gradetransfer = new \local_bath_grades_transfer();
+        $gradetransfer->samisdata->restwsclient = new \test_bath_grades_transfer_rest_client();
+        $this->create_sits_mapping($insertmapping, $gradetransfer->currentacademicyear);
+        $this->create_initial_lookups($insertlookups, $insertoccurrences, $gradetransfer->currentacademicyear);
+
+        // Use fake rest WS client and sync lookups.
+        $assessmentlookup = new local_bath_grades_transfer_assessment_lookup();
+        $assessmentlookup->samisdata->restwsclient = new \test_bath_grades_transfer_rest_client();
+        $assessmentlookup->sync_remote_assessments($course->id);
+
+        // Use first lookup in the list for mapping.
+        $uselookup = $DB->get_record_sql('SELECT * FROM {local_bath_grades_lookup} WHERE expired = 0 LIMIT 1');
+
+        // Create course module.
+        $formdata = new stdClass();
+        $formdata->course                               = $course->id;
+        $formdata->name                                 = 'Test 1';
+        $formdata->grade                                = 100;
+        $formdata->bath_grade_transfer_samis_lookup_id  = $uselookup->id;
+        $formdata->bath_grade_transfer_time_start       = $assessmenttime;
+
+        // THIS REPLICATES THE SAVING OF THE ASSIGN SETTINGS FORM IN MOODLE - THIS IS BEING TESTED HERE
+        $coursemodule = $this->getDataGenerator()->create_module($modulename, $formdata);
+
+        // Get the grade transfer mappings
+        $conditions = array();
+        $conditions["coursemodule"] =  $coursemodule->cmid;
+        $mappings = $DB->get_records('local_bath_grades_mapping', $conditions);
+
+        return array($formdata, $mappings);
     }
 }

@@ -114,8 +114,8 @@ class local_bath_grades_transfer_rest_client
 
     /**
      * Main function that is used to make a WEB SERVICE call to the SAMIS system
-     * @param $method
-     * @param $data
+     * @param string $method
+     * @param array $data
      * @param string $verb
      * @return mixed
      * @throws Exception

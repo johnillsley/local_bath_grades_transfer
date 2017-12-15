@@ -113,19 +113,19 @@ class test_bath_grades_transfer_rest_client
     }
 
     /**
-     * Main function that is used to make a WEB SERVICE call to the SAMIS system
-     * @param $method
+     * FOR UNIT TESTING ONLY: Main function that is used to make a WEB SERVICE call
+     * @param string $method
      * @param $data
      * @param string $verb
-     * @return mixed
-     * @throws Exception
+     * @return boolean
      */
-    public function call_samis($method, $data, $verb = 'GET') {
+    public function call_samis($method, $data, $verb = 'GET')
+    {
         global $CFG;
         $this->response = array();
         // **** FOR UNIT TESTING ONLY ****
         // mimics the web service responses from SAMIS
-print "WEB SERVICE TEST CLIENT CALLED";
+
         if ($method == "MABS" && $verb == "GET") {
             $this->response['status'] = 200;
             $this->response['contents'] = file_get_contents($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_ws.json');
@@ -142,68 +142,5 @@ print "WEB SERVICE TEST CLIENT CALLED";
         }
 
         return true;
-
-        /*
-        global $CFG;
-        try {
-            $dataraw = $this->construct_body($data);
-            $this->dataraw = (string)$dataraw;
-            if ($verb == 'POST') {
-                // Post changes.
-                $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
-                    'debug' => false,
-                    'auth' => [$this->username, $this->password],
-                    'timeout' => 40,
-                    'verify' => false, // for dev
-                    'headers' => [
-                        'Content-Type' => 'text/xml',
-                        'Cache-Control' => 'no-cache',
-                    ],
-                    'body' => $data['body']
-                ]);
-            } else {
-                $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
-                    'debug' => false,
-                    'timeout' => 6,
-                    'verify' => false, // for dev
-                    'auth' => [$this->username, $this->password],
-                    'headers' => [
-                        'Content-Type' => 'text/xml',
-                        'Cache-Control' => 'no-cache',
-                    ],
-                ]);
-            }
-            return $this->promise->then(
-            // Success Callback.
-                function (ResponseInterface $res) {
-                    // Return code and response.
-                    $this->response['status'] = $res->getStatusCode();
-                    $this->response['contents'] = $res->getBody()->getContents();
-                },
-                // Error handling.
-                function (RequestException $e) {
-                    if ($e->getCode() == 400) {
-                        // Bad Request.
-                        throw  new \Exception("Could not find remote assessments for " . $e->getMessage());
-                    } else if ($e->getCode() == 404) {
-                        throw  new \Exception("Cant connect to SAMIS");
-                    } else {
-                        throw  new \Exception($e->getMessage());
-                    }
-                }
-            )->wait();
-
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            if ($e->getCode() >= 400) {
-                // Bad Request.
-                throw  new \Exception($e->getMessage());
-            }
-
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
-            echo "Throwing Server Exception Exception #1";
-            // Treat it as we did not get any data.
-            echo $e->getMessage();
-        }
-        */
     }
 }
