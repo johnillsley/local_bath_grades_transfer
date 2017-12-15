@@ -127,7 +127,7 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
             $record = $DB->get_record(self::$table, ['id' => $id]);
             $mappingobject = self::instantiate($record);
         }
-        //Fetch the corresponding lookup too
+        // Fetch the corresponding lookup too.
         if ($getlookup && isset($mappingobject->assessmentlookupid)) {
             $objlookup = \local_bath_grades_transfer_assessment_lookup::get_by_id($mappingobject->assessmentlookupid);
             if ($objlookup) {
@@ -182,18 +182,17 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
      */
     public static function save_mapping($mapping) {
         global $DB, $USER;
-        // Check compulsory fields - they must all be set
+        // Check compulsory fields - they must all be set.
         if (isset($mapping->coursemodule, $mapping->assessmentlookupid, $mapping->activitytype)) {
             $mapping->modifierid = $USER->id;
             $mapping->timemodified = time();
-print_r($mapping);
-            try{
-                if(empty($mapping->id)) {
-                    // Insert record as id not set
+            try {
+                if (empty($mapping->id)) {
+                    // Insert record as id not set.
                     $mapping->timecreated = time();
                     $id = $DB->insert_record(self::$table, $mapping);
                 } else {
-                    // modify existing record
+                    // Modify existing record.
                     $id = $mapping->id;
                     $DB->update_record(self::$table, $mapping);
                 }
@@ -203,7 +202,7 @@ print_r($mapping);
             return static::get_by_id($id);
 
         } else {
-            return false; // compulsory data missing
+            return false; // Compulsory data missing.
         }
     }
 
