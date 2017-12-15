@@ -179,6 +179,8 @@ class local_bath_grades_transfer_external_data
                                 $assess['astcode'] = $objassessment['ast_code'];
                                 $assess['mabperc'] = $objassessment['mab_perc'];
                                 $assess['mabname'] = $objassessment['mab_name'];
+                                // Added anonymous marking.
+                                $assess['mab_pnam'] = $objassessment['mab_pnam'];
                                 $assessments[$mapcode][] = self::convert_underscores_clean($assess);
                             }
                         }
