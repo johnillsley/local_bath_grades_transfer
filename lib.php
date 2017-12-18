@@ -273,7 +273,7 @@ class=\"alert-info alert \">
                     // Add extra option text.
                     $optiontext .= ' is in use';
                 }
-            } elseif ($lrecord->is_expired()) {
+            } else if ($lrecord->is_expired()) {
                 // The select option shouldn't be displayed.
                 return;
             }
@@ -304,9 +304,9 @@ class=\"alert-info alert \">
         global $DB;
         $status = null;
         if (!empty($grades)) {
-            foreach ($grades as $key => $gradeArray) {
+            foreach ($grades as $key => $gradearray) {
                 $userid = $key;
-                $objgrade = $gradeArray['assessment'];
+                $objgrade = $gradearray['assessment'];
                 var_dump($objgrade);
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
@@ -386,7 +386,7 @@ class=\"alert-info alert \">
 
     /**
      * @param $context
-     * @param $event_message
+     * @param $eventmessage
      */
     protected function raise_custom_error_event($context, $eventmessage) {
         // Origin is always CLI.
@@ -449,7 +449,7 @@ class=\"alert-info alert \">
     /**
      * @param $mappingid
      * @param array $userids
-     * @param string $source
+     * @param object $gradestructure
      * @return bool
      * @throws Exception
      */
@@ -460,7 +460,7 @@ class=\"alert-info alert \">
         // Get all mapping and course data and check all ok.
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
             return false;
-            // TODO - should this do more than just return false
+            // TODO - should this do more than just return false.
         }
         $modulecontext = \context_module::instance($assessmentmapping->coursemodule);
 
@@ -477,7 +477,6 @@ class=\"alert-info alert \">
         }
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
-            //$gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
             if (empty($gradestructure)) {
                 // Trigger an event.
                 $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
@@ -500,7 +499,7 @@ class=\"alert-info alert \">
         $this->local_grades_transfer_log->coursemoduleid = $assessmentmapping->coursemodule;
         $this->local_grades_transfer_log->gradetransfermappingid = $assessmentmapping->id;
         $this->local_grades_transfer_log->assessmentlookupid = $assessmentmapping->assessmentlookupid;
-        $spr_list = array();
+        $sprlist = array();
         if (!empty($userids)) {
             foreach ($userids as $userid) {
 
@@ -516,9 +515,9 @@ class=\"alert-info alert \">
                     // Get SPR code.
                     $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
                     try {
-                        $spr_code = $this->samisdata->get_spr_from_bucs_id_rest($bucsusername);
-                        var_dump($spr_code);
-                        $spr_list[$spr_code] = 1; // For checking if any are missing at the end.
+                        $sprcode = $this->samisdata->get_spr_from_bucs_id_rest($bucsusername);
+                        var_dump($sprcode);
+                        $sprlist[$sprcode] = 1; // For checking if any are missing at the end.
                     } catch (\Exception $e) {
                         $this->local_grades_transfer_log->outcomeid = COULD_NOT_GET_SPR_CODE;
                         $this->local_grades_transfer_log->userid = $userid;
@@ -529,19 +528,15 @@ class=\"alert-info alert \">
                     }
 
                     // Pre transfer check (remote).
-                    if ($this->remote_precheck_conditions($userid, $spr_code, $gradestructure)) {
-                        $gradestructure[$spr_code]['assessment']->mark = $grade->finalgrade;
-                        $singleusertransfer[$userid] = $gradestructure[$spr_code];
+                    if ($this->remote_precheck_conditions($userid, $sprcode, $gradestructure)) {
+                        $gradestructure[$sprcode]['assessment']->mark = $grade->finalgrade;
+                        $singleusertransfer[$userid] = $gradestructure[$sprcode];
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
                         }
                     }
                 }
             }
-        }
-
-        foreach ($gradestructure as $k => $v) {
-            // Check if student exists in course???
         }
     }
 
@@ -572,11 +567,10 @@ class=\"alert-info alert \">
         JOIN {sits_mappings_enrols} me ON me.map_id = sm.id
         JOIN {user_enrolments} ue ON ue.id = me.u_enrol_id -- PROBLEM WITH user_enrolments BEING REMOVED!!!
         JOIN {user} u ON u.id = ue.userid
-        JOIN {role_assignments} ra 
+        JOIN {role_assignments} ra
             ON ra.userid = u.id
             AND contextid = " . $context->id . "
             AND roleid = 5 /* student role */
-            
         /***** join moodle activity information relating to mapping including current grade *****/
         JOIN {course_modules} cm ON cm.id = gm.coursemodule
         JOIN {modules} mo ON mo.id = cm.module
@@ -609,7 +603,7 @@ class=\"alert-info alert \">
         LEFT JOIN {local_bath_grades_outcome} oc ON log.outcomeid = oc.id
 
         WHERE gm.id = $samismappingid
-               AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . ") 
+               AND (log.outcomeid NOT IN (" . TRANSFER_SUCCESS . "," . GRADE_QUEUED . ")
                OR log.outcomeid IS NULL) -- already transferred or queued
         AND gg.finalgrade IS NOT NULL
         AND CEIL(gg.finalgrade) = gg.finalgrade
@@ -679,8 +673,9 @@ class=\"alert-info alert \">
     }
 
     /** Checks done after student SPR code has been retrieved (needed to compare local grades with external SAS export)
-     * @param $moodleusergrades
-     * @param $remotegradestructure
+     * @param int $userid
+     * @param object $grade
+     * @param object $assessmentmapping
      * @return mixed
      */
     public function local_precheck_conditions($userid, $grade, $assessmentmapping) {
@@ -739,22 +734,23 @@ class=\"alert-info alert \">
     }
 
     /** Checks done after student SPR code has been retrieved (needed to compare local grades with external SAS export)
-     * @param $moodleusergrades
-     * @param $remotegradestructure
+     * @param int $userid
+     * @param string $sprcode
+     * @param object $gradestructure
      * @return mixed
      */
-    public function remote_precheck_conditions($userid, $spr_code, $gradestructure) {
+    public function remote_precheck_conditions($userid, $sprcode, $gradestructure) {
 
         $outcomeid = null;
 
         // SPR code missing.
-        if (empty($spr_code)) {
+        if (empty($sprcode)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         } // Student not in SAMIS grade structure.
-        elseif (!array_key_exists($spr_code, $gradestructure)) {
+        elseif (!array_key_exists($sprcode, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
         } // Grade already in SAMIS grade structure.
-        elseif (!empty($gradestructure[$spr_code]['assessment']->mark)) {
+        elseif (!empty($gradestructure[$sprcode]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
 
@@ -812,7 +808,8 @@ class=\"alert-info alert \">
 
     /**
      * Action to perform when module settings a saved in modedit.php form page
-     * @param $formdata
+     * @param object $formdata
+     * @return null
      */
     public function save_form_elements($formdata) {
         // Default actions - do nothing.
@@ -845,7 +842,7 @@ class=\"alert-info alert \">
                 // Transfer date has changed.
                 $savemapping = true;
             }
-        } elseif ($formsamisassessmentlookupid > 0) {
+        } else if ($formsamisassessmentlookupid > 0) {
             // New mapping.
             $savemapping = true;
             $createevent = true;
@@ -855,7 +852,7 @@ class=\"alert-info alert \">
             $newmapping = \local_bath_grades_transfer_assessment_mapping::save_mapping($mapping);
             if ($createevent) {
                 // Trigger an event for assessment mapping created.
-                $lookup_name = $formsamisassessmentlookupid == 0 ? ' None' :
+                $lookupname = $formsamisassessmentlookupid == 0 ? ' None' :
                     \local_bath_grades_transfer_assessment_lookup::get_assessment_name_by_id($newmapping->id);
                 $event = \local_bath_grades_transfer\event\assessment_mapping_saved::create(
                     array(
@@ -863,7 +860,7 @@ class=\"alert-info alert \">
                         'courseid' => $formdata->course,
                         'relateduserid' => null,
                         'other' => array(
-                            'lookup_name' => '\'' . $lookup_name . '\''
+                            'lookup_name' => '\'' . $lookupname . '\''
                         )
                     )
                 );
@@ -897,7 +894,7 @@ class=\"alert-info alert \">
     /**
      * Return SAMIS attributes for a Moodle Coursse from mdl_sits_mapping table
      * @param $moodlecourseid
-     * @return local_bath_grades_transfer_samis_attributes
+     * @return array $samisattributes
      */
     public function get_samis_mapping_attributes($moodlecourseid) {
         $samisattributes = array();
@@ -908,7 +905,8 @@ class=\"alert-info alert \">
                 // Check if mapping exists ( should be default only).
                 if ($this->samis_mapping_exists($moodlecourseid)) {
                     // Fetch the mapping for current year.
-                    $records = $DB->get_records('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->currentacademicyear]);
+                    $records = $DB->get_records('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1,
+                        'acyear' => $this->currentacademicyear]);
                     if ($records) {
                         foreach ($records as $record) {
                             // Return Samis attributes object.
@@ -929,15 +927,15 @@ class=\"alert-info alert \">
      * sets current academic year in the format 'yyyy/+1' style, such as 2010/1, 2011/2 and the lke
      */
     protected function set_currentacademicyear() {
-        $date_array = explode('-', $this->date->format('m-Y'));
-        if (intval($date_array[0]) > 7) {
-            $this->currentacademicyear = strval(intval($date_array[1])) . '/' . substr(strval(intval($date_array[1]) + 1), -1);
-            $this->currentacademicyear_start = new DateTime($date_array[1] . '-07-31 00:00:00');
-            $this->academicyear_end = new DateTime($date_array[1] + 1 . '-07-31 00:00:00');
+        $datearray = explode('-', $this->date->format('m-Y'));
+        if (intval($datearray[0]) > 7) {
+            $this->currentacademicyear = strval(intval($datearray[1])) . '/' . substr(strval(intval($datearray[1]) + 1), -1);
+            $this->currentacademicyearstart = new DateTime($datearray[1] . '-07-31 00:00:00');
+            $this->academicyearend = new DateTime($datearray[1] + 1 . '-07-31 00:00:00');
         } else {
-            $this->currentacademicyear = strval(intval($date_array[1]) - 1) . '/' . substr(strval(intval($date_array[1])), -1);
-            $this->currentacademicyear_start = new DateTime($date_array[1] - 1 . '-07-31 00:00:00');
-            $this->currentacademicyear_end = new DateTime($date_array[1] . '-07-31 00:00:00');
+            $this->currentacademicyear = strval(intval($datearray[1]) - 1) . '/' . substr(strval(intval($datearray[1])), -1);
+            $this->currentacademicyearstart = new DateTime($datearray[1] - 1 . '-07-31 00:00:00');
+            $this->currentacademicyearend = new DateTime($datearray[1] . '-07-31 00:00:00');
         }
     }
 
@@ -947,17 +945,8 @@ class=\"alert-info alert \">
      */
     public function samis_mapping_exists($moodlecourseid) {
         global $DB;
-        return $DB->record_exists('sits_mappings', ['courseid' => $moodlecourseid, 'default_map' => 1, 'acyear' => $this->currentacademicyear]);
-        //return $DB->record_exists('samis_mapping', ['moodle_course_id' => $moodlecourseid, 'is_default' => 1]);
-    }
-
-    /**
-     * Test Connection SAMIS API
-     * @param bool $testing
-     */
-    public function test_samis_connection($testing = false) {
-        //Contact the API client
-        $this->api_client->authenticate();
-        return;
+        return $DB->record_exists('sits_mappings', ['courseid' => $moodlecourseid,
+            'default_map' => 1,
+            'acyear' => $this->currentacademicyear]);
     }
 }
