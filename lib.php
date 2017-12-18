@@ -168,7 +168,6 @@ class=\"alert-info alert \">
         if ($assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
             $samisassessmentenddate = $assessmentmapping->samisassessmentenddate;
             $locked = $assessmentmapping->get_locked();
-            var_dump($locked);
             if ($locked) {
                 $dropdownattributes['disabled'] = 'disabled';
                 if ($assessmentmapping->samisassessmentenddate != '0') {
