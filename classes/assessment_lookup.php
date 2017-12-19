@@ -46,15 +46,15 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
     /**
      * @var
      */
-    private $mapcode;
+    public $mapcode;
     /**
      * @var
      */
-    private $mabseq;
+    public $mabseq;
     /**
      * @var
      */
-    private $astcode;
+    public $astcode;
     /**
      * @var
      */
@@ -85,6 +85,29 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
         global $DB;
         $assessmentname = $DB->get_field(self::$table, 'mabname', ['id' => $lookupid]);
         return $assessmentname;
+    }
+    public static function get_by_id($id)
+    {
+        global $DB;
+
+        if (empty($id) || empty(static::$table)) return false;
+        $object = null;
+        $record = null;
+
+        if ($record = $DB->get_record(static::$table, ['id' => $id])) {
+            $object = self::instantiate($record);
+        } else {
+            return false;
+        }
+
+        // Add the attributes.
+        $object->attributes = new \local_bath_grades_transfer_samis_attributes(
+            $record->samisunitcode,
+            $record->academicyear,
+            $record->periodslotcode,
+            $record->mabseq);
+
+        return $object;
     }
 
     /**
