@@ -71,13 +71,16 @@ class local_bath_grades_transfer_rest_client
     /**
      * Function to test connection to SAMIS
      */
-    public function test_connection() {
+    public function test_connection()
+    {
         try {
-            $response = $this->client->request('GET', '/', ['verify' => false]);
+            $uri = explode('/',get_config('local_bath_grades_transfer', 'samis_api_url'));
+            $response = $this->client->request('GET','/'.$uri[3], ['verify' => false,'debug' => true]);
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $this->isconnected = false;
             echo $e->getMessage();
             echo $e->getCode();
         }
