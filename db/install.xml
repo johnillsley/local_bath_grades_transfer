@@ -43,7 +43,7 @@
                        COMMENT="SAMIS Assessment Name"/>
                 <!-- Anonymous Marking Field-->
                 <FIELD NAME="mabpnam" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false"
-                       DEFAULT="0" COMMENT="Anonymous Flag"/>
+                       DEFAULT="N" COMMENT="Anonymous Flag"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
