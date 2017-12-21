@@ -235,6 +235,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                             "mapcode" => $lookup["mapcode"],
                             "periodslotcode" => $lookup["periodslotcode"],
                             "mabseq" => $lookup["mabseq"],
+                            "mabpnam" => $lookup["mabpnam"],
                             "academicyear" => $lookup["academicyear"]))
                         ) {
                             $id = $DB->insert_record('local_bath_grades_lookup', $lookup);
