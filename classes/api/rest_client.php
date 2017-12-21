@@ -49,8 +49,7 @@ class local_bath_grades_transfer_rest_client
     /**
      * local_bath_grades_transfer_rest_client constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         global $CFG;
         $apiurl = get_config('local_bath_grades_transfer', 'samis_api_url');
         $this->username = get_config('local_bath_grades_transfer', 'samis_api_user');
@@ -72,8 +71,7 @@ class local_bath_grades_transfer_rest_client
     /**
      * Function to test connection to SAMIS
      */
-    public function test_connection()
-    {
+    public function test_connection() {
         try {
             $response = $this->client->request('GET', '/', ['verify' => false]);
             if ($response->getStatusCode() == 200) {
@@ -88,8 +86,7 @@ class local_bath_grades_transfer_rest_client
     /**
      * @return mixed
      */
-    public function is_connected()
-    {
+    public function is_connected() {
         return $this->isconnected;
     }
 
@@ -97,8 +94,7 @@ class local_bath_grades_transfer_rest_client
      * @param array $pieces
      * @return string
      */
-    private function construct_body(array $pieces)
-    {
+    private function construct_body(array $pieces) {
         $glue = '/';
         $bodyraw = '';
         $lastElement = end($pieces);
@@ -120,8 +116,7 @@ class local_bath_grades_transfer_rest_client
      * @return mixed
      * @throws Exception
      */
-    public function call_samis($method, $data, $verb = 'GET')
-    {
+    public function call_samis($method, $data, $verb = 'GET') {
         global $CFG;
         try {
             $dataraw = $this->construct_body($data);
