@@ -110,28 +110,6 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
         return $object;
     }
 
-    public static function get_by_id($id) {
-        global $DB;
-
-        if (empty($id) || empty(static::$table)) return false;
-        $object = null;
-        $record = null;
-
-        if ($record = $DB->get_record(static::$table, ['id' => $id])) {
-            $object = self::instantiate($record);
-        } else {
-            return false;
-        }
-
-        // Add the attributes.
-        $object->attributes = new \local_bath_grades_transfer_samis_attributes(
-            $record->samisunitcode,
-            $record->academicyear,
-            $record->periodslotcode,
-            $record->mabseq);
-
-        return $object;
-    }
 
     /**
      * Get Assessment Lookups locally by SAMIS details - ignores occurrence codes
