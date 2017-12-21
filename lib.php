@@ -84,8 +84,6 @@ class local_bath_grades_transfer
         $this->local_grades_transfer_error = new \local_bath_grades_transfer_error();
         $this->date = new DateTime();
         $this->assessmentmapping = new \local_bath_grades_transfer_assessment_mapping();
-        // SET DUMMY TESTING ACADEMIC YEAR.
-        //$this->currentacademicyear = '2016/7';  // This is for testing only
         if (!$this->currentacademicyear) {
             $this->set_currentacademicyear();
         }
@@ -296,6 +294,7 @@ class=\"alert-info alert \">
     }
 
     /** This is the main function that handles transferring of data via web or cron
+     * @param $mappingid
      * @param $grades
      * @return \gradereport_transfer\output\transfer_status $status
      */
@@ -306,7 +305,6 @@ class=\"alert-info alert \">
             foreach ($grades as $key => $gradearray) {
                 $userid = $key;
                 $objgrade = $gradearray['assessment'];
-                var_dump($objgrade);
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
@@ -332,6 +330,8 @@ class=\"alert-info alert \">
                 } catch (\Exception $e) {
                     // Log failure.
                     echo "logging failure";
+                    var_dump($e);
+                    die;
                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
@@ -365,8 +365,8 @@ class=\"alert-info alert \">
 
     /**
      * Return default samis mapping for a Moodle course
-     * @param $moodlecourseid Moodle Course ID
-     * @return $defaultmapping
+     * @param int $moodlecourseid Moodle Course ID
+     * @return object $defaultmapping
      */
     private function default_samis_mapping($moodlecourseid, \local_bath_grades_transfer_samis_attributes $attributes) {
         $defaultmapping = null;
@@ -448,11 +448,11 @@ class=\"alert-info alert \">
     /**
      * @param $mappingid
      * @param array $userids
-     * @param object $gradestructure
+     * @param object $assessmentgrades
      * @return bool
      * @throws Exception
      */
-    public function transfer_mapping2($mappingid, $userids = array(), $gradestructure) {
+    public function transfer_mapping2($mappingid, $userids = array(), $assessmentgrades) {
         global $DB;
         $singleusertransfer = array();
         // CAN THESE ALL BE PUT INTO ONE TRY?????
@@ -476,6 +476,7 @@ class=\"alert-info alert \">
         }
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
+            $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
             if (empty($gradestructure)) {
                 // Trigger an event.
                 $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
@@ -513,6 +514,7 @@ class=\"alert-info alert \">
 
                     // Get SPR code.
                     $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
+                    var_dump($bucsusername);
                     try {
                         $sprcode = $this->samisdata->get_spr_from_bucs_id_rest($bucsusername);
                         var_dump($sprcode);
@@ -698,14 +700,6 @@ class=\"alert-info alert \">
                 LIMIT 1";
         $current = $DB->get_record_sql($sql, $params);
 
-        // Check if already queued or already transfered.
-        /*if ($current->outcomeid == GRADE_QUEUED || $current->outcomeid == TRANSFER_SUCCESS) {
-            // Do nothing!
-            echo "DO NOTHING";
-            die;
-            return false;
-        }*/
-
         // No grade recorded in Moodle.
         if (empty($grade->finalgrade)) {
             $outcomeid = GRADE_MISSING;
@@ -746,10 +740,10 @@ class=\"alert-info alert \">
         if (empty($sprcode)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         } // Student not in SAMIS grade structure.
-        elseif (!array_key_exists($sprcode, $gradestructure)) {
+        else if (!array_key_exists($sprcode, $gradestructure)) {
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
         } // Grade already in SAMIS grade structure.
-        elseif (!empty($gradestructure[$sprcode]['assessment']->mark)) {
+        else if (!empty($gradestructure[$sprcode]['assessment']->mark)) {
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
 

@@ -45,20 +45,13 @@ $PAGE->requires->js_amd_inline("
     //Test Connection to SAMIS Web Service
     $('#test-samis-connection').click(function(e){
         e.preventDefault();
-       test_connection('samis-dev');
+       test_connection();
     });
-    var test_connection = function (system_type) {
-        var url = '';
-        if(system_type == 'samis-dev'){
-            url = 'https://www.bath.ac.uk/samis-dev/'
-        }
-        else{
-            url = 'https://www.bath.ac.uk/samis-live';
-        }
+    var test_connection = function () {
         $.ajax({url: URL,
             timeout:1000,
             type: 'GET',
-            data: {'system':system_type}
+            data: {}
         }).done(function(status){
         //Show status in html
         if(status.connected){
