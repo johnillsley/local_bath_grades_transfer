@@ -148,7 +148,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
     public function get_local_assessment_details(\local_bath_grades_transfer_samis_attributes $samisattributes) {
         global $DB;
         $localassessments = $DB->get_records_sql("
-            SELECT o.id, l.mapcode, l.mabseq, l.astcode, l.mabperc, l.mabname, o.mavoccur
+            SELECT o.id, l.mapcode, l.mabseq, l.astcode, l.mabperc, l.mabname, l.mabpnam, o.mavoccur
             FROM {local_bath_grades_lookup} AS l, {local_bath_grades_lookup_occ} AS o
             WHERE o.lookupid = l.id
             AND l.expired = 0
