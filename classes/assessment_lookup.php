@@ -79,19 +79,25 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
 
     /**
      * Returns the name of an assessment lookup
-     * @param integer assessment lookup id
-     * $return string name of assessment lookup
+     * @param integer $lookupid Assessment lookup id
+     * $return string $assessmentname name of assessment lookup
      */
     public static function get_assessment_name_by_id($lookupid) {
         global $DB;
         $assessmentname = $DB->get_field(self::$table, 'mabname', ['id' => $lookupid]);
         return $assessmentname;
     }
-    public static function get_by_id($id)
-    {
+
+    /**
+     * @param $id
+     * @return bool|local_bath_grades_transfer_assessment|null
+     */
+    public static function get_by_id($id) {
         global $DB;
 
-        if (empty($id) || empty(static::$table)) return false;
+        if (empty($id) || empty(static::$table)) {
+            return false;
+        }
         $object = null;
         $record = null;
 
@@ -191,7 +197,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                     $update['expired'] = time();
                     $expirelookups = array_diff($localassessments, $remoteassessments); // Assessments in local but not in remote.
                     foreach ($expirelookups as $k => $v) {
-                        $lookup_count = $DB->get_record_sql("
+                        $lookupcount = $DB->get_record_sql("
                         SELECT COUNT(*) AS total, lookupid FROM {local_bath_grades_lookup_occ}
                         WHERE lookupid = ( 
                           SELECT lookupid 
@@ -205,9 +211,9 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                         $conditions["id"] = $k;
                         $DB->delete_records("local_bath_grades_lookup_occ", $conditions);
 
-                        if ($lookup_count->total == 1) {
+                        if ($lookupcount->total == 1) {
                             // Only expire the lookup if it only has one occurrence.
-                            $update['id'] = $lookup_count->lookupid;
+                            $update['id'] = $lookupcount->lookupid;
                             $DB->update_record('local_bath_grades_lookup', $update);
                         }
                     }
@@ -216,16 +222,16 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                     $addlookups = array_diff($remoteassessments, $localassessments); // Assessments in remote but not in local.
                     foreach ($addlookups as $k => $addlookup) {
                         $lookup = array_merge($remotedata[$k], (array)$samisattributes);
-                        // prepare lookup data - occurrence is added to different table so handled separately
+                        // Prepare lookup data - occurrence is added to different table so handled separately.
                         $occurrence = $lookup["mavoccur"];
                         unset ($lookup["mavoccur"]);
                         $lookup["samisassessmentid"] = $lookup["mapcode"] . '_' . $lookup["mabseq"];
                         $lookup["timecreated"] = time();
 
-                        // Check if lookup record already exists (ignoring occurrence)
+                        // Check if lookup record already exists (ignoring occurrence).
                         if (!$id = $DB->get_field("local_bath_grades_lookup", "id", array(
-                            // can't find lookup record - needs adding.
-                            "expired" => 0, // Fix for when lookup is deleted and then re-instated
+                            // Can't find lookup record - needs adding.
+                            "expired" => 0, // Fix for when lookup is deleted and then re-instated.
                             "mapcode" => $lookup["mapcode"],
                             "periodslotcode" => $lookup["periodslotcode"],
                             "mabseq" => $lookup["mabseq"],
@@ -234,14 +240,14 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                             $id = $DB->insert_record('local_bath_grades_lookup', $lookup);
                         }
 
-                        $lookup_occurrence = array(
+                        $lookupoccurrence = array(
                             "lookupid" => $id,
                             "mavoccur" => $occurrence);
 
-                        // Check if occurrence doesn't already exists
-                        if (!$DB->get_field("local_bath_grades_lookup_occ", "id", $lookup_occurrence)) {
-                            // can't find lookup occurence record - needs adding.
-                            $DB->insert_record('local_bath_grades_lookup_occ', $lookup_occurrence);
+                        // Check if occurrence doesn't already exists.
+                        if (!$DB->get_field("local_bath_grades_lookup_occ", "id", $lookupoccurrence)) {
+                            // Can't find lookup occurence record - needs adding..
+                            $DB->insert_record('local_bath_grades_lookup_occ', $lookupoccurrence);
                         }
                     }
 
@@ -253,7 +259,8 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
 
                             // At least one field has changed so update.
                             $localdata[$localkey] = $remotedata[$remotekey];
-                            $localdata[$localkey]["id"] = $DB->get_field("local_bath_grades_lookup_occ", "lookupid", array("id" => $localkey));
+                            $localdata[$localkey]["id"] = $DB->get_field("local_bath_grades_lookup_occ",
+                                "lookupid", array("id" => $localkey));
                             unset($localdata[$localkey]["mavoccur"]);
                             $DB->update_record('local_bath_grades_lookup', $localdata[$localkey]);
                         }
