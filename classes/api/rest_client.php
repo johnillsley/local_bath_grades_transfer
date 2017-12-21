@@ -97,9 +97,9 @@ class local_bath_grades_transfer_rest_client
     private function construct_body(array $pieces) {
         $glue = '/';
         $bodyraw = '';
-        $lastElement = end($pieces);
+        $lastelement = end($pieces);
         foreach ($pieces as $key => $value) {
-            if ($value == $lastElement) {
+            if ($value == $lastelement) {
                 $bodyraw .= $key . $glue . $value;
             } else {
                 $bodyraw .= $key . $glue . $value . $glue;
@@ -127,7 +127,7 @@ class local_bath_grades_transfer_rest_client
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
                     'timeout' => 40,
-                    'verify' => false, // for dev
+                    'verify' => false, // For dev.
                     'headers' => [
                         'Content-Type' => 'text/xml',
                         'Cache-Control' => 'no-cache',
@@ -138,7 +138,7 @@ class local_bath_grades_transfer_rest_client
                 $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'timeout' => 6,
-                    'verify' => false, // for dev
+                    'verify' => false, // For dev.
                     'auth' => [$this->username, $this->password],
                     'headers' => [
                         'Content-Type' => 'text/xml',
