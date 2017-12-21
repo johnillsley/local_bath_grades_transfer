@@ -151,7 +151,8 @@ class=\"alert-info alert \">
             $this->show_transfer_controls($lookuprecords, $cmid, $mform);
         } else {
             // No samis mapping defined for this course..
-            $mform->addElement('html', "<p class=\"alert alert-warning\"><i class=\"fa fa-ban\" aria-hidden=\"true\"></i> " . get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</p>");
+            $mform->addElement('html', "<p class=\"alert alert-warning\"><i class=\"fa fa-ban\" aria-hidden=\"true\"></i> " .
+                get_string('bath_grade_transfer_not_samis_default_mapping', 'local_bath_grades_transfer') . "</p>");
         }
     }
 
@@ -254,6 +255,9 @@ class=\"alert-info alert \">
      */
     private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid) {
         $optiontext = $lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )";
+        if ($lrecord->mabpnam == 'N') {
+            $optiontext = $lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% ) ** ANONYMOUS IN SAMIS**";
+        }
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
             // The lookup is mapped to this course module so set selected.
             $select->setSelected($lrecord->id);
