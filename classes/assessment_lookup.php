@@ -67,7 +67,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
     /**
      * @var
      */
-    private $expired;
+    public $expired;
 
     public function __construct() {
         parent::__construct();
@@ -80,7 +80,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
     /**
      * Returns the name of an assessment lookup
      * @param integer $lookupid Assessment lookup id
-     * $return string $assessmentname name of assessment lookup
+     * @returns string $assessmentname Name of assessment lookup
      */
     public static function get_assessment_name_by_id($lookupid) {
         global $DB;
