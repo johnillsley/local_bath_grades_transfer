@@ -64,6 +64,7 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
      */
     public $mabname;
     public $mabpnam; // Anonymous Marking.
+    public $samisassessmentid;
     /**
      * @var
      */
