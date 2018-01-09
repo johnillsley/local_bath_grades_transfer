@@ -227,7 +227,7 @@ class=\"alert-info alert \">
      * @return void
      */
     protected function transfer_mapping_control($lookuprecords, $cmid, &$mform, $assessmentmapping, $dropdownattributes) {
-
+        global $PAGE;
         $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id',
             'Select Assessment to Link to', [], []);
         $select->addOption("None", 0, $dropdownattributes);
@@ -243,6 +243,35 @@ class=\"alert-info alert \">
             'local_bath_grades_transfer');
         // Disable select element if grading is not out of 100.
         $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
+        // Display an individual box for each of them with mapping details.
+        foreach ($lookuprecords as $lrecord) {
+            $mform->addElement('html', "<div id =\"mapping-box-$lrecord->samisassessmentid\" 
+    class=\"mapping-box-details\">
+
+    <table class='generaltable'>
+    <thead>
+    <tr>
+    <th>MAP Code</th>
+    <th>MAB Seq</th>
+    <th>AST Code</th>
+    <th>MAB Perc</th>
+    <th>Print Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+
+<td>$lrecord->mapcode</td>
+<td>$lrecord->mabseq</td>
+<td>$lrecord->astcode</td>
+<td>$lrecord->mabperc</td>
+<td>$lrecord->mabpnam</td>
+</tr>
+</tbody>
+</table>
+
+    </div>");
+        }
     }
 
     /** Creates a single option for the assessment transfer mapping menu
@@ -255,9 +284,6 @@ class=\"alert-info alert \">
      */
     private function display_option($lrecord, $assessmentmapping, $attributes, &$select, $cmid) {
         $optiontext = $lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% )";
-        if ($lrecord->mabpnam == 'N') {
-            $optiontext = $lrecord->mabname . " ( Wt: " . $lrecord->mabperc . "% ) ** ANONYMOUS IN SAMIS**";
-        }
         if (!empty($assessmentmapping) && $lrecord->id == $assessmentmapping->assessmentlookupid) {
             // The lookup is mapped to this course module so set selected.
             $select->setSelected($lrecord->id);
@@ -279,6 +305,7 @@ class=\"alert-info alert \">
                 return;
             }
         }
+        $attributes['data-samisassessmentid'] = $lrecord->samisassessmentid;
         $select->addOption($optiontext, $lrecord->id, $attributes, $select);
     }
 
