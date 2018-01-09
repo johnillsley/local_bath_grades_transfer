@@ -15,17 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die();
+
 class local_bath_grades_transfer_error
 {
     public $id;
     public $errormessage;
     private $table = 'local_bath_grades_error';
 
-    public function save(){
+    public function save() {
         global $DB;
         $data = new stdClass();
         $data->error_message = $this->errormessage;
-        $this->id = $DB->insert_record($this->table,$data,true);
+        $this->id = $DB->insert_record($this->table, $data, true);
     }
 
 }
