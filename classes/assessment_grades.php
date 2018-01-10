@@ -69,15 +69,12 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
      */
     public $module;
     public $mappingid;
+    public $candidate; // Anonymous assessments.
 
     /**
      * @var
      */
     public $occurrence;
-
-    public function __construct() {
-        parent::__construct();
-    }
 
     /**
      * Fetches the ASSESSMENT DATA from SAMIS Web Service
@@ -88,17 +85,27 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
         // Check that it is a valid lookup.
         $structure = array();
 
-        //From the attributes and map_code, get the grade structure.
+        // From the attributes and map_code, get the grade structure.
         try {
             $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
             // Note: there is a speartate grade structure for each MAV occurrence.
-            foreach ( $remotegradestructures as $remotegradestructure ) {
+            foreach ($remotegradestructures as $remotegradestructure) {
                 if (!empty($remotegradestructure)) {
                     foreach ($remotegradestructure->assessments as $assessment) {
                         if (!empty($assessment)) {
                             foreach ($assessment as $objassessmentdata) {
-                                $structure[(string)$objassessmentdata->student] =
-                                    array('assessment' => self::instantiate($objassessmentdata));
+                                var_dump($objassessmentdata);
+                                if ($lookup->mabpnam == 'N') {
+                                    $structure[(string)$objassessmentdata->candidate] = array
+                                    (
+                                        'assessment' => self::instantiate($objassessmentdata)
+                                    );
+                                } else {
+                                    $structure[(string)$objassessmentdata->student] = array
+                                    (
+                                        'assessment' => self::instantiate($objassessmentdata)
+                                    );
+                                }
                             }
                         }
                     }

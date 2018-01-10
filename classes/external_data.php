@@ -66,6 +66,8 @@ class local_bath_grades_transfer_external_data
         $data['P08'] = $lookup->mapcode;
         $data['P09'] = $lookup->mabseq;
 
+
+
         try {
             // Get all occurrences for the lookup.
             $conditions = array();
@@ -73,7 +75,6 @@ class local_bath_grades_transfer_external_data
             $occurrences = $DB->get_records('local_bath_grades_lookup_occ', $conditions, '', 'mavoccur');
             foreach ($occurrences as $occurrence) {
                 $data['P07'] = $occurrence->mavoccur;
-
                 $this->restwsclient->call_samis($function, $data);
                 if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
                     $response = simplexml_load_string($this->restwsclient->response['contents']);
@@ -205,13 +206,13 @@ class local_bath_grades_transfer_external_data
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucsusername
-     * @return SimpleXMLElement
+     * @return stdClass $studentidentifers
      * @throws Exception
      */
     public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
         $data['STU_UDF1'] = $bucsusername . 'x'; // DEV TESTING.
-        $sprcode = null;
+        $studentidentifer = new stdClass();
         try {
             $this->restwsclient->call_samis($method, $data);
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
@@ -222,14 +223,16 @@ class local_bath_grades_transfer_external_data
                     // We have an error.
                     $this->handle_error($data);
                 }
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objspr) {
-                    $sprcode = (string)$objspr->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'} as $objspr) {
+                    $studentidentifer->sprcode = (string)$objspr->{'SCJ'}->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                    $studentidentifer->candidatenumber = (string)$objspr->{'SCN'}->{'SCN.CAMS'}->{'SCN_CODE'};
+
                 }
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
-        return $sprcode;
+        return $studentidentifer;
     }
 
 
