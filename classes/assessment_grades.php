@@ -29,12 +29,18 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/local/bath_grades_transfer/classes/assessment.php');
 
+/**
+ * Class local_bath_grades_transfer_assessment_grades
+ */
 class local_bath_grades_transfer_assessment_grades extends local_bath_grades_transfer_assessment
 {
     /**
      * @var
      */
     public $student;
+    /**
+     * @var
+     */
     public $name;
     /**
      * @var
@@ -68,7 +74,13 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
      * @var
      */
     public $module;
+    /**
+     * @var
+     */
     public $mappingid;
+    /**
+     * @var
+     */
     public $candidate; // Anonymous assessments.
 
     /**
@@ -80,6 +92,7 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
      * Fetches the ASSESSMENT DATA from SAMIS Web Service
      * @param $lookup
      * @return array
+     * @throws \Exception
      */
     public function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
         // Check that it is a valid lookup.
@@ -94,7 +107,6 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
                     foreach ($remotegradestructure->assessments as $assessment) {
                         if (!empty($assessment)) {
                             foreach ($assessment as $objassessmentdata) {
-                                var_dump($objassessmentdata);
                                 if ($lookup->mabpnam == 'N') {
                                     $structure[(string)$objassessmentdata->candidate] = array
                                     (
