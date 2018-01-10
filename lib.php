@@ -389,9 +389,8 @@ class=\"alert-info alert \">
         $assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, false);
         if ($assessmentmapping) {
             $assessmentmapping->set_locked(true);
+            $assessmentmapping->update();
         }
-        $assessmentmapping->update();
-
     }
 
     /**
@@ -543,13 +542,10 @@ class=\"alert-info alert \">
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
 
-                    // Get SPR code.
-                    $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
-                    var_dump($bucsusername);
+                    // Get SPR code and Candidate Number.
                     try {
-                        $sprcode = $this->samisdata->get_spr_from_bucs_id_rest($bucsusername);
-                        var_dump($sprcode);
-                        $sprlist[$sprcode] = 1; // For checking if any are missing at the end.
+                        $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
+                        $studentidenfiers = $this->samisdata->get_spr_from_bucs_id_rest($bucsusername);
                     } catch (\Exception $e) {
                         $this->local_grades_transfer_log->outcomeid = COULD_NOT_GET_SPR_CODE;
                         $this->local_grades_transfer_log->userid = $userid;
@@ -560,9 +556,16 @@ class=\"alert-info alert \">
                     }
 
                     // Pre transfer check (remote).
-                    if ($this->remote_precheck_conditions($userid, $sprcode, $gradestructure)) {
-                        $gradestructure[$sprcode]['assessment']->mark = $grade->finalgrade;
-                        $singleusertransfer[$userid] = $gradestructure[$sprcode];
+                    if ($assessmentmapping->lookup->mabpnam === 'N') {
+                        $studenidentifier = $studentidenfiers->candidatenumber;
+                    } else {
+                        $studenidentifier = $studentidenfiers->sprcode;
+
+                    }
+                    var_dump($studenidentifier);
+                    if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
+                        $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
+                        $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
                         }
@@ -579,7 +582,6 @@ class=\"alert-info alert \">
     protected function get_users_readyto_transfer($samismappingid) {
         global $DB;
         $users = array();
-        $DB->set_debug(true);
         $context = context_course::instance($this->moodlecourseid);
 
         $sqlfrom = "
@@ -763,18 +765,17 @@ class=\"alert-info alert \">
      * @param object $gradestructure
      * @return mixed
      */
-    public function remote_precheck_conditions($userid, $sprcode, $gradestructure) {
+    public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
 
         $outcomeid = null;
-
         // SPR code missing.
-        if (empty($sprcode)) {
+        if (empty($studentidentifer)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
-        } // Student not in SAMIS grade structure.
-        else if (!array_key_exists($sprcode, $gradestructure)) {
+        } else if (!array_key_exists($studentidentifer, $gradestructure)) {
+            // Student not in SAMIS grade structure.
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
-        } // Grade already in SAMIS grade structure.
-        else if (!empty($gradestructure[$sprcode]['assessment']->mark)) {
+        } else if (!empty($gradestructure[$studentidentifer]['assessment']->mark)) {
+            // Grade already in SAMIS grade structure.
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
 
