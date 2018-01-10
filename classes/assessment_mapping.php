@@ -92,8 +92,8 @@ class local_bath_grades_transfer_assessment_mapping
     public static function getAll($tasktime, $onlyids = true) {
         global $DB;
         $return = array();
-        $conditions = "lasttransfertime IS NULL AND samisassessmentenddate <= $tasktime AND expired = 0 
-        AND assessmentlookupid > 0 ";
+        $conditions = "lasttransfertime IS NULL AND samisassessmentenddate <= $tasktime AND expired = 0
+         AND assessmentlookupid > 0 AND samisassessmentenddate <> 0 ";
         $rs = $DB->get_recordset_select(self::$table, $conditions, null, '', 'id');
         if ($rs->valid()) {
             foreach ($rs as $record) {
