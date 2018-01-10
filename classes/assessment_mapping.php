@@ -70,7 +70,7 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
     /**
      * @var integer
      */
-    private $expired;
+    public $expired;
     /**
      * @var integer
      */
@@ -122,7 +122,7 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
      */
     public static function get($id, $getlookup = false) {
         global $DB;
-        $mappingobject = array();
+        $mappingobject = null;
         $objlookup = null;
         if ($DB->record_exists(self::$table, ['id' => $id])) {
             $record = $DB->get_record(self::$table, ['id' => $id]);
@@ -178,8 +178,8 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
     }
 
     /**
-     * Sets the data
-     * @param $data
+     * Save Assessment Mapping
+     * @param $mapping
      */
     public static function save_mapping($mapping) {
         global $DB, $USER;
