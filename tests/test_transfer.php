@@ -38,6 +38,7 @@ check connection to samis*
 check spr code exists*
 check xml is returned for grade strcuture DONE
 */
+
 /**
  * Unit tests for {@link local_bath_grades_transfer}.
  * @group assessment_mapping
@@ -55,24 +56,24 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
         global $CFG;
         $this->resetAfterTest();
 
-        // create test course.
+        // Create test course.
         $course = $this->getDataGenerator()->create_course();
         require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
 
         $gradetransfer = new \local_bath_grades_transfer();
 
-        // create sits mapping for course.
+        // Create sits mapping for course.
         $sitsmapping = $this->create_sits_mapping($insertmapping, $gradetransfer->currentacademicyear);
 
         $samisattributeslist = $gradetransfer->get_samis_mapping_attributes($course->id);
-        $samisattributes = array_pop($samisattributeslist); // only one record
+        $samisattributes = array_pop($samisattributeslist); // Only one record.
 
         $samisattributesvalues = (array)$samisattributes;
         $samisattributesclass = get_class($samisattributes);
 
         $samischeck = array(
-            "samisunitcode"  => $sitsmapping["sits_code"],
-            "academicyear"   => $sitsmapping["acyear"],
+            "samisunitcode" => $sitsmapping["sits_code"],
+            "academicyear" => $sitsmapping["acyear"],
             "periodslotcode" => $sitsmapping["period_code"]
         );
 
@@ -87,7 +88,7 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
         global $CFG, $DB;
         $this->resetAfterTest();
 
-        // create all test data
+        // Create all test data.
         $course = $this->getDataGenerator()->create_course();
         require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
         $gradetransfer = new \local_bath_grades_transfer();
@@ -100,7 +101,7 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
         $assessmentlookup->samisdata->restwsclient = new \test_bath_grades_transfer_rest_client();
         $assessmentlookup->sync_remote_assessments($course->id);
 
-        // Setup data to confirm if the test worked
+        // Setup data to confirm if the test worked.
         $samisattributeslist = $gradetransfer->get_samis_mapping_attributes($course->id);
         $samisattributes = array_pop($samisattributeslist); // only one record
         $lookups = $assessmentlookup->get_local_assessment_details($samisattributes);
@@ -109,8 +110,8 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
 
         // Check that it has been successful.
         $check = true;
-        if($this->assertTrue(count($remotedata)==count($lookups))) {
-            // Number of lookups match so now compare each of them
+        if ($this->assertTrue(count($remotedata) == count($lookups))) {
+            // Number of lookups match so now compare each of them.
             foreach ($remotedata as $remoteitem) {
                 $localitems = $DB->get_records_sql("
                 SELECT o.id
@@ -177,31 +178,32 @@ class local_bath_grades_transfer_testcase extends advanced_testcase
 
         // Create an assessment mapping for test course.
         list($formdata, $mappings) = $this->create_assessment_mapping($course);
-print_r($mappings);
-        // Get the grade transfer mappings
+        print_r($mappings);
+        // Get the grade transfer mappings.
         $transfermapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($coursemodule->cmid);
-        // Create a user and enrol on the course
+        // Create a user and enrol on the course.
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
 
         // Create the sits mapping and sits enrolment - required to be included in grade transfer.
         $coursecontext = context_course::instance($course->id);
-        $sitsmapping = $DB->get_record('sits_mappings', array("courseid"=>$course->id));
-        $enrol = $DB->get_record('enrol', array("courseid"=>$course->id, "enrol"=>"manual"));
-        $u_enrol = $DB->get_record('user_enrolments', array("userid"=>$user->id, "enrolid"=>$enrol->id ));
-        $ra = $DB->get_record('role_assignments', array("userid"=>$user->id, "contextid"=>$coursecontext->id));
-        $DB->insert_record('sits_mappings_enrols', array("map_id"=>$sitsmapping->id, "u_enrol_id"=>$u_enrol->id, "ra_id"=>$ra->id));
+        $sitsmapping = $DB->get_record('sits_mappings', array("courseid" => $course->id));
+        $enrol = $DB->get_record('enrol', array("courseid" => $course->id, "enrol" => "manual"));
+        $u_enrol = $DB->get_record('user_enrolments', array("userid" => $user->id, "enrolid" => $enrol->id));
+        $ra = $DB->get_record('role_assignments', array("userid" => $user->id, "contextid" => $coursecontext->id));
+        $DB->insert_record('sits_mappings_enrols',
+            array("map_id" => $sitsmapping->id, "u_enrol_id" => $u_enrol->id, "ra_id" => $ra->id));
 
         // Get grade item for course module and apply a grade for the user.
-        $grade_item = $DB->get_record('grade_items', array("itemmodule"=>$modulename, "iteminstance"=>$coursemodule->id));
+        $grade_item = $DB->get_record('grade_items', array("itemmodule" => $modulename, "iteminstance" => $coursemodule->id));
         grade_update(
-            $grade_item->itemtype . '/' .$grade_item->itemmodule,
+            $grade_item->itemtype . '/' . $grade_item->itemmodule,
             $course->id,
             $grade_item->itemtype,
             $grade_item->itemmodule,
             $grade_item->iteminstance,
             $grade_item->itemnumber,
-            array( $user->id => array( "userid"=>$user->id, "rawgrade"=>60))
+            array($user->id => array("userid" => $user->id, "rawgrade" => 60))
         );
 
         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
@@ -253,7 +255,7 @@ print_r($mappings);
         global $DB;
 
         $insertmapping['acyear'] = $currentacademicyear;
-        if( $DB->insert_record('sits_mappings', $insertmapping ) ) {
+        if ($DB->insert_record('sits_mappings', $insertmapping)) {
             return $insertmapping;
         };
     }
@@ -278,13 +280,14 @@ print_r($mappings);
     private function create_assessment_mapping($course) {
         global $CFG, $DB;
 
-        // create all test data
+        // Create all test data.
         $assessmenttime = time();
         $modulename = 'assign';
 
-        // Set plugin config value to enable modules to do grade transfer
-        $id = $DB->get_field('config_plugins', 'id', array('plugin'=>'local_bath_grades_transfer', 'name'=>'bath_grades_transfer_use'));
-        $DB->update_record('config_plugins', array('value'=>'mod_assign', 'id'=>$id ));
+        // Set plugin config value to enable modules to do grade transfer.
+        $id = $DB->get_field('config_plugins',
+            'id', array('plugin' => 'local_bath_grades_transfer', 'name' => 'bath_grades_transfer_use'));
+        $DB->update_record('config_plugins', array('value' => 'mod_assign', 'id' => $id));
 
         // Set up initial lookup data.
         require($CFG->dirroot . '/local/bath_grades_transfer/tests/test_data_db.php');
@@ -303,18 +306,18 @@ print_r($mappings);
 
         // Create course module.
         $formdata = new stdClass();
-        $formdata->course                               = $course->id;
-        $formdata->name                                 = 'Test 1';
-        $formdata->grade                                = 100;
-        $formdata->bath_grade_transfer_samis_lookup_id  = $uselookup->id;
-        $formdata->bath_grade_transfer_time_start       = $assessmenttime;
+        $formdata->course = $course->id;
+        $formdata->name = 'Test 1';
+        $formdata->grade = 100;
+        $formdata->bath_grade_transfer_samis_lookup_id = $uselookup->id;
+        $formdata->bath_grade_transfer_time_start = $assessmenttime;
 
-        // THIS REPLICATES THE SAVING OF THE ASSIGN SETTINGS FORM IN MOODLE - THIS IS BEING TESTED HERE
+        // THIS REPLICATES THE SAVING OF THE ASSIGN SETTINGS FORM IN MOODLE - THIS IS BEING TESTED HERE.
         $coursemodule = $this->getDataGenerator()->create_module($modulename, $formdata);
 
-        // Get the grade transfer mappings
+        // Get the grade transfer mappings.
         $conditions = array();
-        $conditions["coursemodule"] =  $coursemodule->cmid;
+        $conditions["coursemodule"] = $coursemodule->cmid;
         $mappings = $DB->get_records('local_bath_grades_mapping', $conditions);
 
         return array($formdata, $mappings);
