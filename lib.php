@@ -349,6 +349,7 @@ class=\"alert-info alert \">
                         // Lock the mapping.
                         echo "++++Lock mapping++++";
                         self::lock_mapping($mappingid);
+                        return true;
                         if ($web) {
                             // Display result to the user.
                             $status = new \gradereport_transfer\output\transfer_status(
@@ -361,9 +362,7 @@ class=\"alert-info alert \">
                 } catch (\Exception $e) {
                     // Log failure.
                     echo "logging failure";
-                    var_dump($e);
-                    die;
-                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
                     $this->local_grades_transfer_log->save();
@@ -451,14 +450,20 @@ class=\"alert-info alert \">
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
-                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid)) {
+                    if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
                         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
+                        $userids = array();
                         foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
+                        }
+                        echo "++++++ USERS IM SENDING THROUGH+++++";
+                        var_dump($userids);
+                        if(!empty($userids)){
                             $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
                         }
-                    } else {
-                        echo "++++NO USERS TO TRANSFER++++";
+                        else {
+                            echo "++++NO USERS TO TRANSFER++++";
+                        }
                     }
                 }
                 // Transfer mapping.
@@ -563,11 +568,14 @@ class=\"alert-info alert \">
 
                     }
                     var_dump($studenidentifier);
+                    echo "\nChecking that $studenidentifier is in the grade struct...";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
-                            $this->do_transfer($mappingid, $singleusertransfer);
+                            if($this->do_transfer($mappingid, $singleusertransfer)){
+                                unset($singleusertransfer[$userid]);
+                            }
                         }
                     }
                 }
@@ -579,10 +587,10 @@ class=\"alert-info alert \">
      * @param $samismappingid
      * @return array|bool
      */
-    protected function get_users_readyto_transfer($samismappingid) {
+    protected function get_users_readyto_transfer($samismappingid, $moodlecourseid) {
         global $DB;
         $users = array();
-        $context = context_course::instance($this->moodlecourseid);
+        $context = context_course::instance($moodlecourseid);
 
         $sqlfrom = "
         /***** get the grade transfer mapping *****/
