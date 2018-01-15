@@ -557,7 +557,6 @@ class=\"alert-info alert \">
                         $this->local_grades_transfer_log->timetransferred = time();
                         $this->local_grades_transfer_log->errormessage = $e->getMessage();
                         $this->local_grades_transfer_log->save();
-                        throw $e;
                     }
 
                     // Pre transfer check (remote).
