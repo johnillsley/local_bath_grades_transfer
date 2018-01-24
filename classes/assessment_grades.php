@@ -15,16 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Deals with setting and getting grades from SAMIS
+ * Grade transfer assessment grades class
+ * This class gives access to grades in SAMIS for reading and writing
+ *
+ * @package    local_bath_grades_transfer
+ * @author     Hittesh Ahuja <h.ahuja@bath.ac.uk>
+ * @author     John Illsley <j.s.illsley@bath.ac.uk>
+ * @copyright  2017 University of Bath
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
-class local_bath_grades_transfer_assessment_grades
+require_once($CFG->dirroot . '/local/bath_grades_transfer/classes/assessment.php');
+
+/**
+ * Class local_bath_grades_transfer_assessment_grades
+ */
+class local_bath_grades_transfer_assessment_grades extends local_bath_grades_transfer_assessment
 {
     /**
      * @var
      */
     public $student;
+    /**
+     * @var
+     */
     public $name;
     /**
      * @var
@@ -58,128 +74,50 @@ class local_bath_grades_transfer_assessment_grades
      * @var
      */
     public $module;
+    /**
+     * @var
+     */
     public $mappingid;
-
     /**
-     * @return mixed
+     * @var
      */
-    public function getyear() {
-        return $this->year;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getperiod() {
-        return $this->period;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getmodule() {
-        return $this->module;
-    }
-
-    /**
-     * Get Occurrence
-     * @return mixed
-     */
-    public function getoccurrence() {
-        return $this->occurrence;
-    }
+    public $candidate; // Anonymous assessments.
 
     /**
      * @var
      */
     public $occurrence;
-    /**
-     * @var
-     */
-    public static $samisdata;
-
-
-    public function __construct() {
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getStudent() {
-        return $this->student;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMark() {
-        return $this->mark;
-    }
-
-    public function getName() {
-        return $this->name;
-    }
-
-    /**
-     * Set a mark for the grade structure
-     * @param $mark
-     */
-    public function setmark($mark) {
-        $this->mark = $mark;
-    }
-
-    /**
-     * Get Assessment Item
-     * @return mixed
-     */
-    public function getassessmentitem() {
-        return $this->assessitem;
-    }
-
-    /**
-     * Get Assessment Pattern
-     * @return mixed
-     */
-    public function getassesspattern() {
-        return $this->assesspattern;
-    }
-
-    /**
-     * Get Attempt
-     * @return mixed
-     */
-    public function getattempt() {
-        return $this->attempt;
-    }
-
-    /** Get grade mark
-     * @return mixed
-     */
-    public function getgrade() {
-        return $this->grade;
-    }
 
     /**
      * Fetches the ASSESSMENT DATA from SAMIS Web Service
      * @param $lookup
      * @return array
+     * @throws \Exception
      */
-    public static function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
+    public function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
         // Check that it is a valid lookup.
         $structure = array();
 
-        self::$samisdata = new \local_bath_grades_transfer_external_data();
-        //From the attributes and map_code, get the grade structure.
+        // From the attributes and map_code, get the grade structure.
         try {
-            $remotegradestructures = self::$samisdata->get_remote_grade_structure($lookup);
+            $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
             // Note: there is a speartate grade structure for each MAV occurrence.
-            foreach ( $remotegradestructures as $remotegradestructure ) {
+            foreach ($remotegradestructures as $remotegradestructure) {
                 if (!empty($remotegradestructure)) {
                     foreach ($remotegradestructure->assessments as $assessment) {
                         if (!empty($assessment)) {
                             foreach ($assessment as $objassessmentdata) {
-                                $structure[(string)$objassessmentdata->student] =
-                                    array('assessment' => self::instantiate($objassessmentdata));
+                                if ($lookup->mabpnam == 'N') {
+                                    $structure[(string)$objassessmentdata->candidate] = array
+                                    (
+                                        'assessment' => self::instantiate($objassessmentdata)
+                                    );
+                                } else {
+                                    $structure[(string)$objassessmentdata->student] = array
+                                    (
+                                        'assessment' => self::instantiate($objassessmentdata)
+                                    );
+                                }
                             }
                         }
                     }
@@ -188,30 +126,6 @@ class local_bath_grades_transfer_assessment_grades
         } catch (\Exception $e) {
             throw $e;
         }
-
         return $structure;
-    }
-
-    /** Instantiate a new class object
-     * @param $record
-     * @return local_bath_grades_transfer_assessment_grades
-     */
-    private static function instantiate($record) {
-        $object = new self;
-        foreach ($record as $key => $value) {
-            if ($object->has_attribute($key)) {
-                $object->$key = (string)$value;
-            }
-        }
-        return $object;
-    }
-
-    /** Check if it has the attribute
-     * @param $attribute
-     * @return bool
-     */
-    private function has_attribute($attribute) {
-        $object_vars = get_object_vars($this);
-        return array_key_exists($attribute, $object_vars);
     }
 }

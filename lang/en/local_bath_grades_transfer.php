@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $string['pluginname'] = 'Bath Grades Transfer';
 $string['transfergrades'] = 'Transfer Grades to SAMIS';
 $string['samis_api_heading'] = 'SAMIS API Settings';
@@ -30,9 +44,9 @@ $string['no_lookup_records_found'] = ' No Lookup records were found';
 $string['samis_assessment_mapping_option_label'] = '{$a->mabname} ( Wt: {$a->mabperc}% ) ';
 $string['bath_grade_transfer_samis_unlock_assessment'] = 'Unlock mapping';
 $string['bath_grade_transfer_samis_unlock_assessment_help'] = 'Unlock mapping';
-$string['unlock_warning'] = '!!!!!!!Are you sure you want to do this ? This action cannot be undone !!!!!!!!!!!!';
+$string['unlock_warning'] = 'This action cannot be undone. Are you sure you want to do this ?';
 $string['bath_grade_transfer_samis_lookup_id_help'] = 'Lookup help text';
-/////EVENTS ////////
+// EVENTS.
 $string['grade_transferred'] = 'Grade Transferred';
 $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
 // Capabilities .

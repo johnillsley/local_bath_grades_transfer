@@ -242,7 +242,7 @@ class=\"alert-info alert \">
         $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id',
             'local_bath_grades_transfer');
         // Disable select element if grading is not out of 100.
-        $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
+        //$mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
         // Display an individual box for each of them with mapping details.
         foreach ($lookuprecords as $lrecord) {
             $mform->addElement('html', "<div id =\"mapping-box-$lrecord->samisassessmentid\" 
@@ -349,6 +349,7 @@ class=\"alert-info alert \">
                         // Lock the mapping.
                         echo "++++Lock mapping++++";
                         self::lock_mapping($mappingid);
+                        return true;
                         if ($web) {
                             // Display result to the user.
                             $status = new \gradereport_transfer\output\transfer_status(
@@ -361,9 +362,7 @@ class=\"alert-info alert \">
                 } catch (\Exception $e) {
                     // Log failure.
                     echo "logging failure";
-                    var_dump($e);
-                    die;
-                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
                     $this->local_grades_transfer_log->save();
@@ -428,12 +427,14 @@ class=\"alert-info alert \">
         );
         $event->trigger();
     }
-
     /**
      * Cron that processes any automated transfers
      */
     public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
+        global $DB,$CFG;
+        require_once($CFG->dirroot.'/mod/assign/locallib.php');
+
         // CRON RUN.
         // Get all mappings .
         // See the ones that are set to auto transfer - done
@@ -446,19 +447,43 @@ class=\"alert-info alert \">
                     //throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
                     return false;
                 }
+
                 if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
                     //throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
+                }
+                // Check that blind marking is not enabled / identities have been revealed.
+                list($course, $cm) = get_course_and_cm_from_cmid($assessmentmapping->coursemodule);
+                if ($cm->modname == 'assign') {
+                    $assign = new \assign(null, $cm, $course);
+                    if ($assign->is_blind_marking()) {
+                        // Raise an event.
+                        $context = \context_module::instance($assessmentmapping->coursemodule);
+                        $event = \local_bath_grades_transfer\event\assignment_blind_marking_turned_on::create(
+                            array(
+                                'contextid' => $context->id,
+                                'courseid' => $course->id
+                            )
+                        );
+                        $event->trigger();
+                        continue;
+                    }
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
                     if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
                         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
+                        $userids = array();
                         foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
+                        }
+                        echo "++++++ USERS IM SENDING THROUGH+++++";
+                        var_dump($userids);
+                        if(!empty($userids)){
                             $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
                         }
-                    } else {
-                        echo "++++NO USERS TO TRANSFER++++";
+                        else {
+                            echo "++++NO USERS TO TRANSFER++++";
+                        }
                     }
                 }
                 // Transfer mapping.
@@ -552,7 +577,6 @@ class=\"alert-info alert \">
                         $this->local_grades_transfer_log->timetransferred = time();
                         $this->local_grades_transfer_log->errormessage = $e->getMessage();
                         $this->local_grades_transfer_log->save();
-                        throw $e;
                     }
 
                     // Pre transfer check (remote).
@@ -563,11 +587,14 @@ class=\"alert-info alert \">
 
                     }
                     var_dump($studenidentifier);
+                    echo "\nChecking that $studenidentifier is in the grade struct...";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
-                            $this->do_transfer($mappingid, $singleusertransfer);
+                            if($this->do_transfer($mappingid, $singleusertransfer)){
+                                unset($singleusertransfer[$userid]);
+                            }
                         }
                     }
                 }
@@ -577,13 +604,13 @@ class=\"alert-info alert \">
 
     /**
      * @param $samismappingid
-     * @param $moodlecourseid
      * @return array|bool
      */
     protected function get_users_readyto_transfer($samismappingid, $moodlecourseid) {
         global $DB;
         $users = array();
         $context = context_course::instance($moodlecourseid);
+
         $sqlfrom = "
         /***** get the grade transfer mapping *****/
         FROM {local_bath_grades_mapping} gm
@@ -655,10 +682,12 @@ class=\"alert-info alert \">
                     $users[$record->userid] = $record;
                 }
             }
+
         } catch (\Exception $e) {
             echo $e->getMessage();
             return false;
         }
+        $DB->set_debug(false);
         return $users;
 
     }
@@ -769,8 +798,6 @@ class=\"alert-info alert \">
         // SPR code missing.
         if (empty($studentidentifer)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
-            //21487 is the key in $gradestrcurre
-            // 1234/1
         } else if (!array_key_exists($studentidentifer, $gradestructure)) {
             // Student not in SAMIS grade structure.
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
@@ -844,11 +871,15 @@ class=\"alert-info alert \">
         if (!in_array('mod_' . $formdata->modulename, $this->allowedmods)) {
             return false;
         }
+        $formsamisassessmentlookupid = null;
+
         // Get the assessment lookup id from the posted form data.
-        $formsamisassessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        if (isset($formdata->bath_grade_transfer_samis_lookup_id)) {
+            $formsamisassessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        }
         $mapping = new stdClass();
         $mapping->coursemodule = $formdata->coursemodule;
-        $mapping->assessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        $mapping->assessmentlookupid = $formsamisassessmentlookupid;
         $mapping->samisassessmentenddate = $formdata->bath_grade_transfer_time_start;
         $mapping->activitytype = $formdata->modulename;
 

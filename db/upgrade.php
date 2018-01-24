@@ -13,20 +13,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Version details.
- *
- * @package    local_bath_grades_transfer
- * @copyright  2017 University of Bath
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 defined('MOODLE_INTERNAL') || die();
+function xmldb_local_bath_grades_transfer_upgrade($oldversion)
+{
+    global $DB;
 
-$plugin->version = 2018011400;        // The current module version (YYYYMMDDXX)
-$plugin->requires = 2015111000;        // Requires this Moodle version.
-$plugin->component = 'local_bath_grades_transfer';
-$plugin->dependencies = array(
-    'enrol_sits' => ANY_VERSION,
-    'local_sits' => ANY_VERSION
-);
+    $dbman = $DB->get_manager();
+    if ($oldversion < 2018011500) {
+
+        // Define table local_scd_failed_transfer to be created.
+        $table = new xmldb_table('local_bath_grades_lookup');
+
+        // Adding fields to table local_scd_failed_transfer.
+        $table->add_field('mabpnam', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'Y');
+
+        // Bath_send_completion_data savepoint reached.
+        upgrade_plugin_savepoint(true, 2018011501, 'local', 'bath_grades_transfer');
+    }
+
+    return true;
+}
+

@@ -62,24 +62,19 @@ class local_bath_grades_transfer_external_data
         // DEV DATA FOR TESTING.
         $data['P04'] = str_replace('/', '-', $lookupattributes->academicyear);
         $data['P05'] = $lookupattributes->periodslotcode;
-        //$data['P05'] = 'S1';
         $data['P06'] = $lookupattributes->samisunitcode;
-        //$data['P06'] = 'BB10012';
-        //$data['P07'] = $lookupattributes->occurrence;
-        //$data['P07'] = 'A';
         $data['P08'] = $lookup->mapcode;
-        //$data['P08'] = 'BB10012B';
         $data['P09'] = $lookup->mabseq;
-        //$data['P09'] = '01';
+
+
 
         try {
-            // Get all occurrences for the lookup
+            // Get all occurrences for the lookup.
             $conditions = array();
             $conditions["lookupid"] = $lookup->id;
             $occurrences = $DB->get_records('local_bath_grades_lookup_occ', $conditions, '', 'mavoccur');
             foreach ($occurrences as $occurrence) {
                 $data['P07'] = $occurrence->mavoccur;
-
                 $this->restwsclient->call_samis($function, $data);
                 if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
                     $response = simplexml_load_string($this->restwsclient->response['contents']);
@@ -129,9 +124,8 @@ class local_bath_grades_transfer_external_data
             }
             if (isset($data->outdata)) {
                 $xmlassessmentdata = simplexml_load_string($data->outdata);
-
-                foreach ($xmlassessmentdata->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'mab'}->{'mab.cams'}
-                         as $objassessment) {
+                foreach ($xmlassessmentdata->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'mab'}->{'mab.cams'} as
+                         $objassessment) {
                     $mapcode = (string)$xmlassessmentdata->{'mav'}->{'mav.cams'}->{'map'}->{'map.cams'}->{'map_code'};
                     if (!empty($objassessment)) {
                         $assessments[$mapcode][] = $objassessment;
@@ -155,7 +149,6 @@ class local_bath_grades_transfer_external_data
 
         $data = array();
         $assessments = array();
-        //TODO Overwrite this with only a working value as SAMIS team is still setting this up
         $data['MOD_CODE'] = $attributes->samisunitcode; // P06.
         $data['AYR_CODE'] = str_replace('/', '-', $attributes->academicyear);
         $data['PSL_CODE'] = $attributes->periodslotcode; // P05.
@@ -176,17 +169,19 @@ class local_bath_grades_transfer_external_data
                     $this->handle_error($data);
                 }
                 foreach ($retdata['exchange']['mav']['mav.cams'] as $arraycam) {
-                    $mav_occur = $arraycam['mav_occur'];
+                    $mavoccur = $arraycam['mav_occur'];
                     foreach ($arraycam['map']['map.cams'] as $arraymab) {
                         foreach ($arraymab['mab']['mab.cams'] as $objassessment) {
                             $mapcode = $objassessment['map_code'];
                             if (!empty($objassessment)) {
-                                $assess['mavoccur'] = $mav_occur;
+                                $assess['mavoccur'] = $mavoccur;
                                 $assess['mapcode'] = $objassessment['map_code'];
                                 $assess['mabseq'] = $objassessment['mab_seq'];
                                 $assess['astcode'] = $objassessment['ast_code'];
                                 $assess['mabperc'] = $objassessment['mab_perc'];
                                 $assess['mabname'] = $objassessment['mab_name'];
+                                // Added anonymous marking.
+                                $assess['mab_pnam'] = $objassessment['mab_pnam'];
                                 $assessments[$mapcode][] = self::convert_underscores_clean($assess);
                             }
                         }
@@ -211,13 +206,13 @@ class local_bath_grades_transfer_external_data
     /**
      * Given a bucs username, return the SPR code from SAMIS
      * @param $bucsusername
-     * @return SimpleXMLElement
+     * @return stdClass $studentidentifers
      * @throws Exception
      */
     public function get_spr_from_bucs_id_rest($bucsusername) {
         $method = 'USERS';
-        $data['STU_UDF1'] = $bucsusername.'x'; // DEV TESTING.
-        $sprcode = null;
+        $data['STU_UDF1'] = $bucsusername . 'x'; // DEV TESTING.
+        $studentidentifer = new stdClass();
         try {
             $this->restwsclient->call_samis($method, $data);
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
@@ -228,14 +223,16 @@ class local_bath_grades_transfer_external_data
                     // We have an error.
                     $this->handle_error($data);
                 }
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'}->{'SCJ'} as $objspr) {
-                    $sprcode = (string)$objspr->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'} as $objspr) {
+                    $studentidentifer->sprcode = (string)$objspr->{'SCJ'}->{'SCJ.SRS'}->{'SCJ_SPRC'};
+                    $studentidentifer->candidatenumber = (string)$objspr->{'SCN'}->{'SCN.CAMS'}->{'SCN_CODE'};
+
                 }
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
-        return $sprcode;
+        return $studentidentifer;
     }
 
 
@@ -276,7 +273,9 @@ class local_bath_grades_transfer_external_data
      */
     private function array_to_xml($array, &$simplexmlobj) {
         foreach ($array as $key => $value) {
-            $simplexmlobj->addChild("$key", htmlspecialchars("$value"));
+            if ($key != 'samisdata') {
+                $simplexmlobj->addChild("$key", htmlspecialchars("$value"));
+            }
         }
     }
 

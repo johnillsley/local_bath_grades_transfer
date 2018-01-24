@@ -28,9 +28,8 @@ class housekeep_lookup extends \core\task\scheduled_task
     }
     public function execute() {
         global $CFG;
-        require_once($CFG->dirroot . '/local/bath_grades_transfer/lib.php');
-        //local_bath_grades_transfer_scheduled_task();
-        $lib = new \local_bath_grades_transfer();
-        $lib->sync_remote_assessments();
+        require_once($CFG->dirroot . '/local/bath_grades_transfer/classes/assessment_lookup.php');
+        $assessmentlookup = new local_bath_grades_transfer_assessment_lookup();
+        $assessmentlookup->sync_remote_assessments();
     }
 }

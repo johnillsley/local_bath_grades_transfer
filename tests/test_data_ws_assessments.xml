@@ -1,0 +1,17 @@
+<records>
+    <assessments>
+        <assessment>
+            <student>159052882/1</student>
+            <name>SOME TEST STUDENT</name>
+            <year>2016/7</year>
+            <period>AY</period>
+            <module>CM30082</module>
+            <occurrence>A</occurrence>
+            <assess_pattern>CM30082C</assess_pattern>
+            <assess_item>01</assess_item>
+            <attempt>1</attempt>
+            <mark/>
+            <grade/>
+        </assessment>
+    </assessments>
+</records>
