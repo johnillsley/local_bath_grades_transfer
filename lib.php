@@ -36,43 +36,43 @@
 const MAX_GRADE = 100;
 // Transfer outcome codes.
 /**
- *
+ * Transfer is successful
  */
 const TRANSFER_SUCCESS = 1;
 /**
- *
+ * Grade / Student missing in SAMIS
  */
 const GRADE_MISSING = 2;
 /**
- *
+ * Transfer failed with errors
  */
 const TRANSFER_FAILURE = 3;
 /**
- *
+ * Grade already exists in SAMIS
  */
 const GRADE_ALREADY_EXISTS = 4;
 /**
- *
+ * User present in XML structure but missing in Moodle
  */
 const GRADE_NOT_IN_MOODLE_COURSE = 5;
 /**
- *
+ * Grade not out of 100
  */
 const GRADE_NOT_OUT_OF_100 = 6;
 /**
- *
+ * Grade not in SAMIS grade structure ( ASSESSMENT)
  */
 const GRADE_NOT_IN_STRUCTURE = 7;
 /**
- *
+ *  Grade queued
  */
 const GRADE_QUEUED = 8;
 /**
- *
+ * Grade not a whole number in Moodle
  */
 const GRADE_NOT_WHOLE_NUMBER = 9;
 /**
- *
+ * Could not get SPR Code
  */
 const COULD_NOT_GET_SPR_CODE = 10;
 
@@ -392,7 +392,7 @@ class=\"alert-info alert \">
                 } catch (\Exception $e) {
                     // Log failure.
                     echo "logging failure";
-                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
+                    $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
                     $this->local_grades_transfer_log->save();
@@ -457,13 +457,14 @@ class=\"alert-info alert \">
         );
         $event->trigger();
     }
+
     /**
      * Cron that processes any automated transfers
      */
     public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
-        global $DB,$CFG;
-        require_once($CFG->dirroot.'/mod/assign/locallib.php');
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
         // CRON RUN.
         // Get all mappings .
@@ -508,10 +509,9 @@ class=\"alert-info alert \">
                         }
                         echo "++++++ USERS IM SENDING THROUGH+++++";
                         var_dump($userids);
-                        if(!empty($userids)){
+                        if (!empty($userids)) {
                             $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
-                        }
-                        else {
+                        } else {
                             echo "++++NO USERS TO TRANSFER++++";
                         }
                     }
