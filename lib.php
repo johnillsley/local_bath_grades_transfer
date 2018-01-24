@@ -242,7 +242,7 @@ class=\"alert-info alert \">
         $mform->addHelpButton('bath_grade_transfer_samis_lookup_id', 'bath_grade_transfer_samis_lookup_id',
             'local_bath_grades_transfer');
         // Disable select element if grading is not out of 100.
-        $mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
+        //$mform->disabledIf('bath_grade_transfer_samis_lookup_id', 'grade[modgrade_point]', 'neq', 100);
         // Display an individual box for each of them with mapping details.
         foreach ($lookuprecords as $lrecord) {
             $mform->addElement('html', "<div id =\"mapping-box-$lrecord->samisassessmentid\" 
@@ -427,12 +427,14 @@ class=\"alert-info alert \">
         );
         $event->trigger();
     }
-
     /**
      * Cron that processes any automated transfers
      */
     public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
+        global $DB,$CFG;
+        require_once($CFG->dirroot.'/mod/assign/locallib.php');
+
         // CRON RUN.
         // Get all mappings .
         // See the ones that are set to auto transfer - done
@@ -445,8 +447,26 @@ class=\"alert-info alert \">
                     //throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
                     return false;
                 }
+
                 if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
                     //throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
+                }
+                // Check that blind marking is not enabled / identities have been revealed.
+                list($course, $cm) = get_course_and_cm_from_cmid($assessmentmapping->coursemodule);
+                if ($cm->modname == 'assign') {
+                    $assign = new \assign(null, $cm, $course);
+                    if ($assign->is_blind_marking()) {
+                        // Raise an event.
+                        $context = \context_module::instance($assessmentmapping->coursemodule);
+                        $event = \local_bath_grades_transfer\event\assignment_blind_marking_turned_on::create(
+                            array(
+                                'contextid' => $context->id,
+                                'courseid' => $course->id
+                            )
+                        );
+                        $event->trigger();
+                        continue;
+                    }
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
@@ -851,11 +871,15 @@ class=\"alert-info alert \">
         if (!in_array('mod_' . $formdata->modulename, $this->allowedmods)) {
             return false;
         }
+        $formsamisassessmentlookupid = null;
+
         // Get the assessment lookup id from the posted form data.
-        $formsamisassessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        if (isset($formdata->bath_grade_transfer_samis_lookup_id)) {
+            $formsamisassessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        }
         $mapping = new stdClass();
         $mapping->coursemodule = $formdata->coursemodule;
-        $mapping->assessmentlookupid = $formdata->bath_grade_transfer_samis_lookup_id;
+        $mapping->assessmentlookupid = $formsamisassessmentlookupid;
         $mapping->samisassessmentenddate = $formdata->bath_grade_transfer_time_start;
         $mapping->activitytype = $formdata->modulename;
 
