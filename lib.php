@@ -35,15 +35,45 @@
  */
 const MAX_GRADE = 100;
 // Transfer outcome codes.
+/**
+ *
+ */
 const TRANSFER_SUCCESS = 1;
+/**
+ *
+ */
 const GRADE_MISSING = 2;
+/**
+ *
+ */
 const TRANSFER_FAILURE = 3;
+/**
+ *
+ */
 const GRADE_ALREADY_EXISTS = 4;
+/**
+ *
+ */
 const GRADE_NOT_IN_MOODLE_COURSE = 5;
+/**
+ *
+ */
 const GRADE_NOT_OUT_OF_100 = 6;
+/**
+ *
+ */
 const GRADE_NOT_IN_STRUCTURE = 7;
+/**
+ *
+ */
 const GRADE_QUEUED = 8;
+/**
+ *
+ */
 const GRADE_NOT_WHOLE_NUMBER = 9;
+/**
+ *
+ */
 const COULD_NOT_GET_SPR_CODE = 10;
 
 /**
@@ -592,7 +622,7 @@ class=\"alert-info alert \">
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
-                            if($this->do_transfer($mappingid, $singleusertransfer)){
+                            if ($this->do_transfer($mappingid, $singleusertransfer)) {
                                 unset($singleusertransfer[$userid]);
                             }
                         }
@@ -604,6 +634,7 @@ class=\"alert-info alert \">
 
     /**
      * @param $samismappingid
+     * @param $moodlecourseid
      * @return array|bool
      */
     protected function get_users_readyto_transfer($samismappingid, $moodlecourseid) {
@@ -788,7 +819,7 @@ class=\"alert-info alert \">
 
     /** Checks done after student SPR code has been retrieved (needed to compare local grades with external SAS export)
      * @param int $userid
-     * @param string $sprcode
+     * @param string $studentidentifer
      * @param object $gradestructure
      * @return mixed
      */
