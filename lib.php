@@ -940,7 +940,7 @@ class=\"alert-info alert \">
             if ($createevent) {
                 // Trigger an event for assessment mapping created.
                 $lookupname = $formsamisassessmentlookupid == 0 ? ' None' :
-                    \local_bath_grades_transfer_assessment_lookup::get_assessment_name_by_id($newmapping->id);
+                    \local_bath_grades_transfer_assessment_lookup::get_assessment_name_by_id($formsamisassessmentlookupid);
                 $event = \local_bath_grades_transfer\event\assessment_mapping_saved::create(
                     array(
                         'context' => \context_module::instance($formdata->coursemodule),
