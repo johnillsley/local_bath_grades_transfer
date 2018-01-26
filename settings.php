@@ -40,7 +40,7 @@ $PAGE->requires->js_amd_inline("
     //Create new button
     var button = \"<button id='test-samis-connection' class='btn'>Test SAMIS Connection</button>\";
     var URL = config.wwwroot + '/local/bath_grades_transfer/test_connection.php';
-    $('#admin-samis_api_key').append(button);
+    $('#admin-samis_api_password').append(button);
     //Test Connection to SAMIS Web Service
     $('#test-samis-connection').click(function(e){
         e.preventDefault();
@@ -58,7 +58,7 @@ $PAGE->requires->js_amd_inline("
             $('#test-samis-connection').after(status_html);
         }
         else{
-        var status_html = '<div class=\'alert alert-danger\'><i class=\"fa fa-times\" aria-hidden=\"true\"></i>  Error Connecting</div>';
+        var status_html = '<div class=\'alert alert-danger\'><i class=\"fa fa-times\" aria-hidden=\"true\"></i>'+status.error+'</div>';
             $('#test-samis-connection').after(status_html);
         }
             

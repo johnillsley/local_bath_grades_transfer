@@ -75,7 +75,7 @@ class local_bath_grades_transfer_rest_client
     {
         try {
             $uri = explode('/',get_config('local_bath_grades_transfer', 'samis_api_url'));
-            $response = $this->client->request('GET','/'.$uri[3], ['verify' => false,'debug' => false]);
+            $response = $this->client->request('GET','/', ['verify' => false,'debug' => true]);
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
             }
