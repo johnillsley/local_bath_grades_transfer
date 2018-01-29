@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 namespace local_bath_grades_transfer\event;
 defined('MOODLE_INTERNAL') || die();
 /**
@@ -35,9 +34,6 @@ class assessment_mapping_unlocked extends \core\event\base
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        //$this->data['action'] = 'assessment_mapping_unlocked';
-        //$this->data['target'] = 'local_bath_grades_transfer_assessment';
-        //$this->data['objecttable'] = 'local_bath_grades_mapping';
     }
     /**
      * Return localised event name.
@@ -55,6 +51,5 @@ class assessment_mapping_unlocked extends \core\event\base
      */
     public function get_description() {
         return "Assessment mapping has been unlocked ";
-        //return "The user with id" . $this->userid . " has set SAMIS Assessment to " . $this->other['assessment_name'];
     }
 }
