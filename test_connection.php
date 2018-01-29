@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+defined('MOODLE_INTERNAL') || die;
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -24,10 +25,9 @@ require_once($CFG->dirroot . '/local/bath_grades_transfer/classes/api/rest_clien
 // Test connection to SAMIS.
 $restclient = new local_bath_grades_transfer_rest_client();
 $restclient->test_connection();
- $status = new stdClass();
+$status = new stdClass();
 if ($restclient->isconnected) {
     $status->connected = true;
-
 } else {
     $status->connected = false;
 }
