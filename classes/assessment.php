@@ -43,7 +43,9 @@ class local_bath_grades_transfer_assessment {
     protected static function get_by_id($id) {
         global $DB;
 
-        if (empty($id) || empty(static::$table)) return false;
+        if (empty($id) || empty(static::$table)) {
+            return false;
+        }
         $object = null;
         $record = null;
 
