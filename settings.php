@@ -44,6 +44,7 @@ if ($hassiteconfig) {
         get_string('default_mapping_only_desc', 'local_bath_grades_transfer'), '1', 1, 0));
 
 }
+global $PAGE;
 $PAGE->requires->js_amd_inline("
     require(['jquery','core/config'], function($,config) {
     //Create new button
@@ -63,14 +64,15 @@ $PAGE->requires->js_amd_inline("
         }).done(function(status){
         //Show status in html
         if(status.connected){
-        var status_html = '<div class=\'alert alert-success\'><i class=\"fa fa-check-circle\" aria-hidden=\"true\"></i>  Connected OK </div>';
+        var status_html = '<div class=\'alert alert-success\'>
+        <i class=\"fa fa-check-circle\" aria-hidden=\"true\"></i>  Connected OK </div>';
             $('#test-samis-connection').after(status_html);
         }
         else{
-        var status_html = '<div class=\'alert alert-danger\'><i class=\"fa fa-times\" aria-hidden=\"true\"></i>'+status.error+'</div>';
+        var status_html = '<div class=\'alert alert-danger\'>
+        <i class=\"fa fa-times\" aria-hidden=\"true\"></i>'+status.error+'</div>';
             $('#test-samis-connection').after(status_html);
         }
-            
         });
     }
 });
