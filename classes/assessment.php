@@ -75,14 +75,6 @@ class local_bath_grades_transfer_assessment {
             if ($object->has_attribute($key)) {
                 $object->$key = $value;
             }
-            // Add the attributes.
-            /*
-            $object->attributes = new \local_bath_grades_transfer_samis_attributes(
-                $record->samisunitcode,
-                $record->academicyear,
-                $record->periodslotcode,
-                $record->mabseq);
-            */
         }
         return $object;
     }
