@@ -66,4 +66,3 @@ $PAGE->requires->js_amd_inline("
     }
 });
 ");
-?>
