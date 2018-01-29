@@ -13,9 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+defined('MOODLE_INTERNAL') || die();
 global $CFG;
-include_once($CFG->dirroot . '/local/bath_grades_transfer/vendor/autoload.php');
-
+require_once($CFG->dirroot . '/local/bath_grades_transfer/vendor/autoload.php');
 use \GuzzleHttp\Client;
 use GuzzleHttp\Promise;
 use \GuzzleHttp\Psr7\Response;
@@ -71,11 +71,10 @@ class local_bath_grades_transfer_rest_client
     /**
      * Function to test connection to SAMIS
      */
-    public function test_connection()
-    {
+    public function test_connection() {
         try {
-            $uri = explode('/',get_config('local_bath_grades_transfer', 'samis_api_url'));
-            $response = $this->client->request('GET','/', ['verify' => false,'debug' => true]);
+            $uri = explode('/', get_config('local_bath_grades_transfer', 'samis_api_url'));
+            $response = $this->client->request('GET', '/', ['verify' => false, 'debug' => true]);
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
             }

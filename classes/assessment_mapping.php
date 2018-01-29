@@ -198,7 +198,7 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
                     $DB->update_record(self::$table, $mapping);
                 }
             } catch (\Exception $e) {
-
+                throw $e;
             }
             return static::get_by_id($id);
 

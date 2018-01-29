@@ -200,8 +200,8 @@ class local_bath_grades_transfer_assessment_lookup extends local_bath_grades_tra
                     foreach ($expirelookups as $k => $v) {
                         $lookupcount = $DB->get_record_sql("
                         SELECT COUNT(*) AS total, lookupid FROM {local_bath_grades_lookup_occ}
-                        WHERE lookupid = ( 
-                          SELECT lookupid 
+                        WHERE lookupid = (
+                          SELECT lookupid
                           FROM {local_bath_grades_lookup_occ}
                           WHERE id = " . $k . "
                           )
