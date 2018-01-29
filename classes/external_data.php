@@ -13,12 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+defined('MOODLE_INTERNAL') || die();
+require_once('api/client.php');
+require_once('api/rest_client.php');
 
-require_once 'api/client.php';
-require_once 'api/rest_client.php';
-
-class local_bath_grades_transfer_external_data
-{
+class local_bath_grades_transfer_external_data {
     /**
      * @var samis_http_client
      */
@@ -65,9 +64,6 @@ class local_bath_grades_transfer_external_data
         $data['P06'] = $lookupattributes->samisunitcode;
         $data['P08'] = $lookup->mapcode;
         $data['P09'] = $lookup->mabseq;
-
-
-
         try {
             // Get all occurrences for the lookup.
             $conditions = array();
@@ -96,8 +92,6 @@ class local_bath_grades_transfer_external_data
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
         }
-
-
     }
 
     /**
@@ -243,7 +237,6 @@ class local_bath_grades_transfer_external_data
      */
     public function set_export_grade($objgrade) {
         $method = 'ASSESSMENTS';
-        //echo "\n\nINSIDE SET EXPORT GRADES+++++++++++++++\n";
         $recordssimplexmlobject = new SimpleXMLElement("<records></records>");
         $assessments = $recordssimplexmlobject->addChild('assessments');
         $assessment = $assessments->addChild('assessment');
@@ -258,7 +251,6 @@ class local_bath_grades_transfer_external_data
         try {
             $this->restwsclient->call_samis($method, $data, 'POST');
             if ($this->restwsclient->response['status'] == 201) {
-                //  "\n++++++++GRADE SENT TO SAMIS SUCCESSFULLY for $objgrade->name +++++";
                 return true;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
