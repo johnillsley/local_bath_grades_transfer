@@ -14,8 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die();
-function xmldb_local_bath_grades_transfer_upgrade($oldversion)
-{
+function xmldb_local_bath_grades_transfer_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager();
