@@ -23,7 +23,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2018012400;        // The current module version (YYYYMMDDXX)
+$plugin->version = 2018011401;        // The current module version (YYYYMMDDXX)
 $plugin->requires = 2015111000;        // Requires this Moodle version.
 $plugin->component = 'local_bath_grades_transfer';
 $plugin->dependencies = array(
