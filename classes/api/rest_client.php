@@ -75,8 +75,12 @@ class local_bath_grades_transfer_rest_client
         try {
             $uri = explode('/', get_config('local_bath_grades_transfer', 'samis_api_url'));
             $response = $this->client->request('GET', '/', ['verify' => false, 'debug' => true]);
+            echo $response->getStatusCode()."\n";
+            echo $response->getReasonPhrase();
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
+            } else {
+                $this->isconnected = false;
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $this->isconnected = false;
