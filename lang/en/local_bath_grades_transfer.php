@@ -26,7 +26,7 @@ $string['samis_api_url_desc'] = 'SAMIS API URI to connect to ';
 $string['samis_api_key_desc'] = 'SAMIS API key goes here';
 $string['mod_choices'] = 'Enable in the following modules';
 $string['mod_choices_desc'] = 'Enable in the following modules';
-$string['bath_grade_transfer_time_start_help'] = 'b.	Optional setting.  If set, Moodle will attempt to transfer grades after this date';
+$string['bath_grade_transfer_time_start_help'] = 'Optional setting.  If set, Moodle will attempt to transfer grades after this date';
 $string['samis_mapping_warning'] = 'Please ensure you have contacted the SAMIS team before setting up these assessments';
 $string['bath_grade_transfer_time_start'] = 'Transfer from';
 $string['bath_grade_transfer_samis_lookup_id'] = 'SAMIS Assessment to link to';
@@ -45,7 +45,7 @@ $string['samis_assessment_mapping_option_label'] = '{$a->mabname} ( Wt: {$a->mab
 $string['bath_grade_transfer_samis_unlock_assessment'] = 'Unlock mapping';
 $string['bath_grade_transfer_samis_unlock_assessment_help'] = 'Unlock mapping';
 $string['unlock_warning'] = 'This action cannot be undone. Are you sure you want to do this ?';
-$string['bath_grade_transfer_samis_lookup_id_help'] = 'a.	If planning to transfer grades from Moodle to SAMIS, select the relevant assessment item from the list.  Available assessments come from SAMIS and relate to the current academic year and period slot code only.';
+$string['bath_grade_transfer_samis_lookup_id_help'] = 'If planning to transfer grades from Moodle to SAMIS, select the relevant assessment item from the list.  Available assessments come from SAMIS and relate to the current academic year and period slot code only.';
 // EVENTS.
 $string['grade_transferred'] = 'Grade Transferred';
 $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
