@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+defined('MOODLE_INTERNAL') || die();
 /**
  * Grade transfer class
  * This class provides top level functions including generating additional form elements for moodle core hacks
@@ -259,7 +259,7 @@ class=\"alert-info alert \">
     protected function transfer_mapping_control($lookuprecords, $cmid, &$mform, $assessmentmapping, $dropdownattributes) {
         global $PAGE;
         $select = $mform->addElement('select', 'bath_grade_transfer_samis_lookup_id',
-            'Select Assessment to Link to', [], []);
+            'Select assessment to link to', [], []);
         $select->addOption("None", 0, $dropdownattributes);
         if (!empty($lookuprecords)) {
             foreach ($lookuprecords as $lrecord) {
@@ -478,7 +478,7 @@ class=\"alert-info alert \">
                     //throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
                     return false;
                 }
-
+                $context = \context_module::instance($assessmentmapping->coursemodule);
                 if (!$moodlecourseid = $this->get_moodle_course_id_coursemodule($assessmentmapping->coursemodule)) {
                     //throw new \Exception("Moodle course module no longer exists for id=" . $assessmentmapping->coursemodule);
                 }
@@ -488,7 +488,6 @@ class=\"alert-info alert \">
                     $assign = new \assign(null, $cm, $course);
                     if ($assign->is_blind_marking()) {
                         // Raise an event.
-                        $context = \context_module::instance($assessmentmapping->coursemodule);
                         $event = \local_bath_grades_transfer\event\assignment_blind_marking_turned_on::create(
                             array(
                                 'contextid' => $context->id,
@@ -510,7 +509,11 @@ class=\"alert-info alert \">
                         echo "++++++ USERS IM SENDING THROUGH+++++";
                         var_dump($userids);
                         if (!empty($userids)) {
-                            $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
+                            try {
+                                $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
+                            } catch (\Exception $e) {
+                                $this->raise_custom_error_event($context, $e->getMessage());
+                            }
                         } else {
                             echo "++++NO USERS TO TRANSFER++++";
                         }
