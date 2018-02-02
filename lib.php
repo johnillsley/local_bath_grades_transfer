@@ -153,7 +153,7 @@ class local_bath_grades_transfer
             return true;
         }
         // Render the header.
-        $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grades Transfer');
+        $mform->addElement('header', 'local_bath_grades_transfer_header', 'Grade transfer');
 
         ////// BUILD CONTROLS /////////////
         // Only get settings if the course is mapped to a SAMIS code.
