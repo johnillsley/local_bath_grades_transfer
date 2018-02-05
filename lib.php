@@ -666,6 +666,7 @@ class=\"alert-info alert \">
             ON ra.userid = u.id
             AND contextid = " . $context->id . "
             AND roleid = 5 /* student role */
+            AND ra.id = me.ra_id
         /***** join moodle activity information relating to mapping including current grade *****/
         JOIN {course_modules} cm ON cm.id = gm.coursemodule
         JOIN {modules} mo ON mo.id = cm.module
