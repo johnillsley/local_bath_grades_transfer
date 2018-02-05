@@ -44,7 +44,6 @@ if ($hassiteconfig) {
         get_string('default_mapping_only_desc', 'local_bath_grades_transfer'), '1', 1, 0));
 
 }
-global $PAGE;
 $PAGE->requires->js_amd_inline("
     require(['jquery','core/config'], function($,config) {
     //Create new button
