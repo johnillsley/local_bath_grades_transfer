@@ -20,7 +20,7 @@ define(['jquery'], function ($) {
             });
 
             // Show more details about the mapping when you select it from the dropdown
-            $( "#id_bath_grade_transfer_samis_lookup_id" ).change(function() {
+            /*$( "#id_bath_grade_transfer_samis_lookup_id" ).change(function() {
                 var selectedMapping = $(this).find("option:selected").attr('data-samisassessmentid');
                 if(selectedMapping){
                     //Get the relevant mapping box with details
@@ -30,7 +30,7 @@ define(['jquery'], function ($) {
                 else{
                     $(".mapping-box-details").hide();
                 }
-            }).change();
+            }).change();*/
         }
     };
 });
