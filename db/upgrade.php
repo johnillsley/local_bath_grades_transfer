@@ -23,7 +23,6 @@ function xmldb_local_bath_grades_transfer_upgrade($oldversion) {
         // Define table local_scd_failed_transfer to be created.
         $table = new xmldb_table('local_bath_grades_lookup');
         // Adding fields to table local_scd_failed_transfer.
-        //$table->add_field('mabpnam', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'Y');
         $field = new xmldb_field('mabpnam', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'Y');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
