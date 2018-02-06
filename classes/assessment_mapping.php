@@ -177,9 +177,11 @@ class local_bath_grades_transfer_assessment_mapping extends local_bath_grades_tr
         return $this->expired;
     }
 
-    /**
-     * Save Assessment Mapping
+
+    /** Saves a mapping
      * @param $mapping
+     * @return bool|mixed|null
+     * @throws Exception
      */
     public static function save_mapping($mapping) {
         global $DB, $USER;
