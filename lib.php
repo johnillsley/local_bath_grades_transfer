@@ -967,6 +967,7 @@ class=\"alert-info alert \">
                     // Expire the old one .
                     $mapping->expired = time();
                     // Save mapping settings.
+                    $mapping->locked = 0;
                     $newmapping = \local_bath_grades_transfer_assessment_mapping::save_mapping($mapping);
                     // Trigger an event for assessment mapping unlocked.
                     $event = \local_bath_grades_transfer\event\assessment_mapping_unlocked::create(
