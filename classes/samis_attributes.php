@@ -50,7 +50,7 @@ class local_bath_grades_transfer_samis_attributes
         global $DB;
 
         $allunits = $DB->get_records_sql("
-            SELECT DISTINCT 
+            SELECT DISTINCT
               samisunitcode
             , periodslotcode
             , academicyear

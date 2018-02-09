@@ -1,0 +1,25 @@
+<EXCHANGE>
+    <STU>
+        <STU.SRS>
+            <STU_CODE>159052882</STU_CODE>
+            <SCE>
+                <SCE.SRS>
+                    <SCE_SCJC>159052882/1</SCE_SCJC>
+                    <SCE_SEQ2>03</SCE_SEQ2>
+                    <SCE_STUC>159052882</SCE_STUC>
+                    <SCE_AYRC>2017/8</SCE_AYRC>
+                    <SCE_STAC>C</SCE_STAC>
+                    <SCJ>
+                        <SCJ.SRS>
+                            <SCJ_CODE>159052882/1</SCJ_CODE>
+                            <SCJ_SEQ2>01</SCJ_SEQ2>
+                            <SCJ_SPRC>159052882/1</SCJ_SPRC>
+                            <SCJ_CRSC>USBB-AFB02</SCJ_CRSC>
+                            <SCJ_STAC>C</SCJ_STAC>
+                        </SCJ.SRS>
+                    </SCJ>
+                </SCE.SRS>
+            </SCE>
+        </STU.SRS>
+    </STU>
+</EXCHANGE>

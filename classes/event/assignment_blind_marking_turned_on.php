@@ -13,10 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 namespace local_bath_grades_transfer\event;
 defined('MOODLE_INTERNAL') || die();
+
 /**
- * Class for event to be triggered when user unlocks an assessment mapping
+ * Class for event to be triggered when a Moodle Module has been deleted.
  *
  *
  * @package    core
@@ -24,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2017 onwards University of Bath
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assessment_mapping_unlocked extends \core\event\base
+class assignment_blind_marking_turned_on extends \core\event\base
 {
     /**
      * Init method.
@@ -32,24 +34,26 @@ class assessment_mapping_unlocked extends \core\event\base
      * @return void
      */
     protected function init() {
-        $this->data['crud'] = 'u';
+        $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_OTHER;
     }
+
     /**
      * Return localised event name.
      *
      * @return string
      */
     public static function get_name() {
-        return 'Assessment Mapping Unlocked';
+        return 'Assignment Blind Marking Turned on';
 
     }
+
     /**
      * Returns description of what happened.
      *
      * @return string
      */
     public function get_description() {
-        return "Assessment mapping has been unlocked ";
+        return "Cannot transfer grades as blind marking is turned on for this assignment";
     }
 }

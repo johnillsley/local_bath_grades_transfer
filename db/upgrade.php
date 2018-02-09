@@ -13,23 +13,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 31/03/2017
- * Time: 16:22
- */
-namespace local_bath_grades_transfer\task;
 defined('MOODLE_INTERNAL') || die();
-class housekeep_lookup extends \core\task\scheduled_task
-{
-    public function get_name() {
-        return get_string('pluginname', 'local_bath_grades_transfer');
+function xmldb_local_bath_grades_transfer_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+    if ($oldversion < 2018011500) {
+
+        // Define table local_scd_failed_transfer to be created.
+        $table = new xmldb_table('local_bath_grades_lookup');
+        // Adding fields to table local_scd_failed_transfer.
+        $field = new xmldb_field('mabpnam', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'Y');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Bath_send_completion_data savepoint reached.
+        upgrade_plugin_savepoint(true, 2018011501, 'local', 'bath_grades_transfer');
     }
-    public function execute() {
-        global $CFG;
-        require_once($CFG->dirroot . '/local/bath_grades_transfer/classes/assessment_lookup.php');
-        $assessmentlookup = new local_bath_grades_transfer_assessment_lookup();
-        $assessmentlookup->sync_remote_assessments();
-    }
+
+    return true;
 }
+
