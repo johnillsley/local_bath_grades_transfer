@@ -369,7 +369,6 @@ class=\"alert-info alert \">
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
-                    echo "++++++Passing Grade for $userid ....++++++";
                     if ($this->samisdata->set_export_grade($objgrade)) {
                         // Log it.
                         $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
@@ -377,7 +376,6 @@ class=\"alert-info alert \">
                         $this->local_grades_transfer_log->save();
 
                         // Lock the mapping.
-                        echo "++++Lock mapping++++";
                         self::lock_mapping($mappingid);
                         return true;
                         if ($web) {
@@ -391,7 +389,6 @@ class=\"alert-info alert \">
 
                 } catch (\Exception $e) {
                     // Log failure.
-                    echo "logging failure";
                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
@@ -506,8 +503,6 @@ class=\"alert-info alert \">
                         foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
                         }
-                        echo "++++++ USERS IM SENDING THROUGH+++++";
-                        var_dump($userids);
                         if (!empty($userids)) {
                             try {
                                 $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
@@ -595,7 +590,6 @@ class=\"alert-info alert \">
 
                 // Get grade.
                 $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
-                var_dump($grade);
 
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
@@ -619,8 +613,6 @@ class=\"alert-info alert \">
                         $studenidentifier = $studentidenfiers->sprcode;
 
                     }
-                    var_dump($studenidentifier);
-                    echo "\nChecking that $studenidentifier is in the grade struct...";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
@@ -759,7 +751,6 @@ class=\"alert-info alert \">
         global $DB;
         $sprcode = null;
         if (isset($moodleuserid)) {
-            echo "Getting username for $moodleuserid";
             // Get username.
             $username = $DB->get_field('user', 'username', ['id' => $moodleuserid]);
             // Pass username to SAMIS to get SPR code.
