@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
 // TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
-//TODO -- What happens when the data changes but the mapping doesn't ?
 
 /**
  * Class local_bath_grades_transfer constants
@@ -541,8 +540,8 @@ class=\"alert-info alert \">
         // CAN THESE ALL BE PUT INTO ONE TRY?????
         // Get all mapping and course data and check all ok.
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
+            mtrace("Could not get mapping object for id = $mappingid");
             return false;
-            // TODO - should this do more than just return false.
         }
         $modulecontext = \context_module::instance($assessmentmapping->coursemodule);
 
