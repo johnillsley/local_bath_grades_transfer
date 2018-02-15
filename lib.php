@@ -496,12 +496,13 @@ class=\"alert-info alert \">
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
+                    $userids = array();
                     if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
                         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
-                        $userids = array();
-                        foreach ($userstotransfer as $user) {
+                        $userids = array_keys($userstotransfer);
+                        /*foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
-                        }
+                        }*/
                         if (!empty($userids)) {
                             try {
                                 $this->transfer_mapping2($mappingid, $userids, $assessmentgrades);
