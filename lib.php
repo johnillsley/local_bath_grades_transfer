@@ -464,6 +464,7 @@ class=\"alert-info alert \">
     public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
         global $DB, $CFG;
+        $userids = array();
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
         // CRON RUN.
@@ -502,10 +503,10 @@ class=\"alert-info alert \">
                 if (!is_null($defaultsamismapping)) {
                     if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
                         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
-                        $userids = array();
-                        foreach ($userstotransfer as $user) {
+                        $userids = array_keys($userstotransfer);
+                        /*foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
-                        }
+                        }*/
                         echo "++++++ USERS IM SENDING THROUGH+++++";
                         var_dump($userids);
                         if (!empty($userids)) {
