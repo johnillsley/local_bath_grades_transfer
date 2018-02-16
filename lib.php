@@ -369,7 +369,7 @@ class=\"alert-info alert \">
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
-                    echo "++++++Passing Grade for $userid ....++++++";
+                    mtrace("++++++Passing Grade for $userid ....++++++");
                     if ($this->samisdata->set_export_grade($objgrade)) {
                         // Log it.
                         $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
@@ -377,7 +377,7 @@ class=\"alert-info alert \">
                         $this->local_grades_transfer_log->save();
 
                         // Lock the mapping.
-                        echo "++++Lock mapping++++";
+                        mtrace("++++Lock mapping++++") ;
                         self::lock_mapping($mappingid);
                         return true;
                         if ($web) {
@@ -391,7 +391,7 @@ class=\"alert-info alert \">
 
                 } catch (\Exception $e) {
                     // Log failure.
-                    echo "logging failure";
+                    mtrace("++++logging failure++++") ;
                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
@@ -594,14 +594,14 @@ class=\"alert-info alert \">
             foreach ($userids as $userid) {
 
                 $this->local_grades_transfer_log->errormessage = "";
-                mtrace("TRYING TO SEND GRADE FOR USER:".$userid);
+                mtrace("TRYING TO SEND GRADE FOR USER:" . $userid);
                 // Get grade.
                 $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
                 var_dump($grade);
 
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
-                        mtrace("LOCAL PRECHECK Conditions PASSED for ".$userid);
+                    mtrace("LOCAL PRECHECK Conditions PASSED for " . $userid);
                     // Get SPR code and Candidate Number.
                     try {
                         $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
@@ -624,16 +624,17 @@ class=\"alert-info alert \">
                     var_dump($studenidentifier);
                     echo "\nChecking that $studenidentifier is in the grade struct...\n";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
-                        mtrace("REMOTE PRECHECK Conditions PASSED for ".$userid);
+                        mtrace("REMOTE PRECHECK Conditions PASSED for " . $userid);
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
-                            if ($this->do_transfer($mappingid, $singleusertransfer)) {
-                                unset($singleusertransfer[$userid]);
-                            }
+                            $this->do_transfer($mappingid, $singleusertransfer);
+                            unset($singleusertransfer[$userid]);
+
                         }
-                    }
-                }
+                    } // End of Remote Precheck.
+
+                } // End of Local Pre-check.
             }
         }
     }
