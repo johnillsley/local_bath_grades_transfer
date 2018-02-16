@@ -477,6 +477,7 @@ class=\"alert-info alert \">
             foreach ($assessmentmappingids as $mappingid) {
                 if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
                     //throw new \Exception("Assessment mapping could not be found with id=" . $mappingid);
+                    mtrace("Mapping not found");
                     return false;
                 }
                 $context = \context_module::instance($assessmentmapping->coursemodule);
@@ -507,7 +508,7 @@ class=\"alert-info alert \">
                         /*foreach ($userstotransfer as $user) {
                             $userids[] = $user->userid;
                         }*/
-                        echo "++++++ USERS IM SENDING THROUGH+++++";
+                        echo "\n++++++ USERS IM SENDING THROUGH+++++\n";
                         var_dump($userids);
                         if (!empty($userids)) {
                             try {
@@ -530,7 +531,7 @@ class=\"alert-info alert \">
                 }
             }
         } else {
-            mtrace("NO ASSESSMENT MAPPINGS TO PROCESS");
+            mtrace("\n++++++++++NO ASSESSMENT MAPPINGS TO PROCESS++++++++\n");
         }
     }
 
@@ -593,14 +594,14 @@ class=\"alert-info alert \">
             foreach ($userids as $userid) {
 
                 $this->local_grades_transfer_log->errormessage = "";
-
+                mtrace("TRYING TO SEND GRADE FOR USER:".$userid);
                 // Get grade.
                 $grade = $this->get_moodle_grade($userid, $assessmentmapping->coursemodule);
                 var_dump($grade);
 
                 // Pre transfer check (local).
                 if ($this->local_precheck_conditions($userid, $grade, $assessmentmapping)) {
-
+                        mtrace("LOCAL PRECHECK Conditions PASSED for ".$userid);
                     // Get SPR code and Candidate Number.
                     try {
                         $bucsusername = $DB->get_field('user', 'username', array('id' => $userid));
@@ -621,8 +622,9 @@ class=\"alert-info alert \">
 
                     }
                     var_dump($studenidentifier);
-                    echo "\nChecking that $studenidentifier is in the grade struct...";
+                    echo "\nChecking that $studenidentifier is in the grade struct...\n";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
+                        mtrace("REMOTE PRECHECK Conditions PASSED for ".$userid);
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
