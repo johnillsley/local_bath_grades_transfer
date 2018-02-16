@@ -128,7 +128,7 @@ class local_bath_grades_transfer_rest_client
             if ($verb == 'POST') {
                 // Post changes.
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
-                    'debug' => false,
+                    'debug' => true,
                     'auth' => [$this->username, $this->password],
                     'timeout' => 40,
                     'verify' => false, // For dev.
@@ -140,7 +140,7 @@ class local_bath_grades_transfer_rest_client
                 ]);
             } else {
                 $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
-                    'debug' => false,
+                    'debug' => true,
                     'timeout' => 6,
                     'verify' => false, // For dev.
                     'auth' => [$this->username, $this->password],

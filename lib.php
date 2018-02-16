@@ -567,6 +567,7 @@ class=\"alert-info alert \">
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
             $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
+            var_dump($gradestructure);
             if (empty($gradestructure)) {
                 // Trigger an event.
                 $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
@@ -832,7 +833,6 @@ class=\"alert-info alert \">
      * @return mixed
      */
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
-        var_dump($gradestructure[$studentidentifer]);
         $outcomeid = null;
         // SPR code missing.
         if (empty($studentidentifer)) {

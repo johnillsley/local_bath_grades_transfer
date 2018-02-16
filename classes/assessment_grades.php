@@ -97,7 +97,6 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
     public function get_grade_strucuture_samis(\local_bath_grades_transfer_assessment_lookup $lookup) {
         // Check that it is a valid lookup.
         $structure = array();
-
         // From the attributes and map_code, get the grade structure.
         try {
             $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
