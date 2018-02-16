@@ -566,6 +566,7 @@ class=\"alert-info alert \">
         }
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
+            var_dump($assessmentmapping->lookup);
             $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
             var_dump($gradestructure);
             if (empty($gradestructure)) {
