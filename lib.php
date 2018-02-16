@@ -832,7 +832,7 @@ class=\"alert-info alert \">
      * @return mixed
      */
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
-
+        var_dump($gradestructure[$studentidentifer]);
         $outcomeid = null;
         // SPR code missing.
         if (empty($studentidentifer)) {
