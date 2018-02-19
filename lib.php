@@ -568,7 +568,6 @@ class=\"alert-info alert \">
             $context = \context_module::instance($assessmentmapping->coursemodule);
             var_dump($assessmentmapping->lookup);
             $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
-            var_dump($gradestructure);
             if (empty($gradestructure)) {
                 // Trigger an event.
                 $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
