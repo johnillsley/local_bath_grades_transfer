@@ -130,7 +130,7 @@ class local_bath_grades_transfer_rest_client
                 $this->promise = $this->client->postAsync($method . '/' . $dataraw, [
                     'debug' => false,
                     'auth' => [$this->username, $this->password],
-                    'timeout' => 40,
+                    'timeout' => 30,
                     'verify' => true, // For live.
                     'headers' => [
                         'Content-Type' => 'text/xml',
@@ -141,7 +141,7 @@ class local_bath_grades_transfer_rest_client
             } else {
                 $this->promise = $this->client->getAsync($method . '/' . $dataraw, [
                     'debug' => false,
-                    'timeout' => 6,
+                    'timeout' => 30,
                     'verify' => true, // For live.
                     'auth' => [$this->username, $this->password],
                     'headers' => [
