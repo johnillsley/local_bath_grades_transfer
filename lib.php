@@ -836,13 +836,14 @@ class=\"alert-info alert \">
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
         $outcomeid = null;
         // SPR code missing.
-        error_log(json_encode($gradestructure[$studentidentifer]['assessment']->mark),0);
+        echo json_encode($gradestructure);
+        error_log(json_encode($gradestructure[$studentidentifer]->mark),0);
         if (empty($studentidentifer)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         } else if (!array_key_exists($studentidentifer, $gradestructure)) {
             // Student not in SAMIS grade structure.
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
-        } else if (!empty($gradestructure[$studentidentifer]['assessment']->mark)) {
+        } else if (!empty($gradestructure[$studentidentifer]->mark)) {
             // Grade already in SAMIS grade structure.
             $outcomeid = GRADE_ALREADY_EXISTS;
         }

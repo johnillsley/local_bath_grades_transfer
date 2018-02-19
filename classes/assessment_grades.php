@@ -101,11 +101,19 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
         try {
             $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
             // Note: there is a speartate grade structure for each MAV occurrence.
-            foreach ($remotegradestructures as $remotegradestructure) {
-                if (!empty($remotegradestructure)) {
-                    foreach ($remotegradestructure->assessments as $assessment) {
-                        if (!empty($assessment)) {
-                            foreach ($assessment as $objassessmentdata) {
+            //var_dump($remotegradestructures[0]->assessments->assessment);
+            foreach ($remotegradestructures[0]->assessments->assessment as $assessment) {
+                if (!empty($assessment)) {
+                    //foreach ($remotegradestructure->assessment as $assessment) {
+                            if ($lookup->mabpnam == 'N') {
+                                $structure[(string)$assessment->candidate] = $assessment;
+                            }
+                            else{
+                                $structure[(string)$assessment->student] = $assessment;
+
+                            }
+                            /* foreach ($assessment as $objassessmentdata) {
+
                                 if ($lookup->mabpnam == 'N') {
                                     $structure[(string)$objassessmentdata->candidate] = array
                                     (
@@ -117,15 +125,16 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
                                         'assessment' => self::instantiate($objassessmentdata)
                                     );
                                 }
-                            }
-                        }
-                    }
-                }
-            }
+                            }*/
+
+                    //} //for each
+                } // end if
+            } // end for each
         } catch (\Exception $e) {
             throw $e;
-        }
+        } //end
         error_log(json_encode($structure),0);
+        //echo json_encode($structure);
         return $structure;
-    }
+    } // end function
 }
