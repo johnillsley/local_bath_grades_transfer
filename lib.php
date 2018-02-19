@@ -362,31 +362,26 @@ class=\"alert-info alert \">
     public function do_transfer($mappingid, $grades, $web = false) {
         global $DB;
         $status = null;
+
         if (!empty($grades)) {
-            foreach ($grades as $key => $gradearray) {
+            foreach ($grades as $key => $objgrade) {
                 $userid = $key;
-                $objgrade = $gradearray['assessment'];
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
                     mtrace("++++++Passing Grade for $userid ....++++++");
                     if ($this->samisdata->set_export_grade($objgrade)) {
                         // Log it.
+                        var_dump($objgrade);
                         $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
-                        $this->local_grades_transfer_log->gradetransferred = $objgrade->mark;
+                        $this->local_grades_transfer_log->gradetransferred = (string)$objgrade->mark;
+                        var_dump($this->local_grades_transfer_log);
                         $this->local_grades_transfer_log->save();
 
                         // Lock the mapping.
                         mtrace("++++Lock mapping++++") ;
                         self::lock_mapping($mappingid);
                         return true;
-                        if ($web) {
-                            // Display result to the user.
-                            $status = new \gradereport_transfer\output\transfer_status(
-                                $userid,
-                                'success',
-                                $objgrade->mark);
-                        }
                     }
 
                 } catch (\Exception $e) {
@@ -566,7 +561,6 @@ class=\"alert-info alert \">
         }
         try {
             $context = \context_module::instance($assessmentmapping->coursemodule);
-            var_dump($assessmentmapping->lookup);
             $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
             error_log(json_encode($gradestructure),0);
             if (empty($gradestructure)) {
@@ -627,7 +621,7 @@ class=\"alert-info alert \">
                     echo "\nChecking that $studenidentifier is in the grade struct...\n";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
                         mtrace("REMOTE PRECHECK Conditions PASSED for " . $userid);
-                        $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
+                        $gradestructure[$studenidentifier]->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
