@@ -55,7 +55,7 @@ class local_bath_grades_transfer_external_data {
         global $DB;
 
         $function = 'ASSESSMENTS';
-        $assessmentgradestructure = $data = array();
+        $data = $responses = array();
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
@@ -71,6 +71,7 @@ class local_bath_grades_transfer_external_data {
             $occurrences = $DB->get_records('local_bath_grades_lookup_occ', $conditions, '', 'mavoccur');
             foreach ($occurrences as $occurrence) {
                 $data['P07'] = $occurrence->mavoccur;
+                error_log(json_encode($data), 0);
                 $this->restwsclient->call_samis($function, $data);
                 if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
                     $response = simplexml_load_string($this->restwsclient->response['contents']);
@@ -80,6 +81,7 @@ class local_bath_grades_transfer_external_data {
                 }
                 $responses[] = $response;
             }
+            error_log(json_encode($responses), 0);
             return $responses;
 
             /*if (isset($response->records)) {

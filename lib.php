@@ -391,7 +391,7 @@ class=\"alert-info alert \">
 
                 } catch (\Exception $e) {
                     // Log failure.
-                    mtrace("++++logging failure++++") ;
+                    mtrace("++++logging failure++++");
                     $this->local_grades_transfer_log->outcomeid = TRANSFER_FAILURE;
                     // Get error id.
                     $this->local_grades_transfer_log->errormessage = $e->getMessage();
@@ -568,6 +568,7 @@ class=\"alert-info alert \">
             $context = \context_module::instance($assessmentmapping->coursemodule);
             var_dump($assessmentmapping->lookup);
             $gradestructure = $assessmentgrades->get_grade_strucuture_samis($assessmentmapping->lookup);
+            error_log(json_encode($gradestructure),0);
             if (empty($gradestructure)) {
                 // Trigger an event.
                 $event = \local_bath_grades_transfer\event\missing_samis_grade_structure::create(
@@ -835,7 +836,7 @@ class=\"alert-info alert \">
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
         $outcomeid = null;
         // SPR code missing.
-        echo json_encode($gradestructure[$studentidentifer]);
+        error_log(json_encode($gradestructure[$studentidentifer]['assessment']->mark),0);
         if (empty($studentidentifer)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         } else if (!array_key_exists($studentidentifer, $gradestructure)) {

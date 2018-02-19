@@ -125,6 +125,7 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
         } catch (\Exception $e) {
             throw $e;
         }
+        error_log(json_encode($structure),0);
         return $structure;
     }
 }
