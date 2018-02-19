@@ -835,6 +835,7 @@ class=\"alert-info alert \">
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
         $outcomeid = null;
         // SPR code missing.
+        json_encode($gradestructure[$studentidentifer]);
         if (empty($studentidentifer)) {
             $outcomeid = COULD_NOT_GET_SPR_CODE;
         } else if (!array_key_exists($studentidentifer, $gradestructure)) {
