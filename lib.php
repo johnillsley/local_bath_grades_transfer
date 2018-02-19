@@ -617,9 +617,9 @@ class=\"alert-info alert \">
                         $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
-                            if ($this->do_transfer($mappingid, $singleusertransfer)) {
-                                unset($singleusertransfer[$userid]);
-                            }
+                            $this->do_transfer($mappingid, $singleusertransfer);
+                            unset($singleusertransfer[$userid]);
+
                         }
                     }
                 }
