@@ -819,7 +819,7 @@ class=\"alert-info alert \">
         } else if (!array_key_exists($studentidentifer, $gradestructure)) {
             // Student not in SAMIS grade structure.
             $outcomeid = GRADE_NOT_IN_STRUCTURE;
-        } else if (!empty($gradestructure[$studentidentifer]['assessment']->mark)) {
+        } else if (!empty($gradestructure[$studentidentifer]->mark)) {
             // Grade already in SAMIS grade structure.
             $outcomeid = GRADE_ALREADY_EXISTS;
         }
