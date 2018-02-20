@@ -52,4 +52,3 @@ $string['assessmentmapped'] = ' SAMIS Assessment Mapped to Moodle Activity';
 // Capabilities .
 $string['bath_grades_transfer:create_assessment_mapping'] = 'Create new Grades Transfer Assessment Mapping';
 $string['bath_grades_transfer:unlock_assessment_mapping'] = 'Unlock Assessment Mapping';
-
