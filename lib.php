@@ -362,28 +362,20 @@ class=\"alert-info alert \">
         global $DB;
         $status = null;
         if (!empty($grades)) {
-            foreach ($grades as $key => $gradearray) {
+            foreach ($grades as $key => $objgrade) {
                 $userid = $key;
-                $objgrade = $gradearray['assessment'];
                 $this->local_grades_transfer_log->timetransferred = time();
                 $this->local_grades_transfer_log->userid = $userid;
                 try {
                     if ($this->samisdata->set_export_grade($objgrade)) {
                         // Log it.
                         $this->local_grades_transfer_log->outcomeid = TRANSFER_SUCCESS;
-                        $this->local_grades_transfer_log->gradetransferred = $objgrade->mark;
+                        $this->local_grades_transfer_log->gradetransferred = (string)$objgrade->mark;
                         $this->local_grades_transfer_log->save();
 
                         // Lock the mapping.
                         self::lock_mapping($mappingid);
                         return true;
-                        if ($web) {
-                            // Display result to the user.
-                            $status = new \gradereport_transfer\output\transfer_status(
-                                $userid,
-                                'success',
-                                $objgrade->mark);
-                        }
                     }
 
                 } catch (\Exception $e) {
@@ -460,6 +452,7 @@ class=\"alert-info alert \">
     public function cron_transfer($lasttaskruntime) {
         $userstotransfer = null;
         global $DB, $CFG;
+        $userids = array();
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
         // CRON RUN.
@@ -496,7 +489,6 @@ class=\"alert-info alert \">
                 }
                 $defaultsamismapping = $this->default_samis_mapping($moodlecourseid, $assessmentmapping->lookup->attributes);
                 if (!is_null($defaultsamismapping)) {
-                    $userids = array();
                     if ($userstotransfer = $this->get_users_readyto_transfer($mappingid, $moodlecourseid)) {
                         $assessmentgrades = new \local_bath_grades_transfer_assessment_grades();
                         $userids = array_keys($userstotransfer);
