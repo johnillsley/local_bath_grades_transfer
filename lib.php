@@ -606,7 +606,7 @@ class=\"alert-info alert \">
 
                     }
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
-                        $gradestructure[$studenidentifier]['assessment']->mark = $grade->finalgrade;
+                        $gradestructure[$studenidentifier]->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
