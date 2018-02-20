@@ -55,7 +55,7 @@ class local_bath_grades_transfer_external_data {
         global $DB;
 
         $function = 'ASSESSMENTS';
-        $assessmentgradestructure = $data = array();
+        $responses = $data = array();
         $lookupattributes = $lookup->attributes;
 
         // DEV DATA FOR TESTING.
