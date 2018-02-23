@@ -101,17 +101,17 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
         try {
             $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
             // Note: there is a speartate grade structure for each MAV occurrence.
-            foreach ($remotegradestructures[0]->assessments->assessment as $assessment) {
-                if (!empty($assessment)) {
-                    if ($lookup->mabpnam == 'N') {
-                        $structure[(string)$assessment->candidate] = $assessment;
-                    } else {
-                        $structure[(string)$assessment->student] = $assessment;
-
+            foreach ($remotegradestructures as $key => $sxmlobjectassessments) {
+                foreach ($sxmlobjectassessments->assessments->children() as $sxmlobjectassessment) {
+                    if (!empty($sxmlobjectassessment)) {
+                        if ($lookup->mabpnam == 'N') {
+                            $structure[(string)$sxmlobjectassessment->candidate] = $sxmlobjectassessment;
+                        } else {
+                            $structure[(string)$sxmlobjectassessment->student] = $sxmlobjectassessment;
+                        }
                     }
-
-                } // end if
-            } // end for each
+                }
+            }
         } catch (\Exception $e) {
             throw $e;
         }
