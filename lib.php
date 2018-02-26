@@ -26,9 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
-// TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
-//TODO -- What happens when the data changes but the mapping doesn't ?
 
 /**
  * Class local_bath_grades_transfer constants
