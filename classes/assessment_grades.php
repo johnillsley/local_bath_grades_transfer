@@ -101,54 +101,20 @@ class local_bath_grades_transfer_assessment_grades extends local_bath_grades_tra
         try {
             $remotegradestructures = $this->samisdata->get_remote_grade_structure($lookup);
             // Note: there is a speartate grade structure for each MAV occurrence.
-
             foreach ($remotegradestructures as $key => $sxmlobjectassessments) {
-
                 foreach ($sxmlobjectassessments->assessments->children() as $sxmlobjectassessment) {
                     if (!empty($sxmlobjectassessment)) {
-
                         if ($lookup->mabpnam == 'N') {
                             $structure[(string)$sxmlobjectassessment->candidate] = $sxmlobjectassessment;
                         } else {
                             $structure[(string)$sxmlobjectassessment->student] = $sxmlobjectassessment;
-
                         }
-
                     }
                 }
             }
-            /*foreach ($remotegradestructures[0]->assessments->assessment as $assessment) {
-                if (!empty($assessment)) {
-                    //foreach ($remotegradestructure->assessment as $assessment) {
-                            if ($lookup->mabpnam == 'N') {
-                                $structure[(string)$assessment->candidate] = $assessment;
-                            }
-                            else{
-                                $structure[(string)$assessment->student] = $assessment;
-
-                            }
-                            /* foreach ($assessment as $objassessmentdata) {
-
-                                if ($lookup->mabpnam == 'N') {
-                                    $structure[(string)$objassessmentdata->candidate] = array
-                                    (
-                                        'assessment' => self::instantiate($objassessmentdata)
-                                    );
-                                } else {
-                                    $structure[(string)$objassessmentdata->student] = array
-                                    (
-                                        'assessment' => self::instantiate($objassessmentdata)
-                                    );
-                                }
-                            }*/
-
-                    //} //for each
-            //}
-            //}
         } catch (\Exception $e) {
             throw $e;
-        } //end
-        //echo json_encode($structure);
+        }
         return $structure;
-    } // end function
+    }
 }
