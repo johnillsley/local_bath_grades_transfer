@@ -212,18 +212,39 @@ class local_bath_grades_transfer_external_data {
         try {
             $this->restwsclient->call_samis($method, $data);
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
-                $retdata = simplexml_load_string($this->restwsclient->response['contents']);
+                //$retdata = simplexml_load_string($this->restwsclient->response['contents']);
+                $retdata = new SimpleXMLIterator($this->restwsclient->response['contents'], null, false);
             }
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
                     // We have an error.
                     $this->handle_error($data);
                 }
-                foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCE'}->{'SCE.SRS'} as $objspr) {
+                /*foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'}->{'SCE.SRS'} as $objspr) {
                     $studentidentifer->sprcode = (string)$objspr->{'SCJ'}->{'SCJ.SRS'}->{'SCJ_SPRC'};
                     $studentidentifer->candidatenumber = (string)$objspr->{'SCN'}->{'SCN.CAMS'}->{'SCN_CODE'};
 
+                }*/
+                for ($retdata->rewind(); $retdata->valid(); $retdata->next()) {
+                    if ($retdata->hasChildren()) {
+                        if ($retdata->key() == 'STU') {
+                            // Continue.
+                            foreach ($retdata->getChildren() as $STU => $stuobject) {
+                                // Fetch STU Code.
+                                $studentidentifer->stucode = (string)$stuobject->{'STU_CODE'};
+                                // Fetch SPR Code.
+                                foreach ($stuobject->{'SCJ'}->{'SCJ.SRS'} AS $scjobject) {
+                                    $studentidentifer->sprcode  = (string)$scjobject->{'SCJ_SPRC'};
+                                }
+                                // Fetch Candidate Number.
+                                foreach ($stuobject->{'SCN'}->{'SCN.CAMS'} AS $scnobject) {
+                                    $studentidentifer->candidatenumber = (string)$scnobject->{'SCN_CODE'};
+                                }
+                            }
+                        }
+                    }
                 }
+
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             throw new Exception($e->getMessage());
