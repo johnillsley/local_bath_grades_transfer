@@ -158,10 +158,10 @@ class local_bath_grades_transfer_rest_client
                     $this->response['contents'] = $res->getBody()->getContents();
                 },
                 // Error handling.
-                function (RequestException $e) {
+                function (\GuzzleHttp\Exception\ClientException $e) {
                     if ($e->getCode() == 400) {
                         // Bad Request.
-                        throw  new \Exception("Could not find remote assessments for " . $e->getMessage());
+                        throw new \Exception( $e->getMessage());
                     } else if ($e->getCode() == 404) {
                         throw  new \Exception("Cant connect to SAMIS");
                     } else {
