@@ -596,6 +596,7 @@ class=\"alert-info alert \">
                         $this->local_grades_transfer_log->timetransferred = time();
                         $this->local_grades_transfer_log->errormessage = $e->getMessage();
                         $this->local_grades_transfer_log->save();
+                        return true;
                     }
 
                     // Pre transfer check (remote).
@@ -611,7 +612,6 @@ class=\"alert-info alert \">
                         if (!empty($singleusertransfer)) {
                             $this->do_transfer($mappingid, $singleusertransfer);
                             unset($singleusertransfer[$userid]);
-
                         }
                     }
                 }
