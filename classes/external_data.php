@@ -212,13 +212,12 @@ class local_bath_grades_transfer_external_data {
         try {
             $this->restwsclient->call_samis($method, $data);
             if ($this->restwsclient->response['status'] == 200 && $this->restwsclient->response['contents']) {
-                //$retdata = simplexml_load_string($this->restwsclient->response['contents']);
                 $retdata = new SimpleXMLIterator($this->restwsclient->response['contents'], null, false);
             }
             if (isset($retdata) && !empty($retdata)) {
                 if (isset($retdata['status']) && $retdata['status'] < 0) {
                     // We have an error.
-                    $this->handle_error($data);
+                    $this->handle_error($retdata);
                 }
                 /*foreach ($retdata->{'STU'}->{'STU.SRS'}->{'SCJ'}->{'SCE.SRS'} as $objspr) {
                     $studentidentifer->sprcode = (string)$objspr->{'SCJ'}->{'SCJ.SRS'}->{'SCJ_SPRC'};
@@ -246,10 +245,10 @@ class local_bath_grades_transfer_external_data {
                 }
 
             }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (\Exception $e) {
             throw new Exception($e->getMessage());
         }
-        return $studentidentifer;
+         return $studentidentifer;
     }
 
 
