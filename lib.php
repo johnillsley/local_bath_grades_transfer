@@ -143,7 +143,7 @@ class local_bath_grades_transfer
         global $COURSE, $CFG, $PAGE;
         $PAGE->requires->js_call_amd('local_bath_grades_transfer/grades_transfer', 'init', []);
         require($CFG->dirroot . '/enrol/sits/lib.php');
-        // Optional cmid param.
+        // Optional cmid parameter.
         $cmid = optional_param('update', 0, PARAM_INT);
 
         // Check that config is set.
