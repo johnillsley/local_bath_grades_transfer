@@ -26,7 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 //TODO -- minus 2 / plus 1 ACADEMIC YEAR for Grade Transfer Report Logs
 //TODO -- Also allow them to transfer for previous academic year(s) as long as the lookup is still valid
-// TODO -- check for unenrolled students in SAMIS ( Ask Martin ).
 //TODO -- plugin_extend_coursemodule_edit_post_actions use this to extend later?
 
 /**
@@ -361,6 +360,7 @@ class=\"alert-info alert \">
     public function do_transfer($mappingid, $grades, $web = false) {
         global $DB;
         $status = null;
+
         if (!empty($grades)) {
             foreach ($grades as $key => $objgrade) {
                 $userid = $key;
@@ -516,7 +516,7 @@ class=\"alert-info alert \">
                 }
             }
         } else {
-            mtrace("NO ASSESSMENT MAPPINGS TO PROCESS");
+            mtrace("\n++++++++++NO ASSESSMENT MAPPINGS TO PROCESS++++++++\n");
         }
     }
 
@@ -533,8 +533,8 @@ class=\"alert-info alert \">
         // CAN THESE ALL BE PUT INTO ONE TRY?????
         // Get all mapping and course data and check all ok.
         if (!$assessmentmapping = \local_bath_grades_transfer_assessment_mapping::get($mappingid, true)) {
-            mtrace("Could not get mapping object for id = $mappingid");
             return false;
+            // TODO - should this do more than just return false.
         }
         $modulecontext = \context_module::instance($assessmentmapping->coursemodule);
 
@@ -606,6 +606,8 @@ class=\"alert-info alert \">
                         $studenidentifier = $studentidenfiers->sprcode;
 
                     }
+                    var_dump($studenidentifier);
+                    echo "\nChecking that $studenidentifier is in the grade struct...\n";
                     if ($this->remote_precheck_conditions($userid, $studenidentifier, $gradestructure)) {
                         $gradestructure[$studenidentifier]->mark = $grade->finalgrade;
                         $singleusertransfer[$userid] = $gradestructure[$studenidentifier];
@@ -613,8 +615,9 @@ class=\"alert-info alert \">
                             $this->do_transfer($mappingid, $singleusertransfer);
                             unset($singleusertransfer[$userid]);
                         }
-                    }
-                }
+                    } // End of Remote Precheck.
+
+                } // End of Local Pre-check.
             }
         }
     }
@@ -811,7 +814,6 @@ class=\"alert-info alert \">
      * @return mixed
      */
     public function remote_precheck_conditions($userid, $studentidentifer, $gradestructure) {
-
         $outcomeid = null;
         // SPR code missing.
         if (empty($studentidentifer)) {

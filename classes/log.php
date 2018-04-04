@@ -50,6 +50,7 @@ class local_bath_grades_transfer_log
      * @var
      */
     public $gradetransfererrorid;
+    public $errormessage;
     /**
      * @var string
      */
@@ -114,9 +115,10 @@ class local_bath_grades_transfer_log
         $data->timetransferred = $this->timetransferred;
         $data->outcomeid = $this->outcomeid;
         $data->gradetransferred = $this->gradetransferred;
-        if (!empty($data->errormessage)) {
-            $error = new stClass();
-            $error->errormessage = $data->errormessage;
+        $data->errormessage = $this->errormessage;
+        if (!empty($this->errormessage)) {
+            $error = new stdClass();
+            $error->errormessage = $this->errormessage;
             $lastinsertid = $DB->insert_record('local_bath_grades_error', $error);
             $data->gradetransfererrorid = $lastinsertid;
         }
