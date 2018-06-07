@@ -63,7 +63,10 @@ class local_bath_grades_transfer_rest_client
         }
         $this->client = new Client([
                 'base_uri' => $apiurl,
-                'proxy' => $proxy
+                'proxy' => $proxy,
+                'curl' => [
+                    CURLOPT_SSLVERSION => 1
+                ]
             ]
         );
     }
