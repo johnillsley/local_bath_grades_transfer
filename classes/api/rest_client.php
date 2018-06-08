@@ -65,7 +65,7 @@ class local_bath_grades_transfer_rest_client
                 'base_uri' => $apiurl,
                 'proxy' => $proxy,
                 'curl' => [
-                    CURLOPT_SSLVERSION => 1
+                    CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_0
                 ]
             ]
         );
@@ -77,7 +77,7 @@ class local_bath_grades_transfer_rest_client
     public function test_connection() {
         try {
             $uri = explode('/', get_config('local_bath_grades_transfer', 'samis_api_url'));
-            $response = $this->client->request('GET', '/', ['verify' => false, 'debug' => false]);
+            $response = $this->client->request('GET', '/', ['verify' => false, 'debug' => true]);
             if ($response->getStatusCode() == 200) {
                 $this->isconnected = true;
             } else {
