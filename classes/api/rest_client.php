@@ -66,7 +66,7 @@ class local_bath_grades_transfer_rest_client
                 'proxy' => $proxy,
                 'curl' => [
                     CURLOPT_FRESH_CONNECT => 1,
-                    CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1
+                    CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
                 ]
             ]
         );
