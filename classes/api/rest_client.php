@@ -158,7 +158,7 @@ class local_bath_grades_transfer_rest_client
                     $this->response['contents'] = $res->getBody()->getContents();
                 },
                 // Error handling.
-                function (\GuzzleHttp\Exception\ClientException $e) {
+                function (\GuzzleHttp\Exception\RequestException $e) {
                     if ($e->getCode() == 400) {
                         // Bad Request.
                         throw new \Exception( $e->getMessage());
