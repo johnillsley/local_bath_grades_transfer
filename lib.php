@@ -176,6 +176,7 @@ class=\"alert-info alert \">
                 $lookuprecords = array_merge($lookuprecords,
                     \local_bath_grades_transfer_assessment_lookup::get_by_samis_details($samisattributes));
             }
+            $this->expire_mapping_if_not_current($cmid); // Expire mapping if not in current academic year.
             $this->show_transfer_controls($lookuprecords, $cmid, $mform);
         } else {
             // No samis mapping defined for this course..
@@ -1025,5 +1026,25 @@ class=\"alert-info alert \">
         return $DB->record_exists('sits_mappings', ['courseid' => $moodlecourseid,
             'default_map' => 1,
             'acyear' => $this->currentacademicyear]);
+    }
+
+    /**
+     * If the mapping is for a previous academic year expire it.
+     */
+    private function expire_mapping_if_not_current($cmid) {
+        
+        // Get current mapping.
+        if (!$transfermapping = \local_bath_grades_transfer_assessment_mapping::get_by_cm_id($cmid)) {
+            return; // No mapping so nothing to do.
+        }
+        
+        if ($transfermapping->expired == 0 && $transfermapping->assessmentlookupid > 0) {
+            $lookup = \local_bath_grades_transfer_assessment_lookup::get_by_id($transfermapping->assessmentlookupid);
+            if ($lookup->attributes->academicyear != $this->currentacademicyear) {
+                // Mapping lookup is not current year so expire mapping so that it can be re-used.
+                $transfermapping->expire_mapping(1);
+                $transfermapping->update();
+            }
+        }
     }
 }
